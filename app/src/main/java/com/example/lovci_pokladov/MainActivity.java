@@ -74,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return result[0];
     }
 
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
