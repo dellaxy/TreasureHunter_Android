@@ -1,5 +1,7 @@
 package com.example.lovci_pokladov;
 
+import static com.example.lovci_pokladov.objects.ConstantsCatalog.GAME_ACTIVITY_REQUEST_CODE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -38,7 +40,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-    public static final int GAME_ACTIVITY_REQUEST_CODE = 100;
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
     private DatabaseHelper databaseHelper;
