@@ -10,6 +10,6 @@ public class ConstantsCatalog {
 
     // Activity request codes
     public static final int GAME_ACTIVITY_REQUEST_CODE = 100;
-
+    public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
 }
