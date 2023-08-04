@@ -56,36 +56,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         OutputStream outputStream = null;
 
         try {
-            // Open the predefined database in the assets folder
             inputStream = context.getAssets().open(DATABASE_NAME);
 
-            // Create a temporary file to copy the database
             File tempFile = File.createTempFile("temp", null);
             outputStream = new FileOutputStream(tempFile);
 
-            // Copy the database file
             byte[] buffer = new byte[1024];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, length);
             }
 
-            // Close the streams
             outputStream.flush();
             outputStream.close();
             inputStream.close();
 
-            // Attach the temporary database
             db.execSQL("ATTACH DATABASE '" + tempFile.getAbsolutePath() + "' AS tempDb");
-
-            // Copy the table from the temporary database to the actual database
             db.execSQL("CREATE TABLE " + LEVELS_TABLE + " AS SELECT * FROM tempDb." + LEVELS_TABLE);
-
-            // Detach the temporary database
             db.execSQL("DETACH DATABASE tempDb");
-
-            // Delete the temporary file
             tempFile.delete();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
