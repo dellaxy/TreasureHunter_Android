@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import com.example.lovci_pokladov.databinding.ActivityMapsBinding;
 import com.example.lovci_pokladov.objects.CustomMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
+import com.example.lovci_pokladov.objects.GeoJSONLoader;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -33,11 +34,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
@@ -45,7 +50,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseHelper databaseHelper;
     private boolean isPopupOpen = false;
     private PopupWindow popupWindow;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,7 +120,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        loadDataFromDatabase();
+        //loadDataFromDatabase();
+        GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
+        geoJSONLoader.getRegions();
+        Random random = new Random();
+        for (int i=1; i<=8;i++) {
+            PolygonOptions polygonOptions = geoJSONLoader.getRegionPolygon(i);
+            if (polygonOptions != null) {
+                polygonOptions
+                        .strokeWidth(10)
+                        .strokeColor(Color.rgb(0, 0, 125))
+                        .fillColor(Color.parseColor("#4BA1FD"));
+                mMap.addPolygon(polygonOptions);
+            }
+        }
     }
 
     // vypočíta tilt kamery podľa zoomu kamery

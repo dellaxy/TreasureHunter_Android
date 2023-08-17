@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private CustomMarker marker;
     private boolean isInsideArea = false;
     private LatLng markerLocation, areaCenter;
-    private int areaRadius, markerTolerance=3;
+    private int areaRadius, markerTolerance=5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,19 +84,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
-        double currentLatitude = location.getLatitude();
-        double currentLongitude = location.getLongitude();
+        double currentLatitude = location.getLatitude(),
+                currentLongitude = location.getLongitude();
 
-        float distance = calculateDistance(currentLatitude, currentLongitude, areaCenter.latitude, areaCenter.longitude);
-        if(distance < markerTolerance && isInsideArea){
+        float distanceFromArea = calculateDistance(currentLatitude, currentLongitude, areaCenter.latitude, areaCenter.longitude);
+        float distanceFromMarker = calculateDistance(currentLatitude, currentLongitude, markerLocation.latitude, markerLocation.longitude);
+        if (distanceFromMarker <= markerTolerance && isInsideArea){
             Toast.makeText(this, "You found the treasure!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
             finish();
         }
-        if (distance <= areaRadius && !isInsideArea) {
+        if (distanceFromArea <= areaRadius && !isInsideArea) {
             Toast.makeText(this, "You entered the target area!", Toast.LENGTH_SHORT).show();
             isInsideArea = true;
-        } else if (distance > areaRadius && isInsideArea) {
+        } else if (distanceFromArea > areaRadius && isInsideArea) {
             Toast.makeText(this, "You left the target area!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
         }
