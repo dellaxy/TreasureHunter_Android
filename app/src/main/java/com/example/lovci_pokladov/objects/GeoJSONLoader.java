@@ -2,6 +2,7 @@ package com.example.lovci_pokladov.objects;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
@@ -60,6 +61,7 @@ public class GeoJSONLoader {
                 String regionName = region.optString("NM4", "");
                 regionsList.add(Map.of(regionId, regionName));
             }
+            return regionsList;
         } catch (JSONException e) {
             e.printStackTrace();
         }

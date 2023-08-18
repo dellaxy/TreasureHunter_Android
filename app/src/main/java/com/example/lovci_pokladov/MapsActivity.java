@@ -122,8 +122,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //loadDataFromDatabase();
         GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
-        geoJSONLoader.getRegions();
-        Random random = new Random();
         for (int i=1; i<=8;i++) {
             PolygonOptions polygonOptions = geoJSONLoader.getRegionPolygon(i);
             if (polygonOptions != null) {
