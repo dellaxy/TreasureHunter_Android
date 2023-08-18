@@ -19,9 +19,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Lovci_pokladov"
         tools:targetApi="31">
-        <activity
-            android:name=".MenuActivity"
-            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -29,6 +26,13 @@
 
         <activity
             android:name=".MapsActivity"
+            android:exported="false" />
+
+        <activity android:name=".menu.RegionSelectActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".menu.MenuActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
