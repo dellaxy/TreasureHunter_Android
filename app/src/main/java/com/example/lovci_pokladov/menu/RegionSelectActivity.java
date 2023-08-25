@@ -1,20 +1,15 @@
 package com.example.lovci_pokladov.menu;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.GridLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.GridView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.entities.Region;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
 
 import java.util.List;
-import java.util.Map;
 
 public class RegionSelectActivity extends AppCompatActivity {
 
@@ -23,19 +18,13 @@ public class RegionSelectActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_region_select);
 
-        GridLayout gridLayout = findViewById(R.id.regionsGridLayout);
+        GridView regionsGrid = findViewById(R.id.regionsGrid);
 
         GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
-        List<Map<Integer, String>> regions = geoJSONLoader.getRegions();
-        for (Map<Integer, String> region : regions) {
-            View regionCell = LayoutInflater.from(this).inflate(R.layout.region_cell, gridLayout, false);
-            ImageView regionImage = regionCell.findViewById(R.id.regionImage);
-            TextView regionName = regionCell.findViewById(R.id.regionName);
+        List<Region> regionsList = geoJSONLoader.getRegions();
 
-            String regionNameString = region.values().iterator().next();
-            regionName.setText(regionNameString);
+        RegionAdapter regionAdapter = new RegionAdapter(this, regionsList);
+        regionsGrid.setAdapter(regionAdapter);
 
-            gridLayout.addView(regionCell);
-        }
     }
 }

@@ -24,6 +24,8 @@ public class MenuActivity extends AppCompatActivity {
 
     public void toMap(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("countryCode", "SVK");
+        intent.putExtra("regionId", "");
         startActivity(intent);
     }
 }
