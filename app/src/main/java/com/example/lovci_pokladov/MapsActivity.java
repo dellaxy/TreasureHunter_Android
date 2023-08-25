@@ -4,11 +4,13 @@ import static com.example.lovci_pokladov.objects.ConstantsCatalog.GAME_ACTIVITY_
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.lovci_pokladov.databinding.ActivityMapsBinding;
-import com.example.lovci_pokladov.objects.CustomMarker;
+import com.example.lovci_pokladov.entities.Country;
+import com.example.lovci_pokladov.entities.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -34,15 +37,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
@@ -50,6 +50,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseHelper databaseHelper;
     private boolean isPopupOpen = false;
     private PopupWindow popupWindow;
+    private String countryCode="SVK", regionId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +63,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         databaseHelper = new DatabaseHelper(this);
+
+        getMapPreferences();
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View popUpView = inflater.inflate(R.layout.location_info_pop, null);
@@ -80,10 +83,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    private void getMapPreferences() {
+        Intent intent = getIntent();
+        if (intent != null) {
+            countryCode = intent.getStringExtra("countryCode");
+            regionId = intent.getStringExtra("regionId");
+        } else {
+            SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+            countryCode = preferences.getString("countryCode", "");
+            regionId = preferences.getString("regionId", "");
+        }
+    }
+
+    // Načíta všetky markery
     private void loadDataFromDatabase() {
-        List<CustomMarker> markers = databaseHelper.getAllMarkers();
+        List<LocationMarker> markers = databaseHelper.getAllMarkers();
         if (markers != null && !markers.isEmpty()) {
-            for (CustomMarker marker : markers) {
+            for (LocationMarker marker : markers) {
                 addMarker(marker);
             }
         } else {
@@ -98,8 +114,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style);
         // nastaví sa štýl mapy (bez obchodov, reštaurácií ...) res/raw/map_style.json
         mMap.setMapStyle(style);
-        //nastaví sa pozícia kamery na Slovensko
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.287788, 17.923567), 10.0f));
         googleMap.setMinZoomPreference(5.0f);
 
         // nastavenie zoomu a tiltu kamery podľa jej pozície
@@ -120,7 +134,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        loadCountry();
+
         //loadDataFromDatabase();
+
+    }
+
+    private void loadCountry(){
+        GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
+        Country country = countryCode != null ? geoJSONLoader.getCountry(countryCode) : geoJSONLoader.getCountry("SVK");
+        if (country != null){
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(country.getCenter(), 7));
+        }
+    }
+
+    private void loadRegions(){
         GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
         for (int i=1; i<=8;i++) {
             PolygonOptions polygonOptions = geoJSONLoader.getRegionPolygon(i);
@@ -144,7 +172,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tilt = Math.max(minTilt, Math.min(maxTilt, tilt));
         return tilt;
     }
-    public void addMarker(CustomMarker customMarker) {
+    public void addMarker(LocationMarker customMarker) {
         LatLng markerLocation = customMarker.getPosition();
         int markerColor = Color.rgb(Color.red(customMarker.getColor()), Color.green(customMarker.getColor()), Color.blue(customMarker.getColor()));
         // vytvorí sa lokácia hernej plochy
@@ -165,7 +193,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                CustomMarker clickedMarker = (CustomMarker) marker.getTag();
+                LocationMarker clickedMarker = (LocationMarker) marker.getTag();
                 showLocationInfo(clickedMarker);
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
                 return true;
@@ -191,7 +219,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private void showLocationInfo(CustomMarker marker) {
+    // zobrazí PopupWindow s informáciami o lokácií
+    private void showLocationInfo(LocationMarker marker) {
         if (isPopupOpen) {
             return;
         }
@@ -225,7 +254,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    protected void onStop() {
+        super.onStop();
+        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("countryCode", countryCode);
+        editor.putString("regionId", regionId);
+        editor.apply();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-
+        countryCode = "";
+        regionId = "";
+    }
 }

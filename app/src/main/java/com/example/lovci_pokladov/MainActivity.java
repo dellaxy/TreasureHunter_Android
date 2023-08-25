@@ -6,7 +6,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -16,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.example.lovci_pokladov.objects.CustomMarker;
+import com.example.lovci_pokladov.entities.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -33,7 +32,7 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
-    private CustomMarker marker;
+    private LocationMarker marker;
     private boolean isInsideArea = false;
     private LatLng markerLocation, areaCenter;
     private int areaRadius, markerTolerance=5;
@@ -83,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(android.location.Location location) {
         double currentLatitude = location.getLatitude(),
                 currentLongitude = location.getLongitude();
 
@@ -105,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private float calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         float[] result = new float[1];
-        Location.distanceBetween(lat1, lon1, lat2, lon2, result);
+        android.location.Location.distanceBetween(lat1, lon1, lat2, lon2, result);
         return result[0];
     }
 

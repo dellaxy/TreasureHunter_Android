@@ -1,17 +1,13 @@
-package com.example.lovci_pokladov.objects;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+package com.example.lovci_pokladov.entities;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.clustering.ClusterItem;
 
-public class CustomMarker {
+public class LocationMarker {
     private final LatLng position;
     private final int id, color, difficulty;
     private final String title, icon, description;
 
-    public CustomMarker(int id, double lat, double lng, String title, int color, String icon, int difficulty, String description) {
+    public LocationMarker(int id, double lat, double lng, String title, int color, String icon, int difficulty, String description) {
         this.difficulty = difficulty;
         this.description = description;
         this.position = new LatLng(lat, lng);

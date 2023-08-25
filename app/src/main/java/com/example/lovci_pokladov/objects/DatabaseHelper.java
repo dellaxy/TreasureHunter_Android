@@ -7,6 +7,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.example.lovci_pokladov.entities.LocationMarker;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,9 +84,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public CustomMarker getMarkerById(int id) {
+    public LocationMarker getMarkerById(int id) {
         SQLiteDatabase database = getReadableDatabase();
-        CustomMarker marker = null;
+        LocationMarker marker = null;
 
         try {
             Cursor cursor = database.rawQuery("SELECT * FROM "+ LEVELS_TABLE +" WHERE id = ?", new String[]{String.valueOf(id)});
@@ -97,7 +100,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int locationDifficulty = cursor.getInt(cursor.getColumnIndex("difficulty"));
                 String locationTitle = cursor.getString(cursor.getColumnIndex("name"));
                 String locationDescription = cursor.getString(cursor.getColumnIndex("description"));
-                marker = new CustomMarker(locationID, locationLat, locationLong, locationTitle, locationColor, locationIcon, locationDifficulty, locationDescription);
+                marker = new LocationMarker(locationID, locationLat, locationLong, locationTitle, locationColor, locationIcon, locationDifficulty, locationDescription);
             }
 
             cursor.close();
@@ -110,8 +113,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return marker;
     }
 
-    public List<CustomMarker> getAllMarkers() {
-        List<CustomMarker> markers = new ArrayList<>();
+    public List<LocationMarker> getAllMarkers() {
+        List<LocationMarker> markers = new ArrayList<>();
         SQLiteDatabase database = getReadableDatabase();
 
         try {
@@ -127,7 +130,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int locationDifficulty = cursor.getInt(cursor.getColumnIndex("difficulty"));
                 String locationTitle = cursor.getString(cursor.getColumnIndex("name"));
                 String locationDescription = cursor.getString(cursor.getColumnIndex("description"));
-                CustomMarker marker = new CustomMarker(locationID, locationLat, locationLong, locationTitle, locationColor, locationIcon, locationDifficulty, locationDescription);
+                LocationMarker marker = new LocationMarker(locationID, locationLat, locationLong, locationTitle, locationColor, locationIcon, locationDifficulty, locationDescription);
 
                 markers.add(marker);
             }
