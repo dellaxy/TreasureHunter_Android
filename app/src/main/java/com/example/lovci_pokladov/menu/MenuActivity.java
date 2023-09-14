@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.example.lovci_pokladov.MapsActivity;
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.RegionActivity;
 
 public class MenuActivity extends AppCompatActivity {
 
@@ -15,16 +16,16 @@ public class MenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+
     }
 
     public void toRegionSelect(View view) {
-        Intent intent = new Intent(this, RegionSelectActivity.class);
+        Intent intent = new Intent(this, RegionActivity.class);
         startActivity(intent);
     }
 
     public void toMap(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("countryCode", "SVK");
         intent.putExtra("regionId", "");
         startActivity(intent);
     }

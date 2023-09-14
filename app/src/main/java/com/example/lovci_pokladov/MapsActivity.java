@@ -24,7 +24,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.lovci_pokladov.databinding.ActivityMapsBinding;
-import com.example.lovci_pokladov.entities.Country;
 import com.example.lovci_pokladov.entities.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
@@ -50,7 +49,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseHelper databaseHelper;
     private boolean isPopupOpen = false;
     private PopupWindow popupWindow;
-    private String countryCode="SVK", regionId;
+    private String regionId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,11 +85,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void getMapPreferences() {
         Intent intent = getIntent();
         if (intent != null) {
-            countryCode = intent.getStringExtra("countryCode");
             regionId = intent.getStringExtra("regionId");
         } else {
             SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
-            countryCode = preferences.getString("countryCode", "");
             regionId = preferences.getString("regionId", "");
         }
     }
@@ -134,18 +131,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        loadCountry();
+        loadDataFromDatabase();
 
-        //loadDataFromDatabase();
-
-    }
-
-    private void loadCountry(){
-        GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
-        Country country = countryCode != null ? geoJSONLoader.getCountry(countryCode) : geoJSONLoader.getCountry("SVK");
-        if (country != null){
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(country.getCenter(), 7));
-        }
     }
 
     private void loadRegions(){
@@ -258,7 +245,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onStop();
         SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("countryCode", countryCode);
         editor.putString("regionId", regionId);
         editor.apply();
     }
@@ -266,8 +252,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        countryCode = "";
         regionId = "";
     }
 }

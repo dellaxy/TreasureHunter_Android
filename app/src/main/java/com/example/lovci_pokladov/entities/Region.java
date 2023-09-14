@@ -1,19 +1,6 @@
 package com.example.lovci_pokladov.entities;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.util.Log;
-
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class Region {
     int id;

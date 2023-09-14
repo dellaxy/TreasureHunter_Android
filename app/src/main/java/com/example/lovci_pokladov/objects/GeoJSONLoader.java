@@ -3,7 +3,6 @@ package com.example.lovci_pokladov.objects;
 import android.content.Context;
 import android.content.res.AssetManager;
 
-import com.example.lovci_pokladov.entities.Country;
 import com.example.lovci_pokladov.entities.Region;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
@@ -32,10 +31,6 @@ public class GeoJSONLoader {
 
     public List<Region> getRegions() {
         return parseRegions(readRegionGeoJSON());
-    }
-
-    public Country getCountry(String countryCode) {
-        return readCountryGeoJSON(countryCode) != null ? parseCountry(readCountryGeoJSON(countryCode)) : null;
     }
 
     private JSONObject readCountryGeoJSON(String targetCountryCode) {
@@ -82,31 +77,6 @@ public class GeoJSONLoader {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private Country parseCountry(JSONObject country) {
-        Country countryObject = null;
-        PolygonOptions polygonObject = new PolygonOptions();
-        try {
-            JSONObject properties = country.getJSONObject("properties");
-            LatLng countryCenter = new LatLng(properties.getDouble("LAT"), properties.getDouble("LON"));
-            JSONObject geometry = country.getJSONObject("geometry");
-            JSONArray coordinates = geometry.getJSONArray("coordinates");
-
-            for (int i = 0; i < coordinates.length(); i++) {
-                JSONArray ring = coordinates.getJSONArray(i);
-                for (int j = 0; j < ring.length(); j++) {
-                    JSONArray point = ring.getJSONArray(j);
-                    double longitude = point.getDouble(0);
-                    double latitude = point.getDouble(1);
-                    polygonObject.add(new LatLng(latitude, longitude));
-                }
-            }
-            countryObject = new Country(countryCenter, polygonObject);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return countryObject;
     }
 
 
