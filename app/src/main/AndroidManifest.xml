@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -19,6 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Lovci_pokladov"
         tools:targetApi="31">
+        <activity
+            android:name=".RegionActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -27,10 +31,6 @@
         <activity
             android:name=".MapsActivity"
             android:exported="false" />
-
-        <activity android:name=".menu.RegionSelectActivity"
-            android:exported="false" />
-
         <activity
             android:name=".menu.MenuActivity"
             android:exported="true">
