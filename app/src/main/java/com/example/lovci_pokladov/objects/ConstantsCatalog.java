@@ -2,6 +2,8 @@ package com.example.lovci_pokladov.objects;
 
 import android.graphics.Color;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class ConstantsCatalog {
     // Database constants
     public static final String DATABASE_NAME = "treasure_hunters.db";
@@ -12,6 +14,8 @@ public class ConstantsCatalog {
     // Activity request codes
     public static final int GAME_ACTIVITY_REQUEST_CODE = 100;
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    public static final LatLng SLOVAKIA_LOCATION = new LatLng(48.669026, 19.699024);
 
     public enum ColorPalette {
         PRIMARY(69, 107, 141),

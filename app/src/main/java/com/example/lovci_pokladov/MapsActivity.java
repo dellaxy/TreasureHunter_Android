@@ -1,6 +1,7 @@
 package com.example.lovci_pokladov;
 
 import static com.example.lovci_pokladov.objects.ConstantsCatalog.GAME_ACTIVITY_REQUEST_CODE;
+import static com.example.lovci_pokladov.objects.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,13 +10,17 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +45,9 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.maps.android.PolyUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -49,7 +56,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseHelper databaseHelper;
     private boolean isPopupOpen = false;
     private PopupWindow popupWindow;
-    private String regionId;
+    private int regionId = -1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,8 +69,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         databaseHelper = new DatabaseHelper(this);
-
-        getMapPreferences();
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View popUpView = inflater.inflate(R.layout.location_info_pop, null);
@@ -82,38 +87,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void getMapPreferences() {
-        Intent intent = getIntent();
-        if (intent != null) {
-            regionId = intent.getStringExtra("regionId");
-        } else {
-            SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
-            regionId = preferences.getString("regionId", "");
-        }
-    }
-
-    // Načíta všetky markery
-    private void loadDataFromDatabase() {
-        List<LocationMarker> markers = databaseHelper.getAllMarkers();
-        if (markers != null && !markers.isEmpty()) {
-            for (LocationMarker marker : markers) {
-                addMarker(marker);
-            }
-        } else {
-            Toast.makeText(this, "No markers found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style);
-        // nastaví sa štýl mapy (bez obchodov, reštaurácií ...) res/raw/map_style.json
-        mMap.setMapStyle(style);
-        googleMap.setMinZoomPreference(5.0f);
-
-        // nastavenie zoomu a tiltu kamery podľa jej pozície
+        getMapPreferences();
+        loadDataFromDatabase();
         googleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
@@ -130,26 +108,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
             }
         });
-
-        loadDataFromDatabase();
-
     }
 
-    private void loadRegions(){
-        GeoJSONLoader geoJSONLoader = new GeoJSONLoader(this);
-        for (int i=1; i<=8;i++) {
-            PolygonOptions polygonOptions = geoJSONLoader.getRegionPolygon(i);
-            if (polygonOptions != null) {
-                polygonOptions
-                        .strokeWidth(10)
-                        .strokeColor(Color.rgb(0, 0, 125))
-                        .fillColor(Color.parseColor("#4BA1FD"));
-                mMap.addPolygon(polygonOptions);
-            }
+    private void getMapPreferences() {
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style);
+        mMap.setMapStyle(style);
+        mMap.setMinZoomPreference(5.0f);
+        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        regionId = preferences.getInt("selectedRegion", -1);
+        moveCameraToRegion();
+    }
+
+    private void moveCameraToRegion(){
+        if (regionId != -1) {
+            GeoJSONLoader jsonLoader = new GeoJSONLoader(this);
+            PolygonOptions regionPolygon = jsonLoader.getRegionPolygon(regionId);
+            LatLng center = getCenterOfPolygon(regionPolygon);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 8.0f));
+        } else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(SLOVAKIA_LOCATION, 8.0f));
         }
     }
 
-    // vypočíta tilt kamery podľa zoomu kamery
+    private LatLng getCenterOfPolygon(PolygonOptions polygon) {
+        List<LatLng> points = polygon.getPoints();
+        double latitude = 0.0;
+        double longitude = 0.0;
+        for (LatLng point : points) {
+            latitude += point.latitude;
+            longitude += point.longitude;
+        }
+        latitude /= points.size();
+        longitude /= points.size();
+        return new LatLng(latitude, longitude);
+    }
+
     private float calculateTilt(float zoomLevel) {
         float minZoom = 10.0f;
         float maxZoom = 20.0f;
@@ -159,10 +152,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tilt = Math.max(minTilt, Math.min(maxTilt, tilt));
         return tilt;
     }
-    public void addMarker(LocationMarker customMarker) {
+
+    private void loadDataFromDatabase() {
+        List<LocationMarker> markers, allMarkers = databaseHelper.getAllMarkers();
+            if (regionId != -1) {
+                GeoJSONLoader jsonLoader = new GeoJSONLoader(this);
+                PolygonOptions regionPolygon = jsonLoader.getRegionPolygon(regionId);
+                markers = getMarkersInsideRegion(regionPolygon, allMarkers);
+            } else {
+                markers = allMarkers;
+            }
+        if (markers != null && !markers.isEmpty()) {
+            for (LocationMarker marker : markers){
+                addMarker(marker);
+            }
+        } else {
+            Toast.makeText(this, "No markers found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private List<LocationMarker> getMarkersInsideRegion(PolygonOptions regionPolygon, List<LocationMarker> allMarkers) {
+        List<LocationMarker> markers = new ArrayList<>();
+        for (LocationMarker marker : allMarkers) {
+            if(PolyUtil.containsLocation(marker.getPosition(), regionPolygon.getPoints(), true)){
+                markers.add(marker);
+            }
+        }
+        return markers;
+    }
+
+    private void addMarker(LocationMarker customMarker) {
         LatLng markerLocation = customMarker.getPosition();
         int markerColor = Color.rgb(Color.red(customMarker.getColor()), Color.green(customMarker.getColor()), Color.blue(customMarker.getColor()));
-        // vytvorí sa lokácia hernej plochy
+
         CircleOptions circleOptions = new CircleOptions()
                 .center(markerLocation)
                 .radius(50)
@@ -176,7 +198,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .icon(bitmapDescriptorFromVector(getApplicationContext(), customMarker.getIcon(), markerColor)));
         marker.setTag(customMarker);
 
-        // po kliknutí na marker sa zobrazí informácia o hernej ploche a mapa sa priblíži na marker
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -188,7 +209,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    // custom ikonka markera
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, String iconName, int color) {
         int resourceId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
         Drawable vectorDrawable;
@@ -206,7 +226,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    // zobrazí PopupWindow s informáciami o lokácií
     private void showLocationInfo(LocationMarker marker) {
         if (isPopupOpen) {
             return;
@@ -214,44 +233,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView locationName = popupWindow.getContentView().findViewById(R.id.treasureTitle);
         TextView locationDescription = popupWindow.getContentView().findViewById(R.id.treasureDescription);
         Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
+        ImageButton closeButton = popupWindow.getContentView().findViewById(R.id.closeButton);
         acceptButton.setTag(marker.getId());
         locationName.setText(marker.getTitle());
         locationDescription.setText(marker.getDescription());
 
+        Animation slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.slide_in_from_top);
+        popupWindow.getContentView().startAnimation(slideInAnimation);
         popupWindow.showAtLocation(getWindow().getDecorView().getRootView(), Gravity.TOP, 0, 0);
+
         isPopupOpen = true;
 
-        // po kliknutí na tlačidlo sa získa id hry a hra sa začne
-        acceptButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int markerId = (int) v.getTag();
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("markerId", markerId);
-                startActivityForResult(intent, GAME_ACTIVITY_REQUEST_CODE);
-                closeLocationInfo(v);
-            }
+        closeButton.setOnClickListener(v -> closeLocationInfo());
+
+        acceptButton.setOnClickListener(v -> {
+            int markerId = (int) v.getTag();
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.putExtra("markerId", markerId);
+            startActivityForResult(intent, GAME_ACTIVITY_REQUEST_CODE);
+            closeLocationInfo();
         });
     }
 
-    public void closeLocationInfo(View view) {
+    public void closeLocationInfo() {
         if (isPopupOpen) {
-            popupWindow.dismiss();
-            isPopupOpen = false;
+            Animation slideOutAnimation = AnimationUtils.loadAnimation(this, R.anim.slide_out_to_top);
+            slideOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            popupWindow.dismiss();
+                            isPopupOpen = false;
+                        }
+                    }, 10);
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
+
+            popupWindow.getContentView().startAnimation(slideOutAnimation);
         }
     }
 
-    protected void onStop() {
-        super.onStop();
-        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("regionId", regionId);
-        editor.apply();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        regionId = "";
-    }
 }

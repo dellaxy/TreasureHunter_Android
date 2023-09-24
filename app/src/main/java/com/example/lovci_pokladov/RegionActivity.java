@@ -1,17 +1,21 @@
 package com.example.lovci_pokladov;
 
+import static com.example.lovci_pokladov.objects.ConstantsCatalog.SLOVAKIA_LOCATION;
+
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.lovci_pokladov.objects.ConstantsCatalog.ColorPalette;
+
 import com.example.lovci_pokladov.entities.Region;
+import com.example.lovci_pokladov.objects.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -46,8 +50,20 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
         mMap = googleMap;
         MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clean);
         mMap.setMapStyle(style);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(SLOVAKIA_LOCATION, 6.5f));
         displayAllRegionsOnMap();
+        getSelectedRegion();
+    }
 
+    private void getSelectedRegion(){
+        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        int selectedRegion = preferences.getInt("selectedRegion", -1);
+        if (selectedRegion != -1) {
+            Polygon selectedPolygon = polygonMap.get(selectedRegion);
+            if (selectedPolygon != null) {
+                setSelectedRegion(selectedPolygon);
+            }
+        }
     }
 
     private void displayAllRegionsOnMap() {
@@ -109,6 +125,14 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
         });
 
         colorAnimator.start();
+    }
+
+    protected void onPause() {
+        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("selectedRegion", selectedRegionId);
+        editor.apply();
+        super.onPause();
     }
 
 }
