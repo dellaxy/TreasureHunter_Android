@@ -25,41 +25,10 @@ public class GeoJSONLoader {
         this.context = context;
     }
 
-    public PolygonOptions getRegionPolygon(int regionId) {
-        return parseRegionById(readRegionGeoJSON(), regionId);
-    }
-
+    public PolygonOptions getRegionPolygon(int regionId) { return parseRegionById(readRegionGeoJSON(), regionId);}
     public List<Region> getRegions() {
         return parseRegions(readRegionGeoJSON());
     }
-
-    private JSONObject readCountryGeoJSON(String targetCountryCode) {
-        AssetManager assetManager = context.getAssets();
-        try {
-            InputStream inputStream = assetManager.open("europe_countries.geojson");
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-
-            String geoJsonString = new String(buffer, StandardCharsets.UTF_8);
-            JSONObject geoJson = new JSONObject(geoJsonString);
-            JSONArray features = geoJson.getJSONArray("features");
-            for (int i = 0; i < features.length(); i++) {
-                JSONObject feature = features.getJSONObject(i);
-                JSONObject properties = feature.getJSONObject("properties");
-                String countryCode = properties.getString("ISO2");
-
-                if (countryCode.equalsIgnoreCase(targetCountryCode)) {
-                    return feature;
-                }
-            }
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
 
     private JSONArray readRegionGeoJSON() {
         AssetManager assetManager = context.getAssets();
