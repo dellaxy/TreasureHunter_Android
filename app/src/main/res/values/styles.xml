@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="RoundedButton" parent="Widget.AppCompat.Button">
-        <item name="android:background">@drawable/roundedbutton</item>
+        <item name="android:background">@drawable/rounded_button</item>
         <item name="android:backgroundTint">?attr/colorPrimary</item>
         <item name="android:textColor">@android:color/white</item>
     </style>

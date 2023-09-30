@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Gravity;
@@ -71,7 +70,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         databaseHelper = new DatabaseHelper(this);
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View popUpView = inflater.inflate(R.layout.location_info_pop, null);
+        View popUpView = inflater.inflate(R.layout.location_popup, null);
         popupWindow = new PopupWindow(popUpView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         popupWindow.setAnimationStyle(android.R.style.Animation_Translucent);
 

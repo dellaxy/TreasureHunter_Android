@@ -21,7 +21,10 @@
         android:theme="@style/Theme.Lovci_pokladov"
         tools:targetApi="31">
         <activity
-            android:name=".RegionActivity"
+            android:name=".TESTActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menu.RegionActivity"
             android:exported="false" />
 
         <meta-data
