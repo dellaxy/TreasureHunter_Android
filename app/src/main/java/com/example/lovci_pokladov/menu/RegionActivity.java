@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov;
+package com.example.lovci_pokladov.menu;
 
 import static com.example.lovci_pokladov.objects.ConstantsCatalog.SLOVAKIA_LOCATION;
 
@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.entities.Region;
 import com.example.lovci_pokladov.objects.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;

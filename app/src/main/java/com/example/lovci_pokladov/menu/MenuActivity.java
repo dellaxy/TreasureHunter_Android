@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lovci_pokladov.MapsActivity;
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.RegionActivity;
+import com.example.lovci_pokladov.TESTActivity;
 
 public class MenuActivity extends AppCompatActivity {
 
@@ -20,7 +20,7 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     public void toRegionSelect(View view) {
-        Intent intent = new Intent(this, RegionActivity.class);
+        Intent intent = new Intent(this, TESTActivity.class);
         startActivity(intent);
     }
 
