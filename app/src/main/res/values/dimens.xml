@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="DEFAULT_MENU">50dp</dimen>
+    <dimen name="OPENED_MENU_WIDTH">200dp</dimen>
+</resources>

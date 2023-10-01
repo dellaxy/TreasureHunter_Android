@@ -3,6 +3,9 @@ package com.example.lovci_pokladov.objects;
 import android.content.res.Resources;
 import android.graphics.Color;
 
+import com.example.lovci_pokladov.MapsActivity;
+import com.example.lovci_pokladov.TESTActivity;
+import com.example.lovci_pokladov.menu.RegionActivity;
 import com.google.android.gms.maps.model.LatLng;
 
 public class ConstantsCatalog {
@@ -41,4 +44,27 @@ public static final int OPEN_MENU_HEIGHT = (int) (500 * Resources.getSystem().ge
             return Color.argb(alpha, Color.red(this.color), Color.green(this.color), Color.blue(this.color));
         }
     }
+
+    public enum MENU_PAGES {
+        TEST("Test", TESTActivity.class),
+        HOME("Home", MapsActivity.class),
+        SETTINGS("Settings", MapsActivity.class),
+        REGIONS("Region Select", RegionActivity.class);
+        private final String pageName;
+        private final Class<?> activityClass;
+
+        MENU_PAGES(String pageName, Class<?> activityClass) {
+            this.pageName = pageName;
+            this.activityClass = activityClass;
+        }
+
+        public String getPageName() {
+            return pageName;
+        }
+
+        public Class<?> getActivityClass() {
+            return activityClass;
+        }
+        }
+
 }
