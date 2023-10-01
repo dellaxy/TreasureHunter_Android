@@ -18,6 +18,7 @@ public class TESTActivity extends AppCompatActivity {
         setContentView(R.layout.activity_testactivity);
 
     }
+
 }
 
 

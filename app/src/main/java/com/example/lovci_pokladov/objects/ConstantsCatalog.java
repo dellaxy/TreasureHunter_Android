@@ -1,5 +1,6 @@
 package com.example.lovci_pokladov.objects;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -16,6 +17,11 @@ public class ConstantsCatalog {
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     public static final LatLng SLOVAKIA_LOCATION = new LatLng(48.669026, 19.699024);
+
+    public static final int DEFAULT_MENU_WIDTH = (int) (50 * Resources.getSystem().getDisplayMetrics().density);
+    public static final int DEFAULT_MENU_HEIGHT = (int) (50 * Resources.getSystem().getDisplayMetrics().density);
+    public static final int OPEN_MENU_WIDTH = (int) (200 * Resources.getSystem().getDisplayMetrics().density);
+public static final int OPEN_MENU_HEIGHT = (int) (500 * Resources.getSystem().getDisplayMetrics().density);
 
     public enum ColorPalette {
         PRIMARY(69, 107, 141),
