@@ -8,9 +8,10 @@
 
     <Button
         android:id="@+id/button3"
+        style="@style/RoundedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="220dp"
+        android:layout_marginStart="196dp"
         android:layout_marginTop="76dp"
         android:onClick="toRegionSelect"
         android:text="Button"
@@ -19,12 +20,15 @@
 
     <Button
         android:id="@+id/button4"
+        style="@style/RoundedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="72dp"
         android:layout_marginTop="76dp"
         android:onClick="toMap"
-        android:text="Button"
+        android:text="slovo"
+        android:textAllCaps="false"
+        android:typeface="normal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

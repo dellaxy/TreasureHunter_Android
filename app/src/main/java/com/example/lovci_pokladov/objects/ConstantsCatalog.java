@@ -21,10 +21,6 @@ public class ConstantsCatalog {
 
     public static final LatLng SLOVAKIA_LOCATION = new LatLng(48.669026, 19.699024);
 
-    public static final int DEFAULT_MENU_WIDTH = (int) (50 * Resources.getSystem().getDisplayMetrics().density);
-    public static final int DEFAULT_MENU_HEIGHT = (int) (50 * Resources.getSystem().getDisplayMetrics().density);
-    public static final int OPEN_MENU_WIDTH = (int) (200 * Resources.getSystem().getDisplayMetrics().density);
-public static final int OPEN_MENU_HEIGHT = (int) (500 * Resources.getSystem().getDisplayMetrics().density);
 
     public enum ColorPalette {
         PRIMARY(69, 107, 141),
@@ -50,6 +46,7 @@ public static final int OPEN_MENU_HEIGHT = (int) (500 * Resources.getSystem().ge
         HOME("Home", MapsActivity.class),
         SETTINGS("Settings", MapsActivity.class),
         REGIONS("Region Select", RegionActivity.class);
+
         private final String pageName;
         private final Class<?> activityClass;
 
