@@ -39,6 +39,7 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_region);
+        regionNameTextView = findViewById(R.id.regionNameText);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -103,12 +104,14 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
         } else if (selectedRegionId == regionInfo.getInt("regionId")) {
             changePolygonColor(selectedPolygon, ColorPalette.PRIMARY.getColor(128));
             selectedRegionId = -1;
+            this.regionNameTextView.setText("Slovakia");
             return;
         } else {
             Polygon previousSelectedPolygon = polygonMap.get(selectedRegionId);
             changePolygonColor(previousSelectedPolygon, ColorPalette.PRIMARY.getColor(128));
             changePolygonColor(selectedPolygon, ColorPalette.PRIMARY.getColor(220));
         }
+        this.regionNameTextView.setText(regionInfo.getString("regionName"));
         selectedRegionId = regionInfo.getInt("regionId");
     }
 

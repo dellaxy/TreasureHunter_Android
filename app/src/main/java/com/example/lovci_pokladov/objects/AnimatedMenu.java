@@ -1,9 +1,6 @@
 package com.example.lovci_pokladov.objects;
 
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.DEFAULT_MENU_HEIGHT;
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.DEFAULT_MENU_WIDTH;
 import static com.example.lovci_pokladov.objects.ConstantsCatalog.MENU_PAGES;
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.OPEN_MENU_WIDTH;
 
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
@@ -31,7 +28,8 @@ public class AnimatedMenu extends LinearLayout {
     private ImageButton menuButton;
     private AnimatedVectorDrawable openMenuDrawable;
     private AnimatedVectorDrawable closeMenuDrawable;
-    LinearLayout menuLayout;
+    private LinearLayout menuLayout;
+    private Class<?> currentActivityClass;
 
     public AnimatedMenu(Context context) {
         super(context);
@@ -40,6 +38,7 @@ public class AnimatedMenu extends LinearLayout {
 
     public AnimatedMenu(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.currentActivityClass = context.getClass();
         init();
     }
 
@@ -66,6 +65,10 @@ public class AnimatedMenu extends LinearLayout {
 
             button.setText(page.getPageName());
             button.setOnClickListener(view -> {
+                if (currentActivityClass == page.getActivityClass()) {
+                    return;
+                }
+                toggleMenu();
                 Intent intent = new Intent(getContext(), page.getActivityClass());
                 getContext().startActivity(intent);
             });
@@ -87,10 +90,10 @@ public class AnimatedMenu extends LinearLayout {
         if (isMenuOpen) {
             menuButton.setImageDrawable(openMenuDrawable);
             openMenuDrawable.start();
-            animateCardView(DEFAULT_MENU_WIDTH, true);
+            animateCardView((int) getResources().getDimension(R.dimen.DEFAULT_MENU), true);
         } else {
             menuButton.setImageDrawable(closeMenuDrawable);
-            animateCardView(OPEN_MENU_WIDTH, false);
+            animateCardView((int) getResources().getDimension(R.dimen.OPENED_MENU_WIDTH), false);
             closeMenuDrawable.start();
         }
         isMenuOpen = !isMenuOpen;
@@ -104,7 +107,7 @@ public class AnimatedMenu extends LinearLayout {
         // when the menu is being opened, I want the height to match the content.
         //But since it's animated I can't use wrap_content, so I measure the height of the content.
         if (isClosing) {
-            targetHeight = DEFAULT_MENU_HEIGHT;
+            targetHeight = (int) getResources().getDimension(R.dimen.DEFAULT_MENU);
         } else {
             cardView.measure(View.MeasureSpec.makeMeasureSpec(cardView.getWidth(), View.MeasureSpec.EXACTLY),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));

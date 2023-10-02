@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lovci_pokladov</string>
+    <string name="app_name">Treasure_hunter</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="map_id">98a2eac97dc3e6d0</string>
 </resources>

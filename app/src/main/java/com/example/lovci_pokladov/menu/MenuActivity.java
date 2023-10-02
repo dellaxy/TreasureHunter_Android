@@ -20,7 +20,7 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     public void toRegionSelect(View view) {
-        Intent intent = new Intent(this, TESTActivity.class);
+        Intent intent = new Intent(this, RegionActivity.class);
         startActivity(intent);
     }
 
