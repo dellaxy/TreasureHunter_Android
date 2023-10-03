@@ -23,7 +23,7 @@
             android:name=".TESTActivity"
             android:exported="false" />
         <activity
-            android:name=".menu.RegionActivity"
+            android:name=".menu.RegionFragment"
             android:exported="false" />
 
         <meta-data

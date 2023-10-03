@@ -1,11 +1,12 @@
 package com.example.lovci_pokladov.objects;
 
-import android.content.res.Resources;
 import android.graphics.Color;
+
+import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.MapsActivity;
 import com.example.lovci_pokladov.TESTActivity;
-import com.example.lovci_pokladov.menu.RegionActivity;
+import com.example.lovci_pokladov.menu.RegionFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 public class ConstantsCatalog {
@@ -42,26 +43,26 @@ public class ConstantsCatalog {
     }
 
     public enum MENU_PAGES {
-        TEST("Test", TESTActivity.class),
-        HOME("Home", MapsActivity.class),
-        SETTINGS("Settings", MapsActivity.class),
-        REGIONS("Region Select", RegionActivity.class);
+        TEST("Test", new RegionFragment()),
+        HOME("Home", new RegionFragment()),
+        SETTINGS("Settings", new RegionFragment()),
+        REGIONS("Region Select", new RegionFragment());
 
         private final String pageName;
-        private final Class<?> activityClass;
+        private final Fragment fragmentClass;  // Change the type to Fragment class
 
-        MENU_PAGES(String pageName, Class<?> activityClass) {
+        MENU_PAGES(String pageName, Fragment fragmentClass) {
             this.pageName = pageName;
-            this.activityClass = activityClass;
+            this.fragmentClass = fragmentClass;
         }
 
         public String getPageName() {
             return pageName;
         }
 
-        public Class<?> getActivityClass() {
-            return activityClass;
+        public Fragment getFragmentClass() {
+            return fragmentClass;
         }
-        }
+    }
 
 }

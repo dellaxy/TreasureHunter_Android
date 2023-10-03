@@ -1,11 +1,10 @@
-package com.example.lovci_pokladov.objects;
+package com.example.lovci_pokladov.menu;
 
 import static com.example.lovci_pokladov.objects.ConstantsCatalog.MENU_PAGES;
 
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.util.AttributeSet;
@@ -18,6 +17,7 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
+import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
 
@@ -29,7 +29,7 @@ public class AnimatedMenu extends LinearLayout {
     private AnimatedVectorDrawable openMenuDrawable;
     private AnimatedVectorDrawable closeMenuDrawable;
     private LinearLayout menuLayout;
-    private Class<?> currentActivityClass;
+    private MenuClickListener menuClickListener;
 
     public AnimatedMenu(Context context) {
         super(context);
@@ -38,11 +38,11 @@ public class AnimatedMenu extends LinearLayout {
 
     public AnimatedMenu(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.currentActivityClass = context.getClass();
         init();
     }
 
     private void init() {
+        menuClickListener = (MenuClickListener) getContext();
         LayoutInflater.from(getContext()).inflate(R.layout.menu_layout, this, true);
 
         cardView = findViewById(R.id.menu_card);
@@ -65,12 +65,10 @@ public class AnimatedMenu extends LinearLayout {
 
             button.setText(page.getPageName());
             button.setOnClickListener(view -> {
-                if (currentActivityClass == page.getActivityClass()) {
-                    return;
+                if (menuClickListener != null) {
+                    menuClickListener.onMenuItemClick(page.getFragmentClass());
                 }
                 toggleMenu();
-                Intent intent = new Intent(getContext(), page.getActivityClass());
-                getContext().startActivity(intent);
             });
 
             menuLayout.addView(button);

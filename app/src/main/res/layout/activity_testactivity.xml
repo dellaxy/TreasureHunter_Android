@@ -8,7 +8,7 @@
     tools:context=".TESTActivity">
 
 
-    <com.example.lovci_pokladov.objects.AnimatedMenu
+    <com.example.lovci_pokladov.menu.AnimatedMenu
         android:id="@+id/animatedMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
