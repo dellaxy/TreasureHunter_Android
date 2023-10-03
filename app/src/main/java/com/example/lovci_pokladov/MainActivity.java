@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        fragmentContainerView = findViewById(R.id.fragmentContainer);
+        fragmentContainerView = findViewById(R.id.fragment_container);
     }
     @Override
     public void onMenuItemClick(Fragment newFragment) {
@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
 
     private void changeFragment(Fragment newFragment) {
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, newFragment)
+                .replace(R.id.fragment_container, newFragment)
                 .commit();
     }
 
