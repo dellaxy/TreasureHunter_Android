@@ -1,14 +1,14 @@
 package com.example.lovci_pokladov.objects;
 
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.DATABASE_NAME;
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.LEVELS_TABLE;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.LEVELS_TABLE;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.example.lovci_pokladov.entities.LocationMarker;
+import com.example.lovci_pokladov.models.LocationMarker;
 
 import java.io.File;
 import java.io.FileOutputStream;

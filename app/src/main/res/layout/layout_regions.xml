@@ -11,9 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         map:mapId="@string/map_id"
-        tools:context=".MapsActivity" />
+        tools:context=".fragments.MapsFragment" />
 
-    <com.example.lovci_pokladov.menu.AnimatedMenu
+    <com.example.lovci_pokladov.components.menu.AnimatedMenu
         android:id="@+id/animatedMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

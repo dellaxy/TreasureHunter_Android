@@ -1,6 +1,6 @@
-package com.example.lovci_pokladov.menu;
+package com.example.lovci_pokladov.components.menu;
 
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.MENU_PAGES;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.MENU_PAGES;
 
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
 
@@ -43,7 +42,7 @@ public class AnimatedMenu extends LinearLayout {
 
     private void init() {
         menuClickListener = (MenuClickListener) getContext();
-        LayoutInflater.from(getContext()).inflate(R.layout.menu_layout, this, true);
+        LayoutInflater.from(getContext()).inflate(R.layout.layout_animated_menu, this, true);
 
         cardView = findViewById(R.id.menu_card);
         menuButton = findViewById(R.id.menu_button);
