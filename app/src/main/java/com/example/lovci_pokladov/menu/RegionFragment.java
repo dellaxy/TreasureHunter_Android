@@ -1,5 +1,6 @@
 package com.example.lovci_pokladov.menu;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.example.lovci_pokladov.objects.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.animation.ArgbEvaluator;
@@ -7,10 +8,13 @@ import android.animation.ValueAnimator;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.entities.Region;
@@ -28,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RegionActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class RegionFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private GeoJSONLoader geoJSONLoader;
     private TextView regionNameTextView;
@@ -36,21 +40,23 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
     private int selectedRegionId = -1;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_region);
-        regionNameTextView = findViewById(R.id.regionNameText);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_region, container, false);
+
+        regionNameTextView = view.findViewById(R.id.regionNameText);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        geoJSONLoader = new GeoJSONLoader(this);
+        geoJSONLoader = new GeoJSONLoader(requireContext());
         polygonMap = new HashMap<>();
+
+        return view;
     }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clean);
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_clean);
         mMap.setMapStyle(style);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(SLOVAKIA_LOCATION, 6.5f));
         displayAllRegionsOnMap();
@@ -58,7 +64,7 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
     }
 
     private void getSelectedRegion(){
-        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        SharedPreferences preferences = getActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
         int selectedRegion = preferences.getInt("selectedRegion", -1);
         if (selectedRegion != -1) {
             Polygon selectedPolygon = polygonMap.get(selectedRegion);
@@ -131,8 +137,8 @@ public class RegionActivity extends AppCompatActivity implements OnMapReadyCallb
         colorAnimator.start();
     }
 
-    protected void onPause() {
-        SharedPreferences preferences = getSharedPreferences("MapPreferences", MODE_PRIVATE);
+    public void onPause() {
+        SharedPreferences preferences = getActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("selectedRegion", selectedRegionId);
         editor.apply();
