@@ -20,10 +20,10 @@
         android:theme="@style/Theme.Lovci_pokladov"
         tools:targetApi="31">
         <activity
-            android:name=".TESTActivity"
+            android:name=".fragments.TestFragment"
             android:exported="false" />
         <activity
-            android:name=".menu.RegionFragment"
+            android:name=".fragments.RegionFragment"
             android:exported="false" />
 
         <meta-data
@@ -31,10 +31,10 @@
             android:value="${MAPS_API_KEY}" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name=".fragments.MapsFragment"
             android:exported="false" />
         <activity
-            android:name=".menu.MenuActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,7 +43,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".fragments.GameFragment"
             android:exported="false"
             android:label="@string/title_activity_maps" />
     </application>

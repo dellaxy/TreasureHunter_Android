@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.entities;
+package com.example.lovci_pokladov.models;
 
 import com.google.android.gms.maps.model.LatLng;
 

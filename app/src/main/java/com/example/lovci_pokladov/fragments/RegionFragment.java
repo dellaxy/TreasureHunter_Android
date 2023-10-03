@@ -1,7 +1,7 @@
-package com.example.lovci_pokladov.menu;
+package com.example.lovci_pokladov.fragments;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.SLOVAKIA_LOCATION;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
@@ -17,8 +17,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.entities.Region;
-import com.example.lovci_pokladov.objects.ConstantsCatalog.ColorPalette;
+import com.example.lovci_pokladov.models.ConstantsCatalog.ColorPalette;
+import com.example.lovci_pokladov.models.Region;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,7 +41,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_region, container, false);
+        View view = inflater.inflate(R.layout.layout_regions, container, false);
 
         regionNameTextView = view.findViewById(R.id.regionNameText);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -49,7 +49,6 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
         geoJSONLoader = new GeoJSONLoader(requireContext());
         polygonMap = new HashMap<>();
-
         return view;
     }
 
@@ -137,13 +136,16 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         colorAnimator.start();
     }
 
+    @Override
     public void onPause() {
-        SharedPreferences preferences = getActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        super.onPause();
+        SharedPreferences preferences = requireActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("selectedRegion", selectedRegionId);
         editor.apply();
-        super.onPause();
+        selectedRegionId = -1;
     }
+
 
 }
 
