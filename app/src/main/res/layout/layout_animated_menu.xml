@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
     android:background="@android:color/transparent">
-
-    <ImageButton
-        android:id="@+id/menu_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:elevation="5dp"
-        android:background="@drawable/menu_icon_closed"></ImageButton>
-
+    
     <androidx.cardview.widget.CardView
         android:id="@+id/menu_card"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:layout_margin="10dp"
         app:cardCornerRadius="30dp">
 
         <LinearLayout
@@ -25,14 +19,10 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:paddingTop="50dp"
-            android:paddingBottom="10dp"
+            android:paddingBottom="5dp"
             android:paddingStart="15dp"
             android:paddingEnd="15dp">
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>
-
-
-
-
