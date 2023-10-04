@@ -1,12 +1,12 @@
-package com.example.lovci_pokladov.objects;
+package com.example.lovci_pokladov.models;
 
 import android.graphics.Color;
 
 import androidx.fragment.app.Fragment;
 
-import com.example.lovci_pokladov.MapsActivity;
-import com.example.lovci_pokladov.TESTActivity;
-import com.example.lovci_pokladov.menu.RegionFragment;
+import com.example.lovci_pokladov.fragments.MapsFragment;
+import com.example.lovci_pokladov.fragments.RegionFragment;
+import com.example.lovci_pokladov.fragments.TestFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 public class ConstantsCatalog {
@@ -43,8 +43,8 @@ public class ConstantsCatalog {
     }
 
     public enum MENU_PAGES {
-        TEST("Test", new RegionFragment()),
-        HOME("Home", new RegionFragment()),
+        TEST("Test", new TestFragment()),
+        HOME("Home", new MapsFragment()),
         SETTINGS("Settings", new RegionFragment()),
         REGIONS("Region Select", new RegionFragment());
 

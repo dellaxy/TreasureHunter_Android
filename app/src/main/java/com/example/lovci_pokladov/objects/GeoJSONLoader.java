@@ -3,7 +3,7 @@ package com.example.lovci_pokladov.objects;
 import android.content.Context;
 import android.content.res.AssetManager;
 
-import com.example.lovci_pokladov.entities.Region;
+import com.example.lovci_pokladov.models.Region;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 

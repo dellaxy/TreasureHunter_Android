@@ -1,6 +1,6 @@
-package com.example.lovci_pokladov.menu;
+package com.example.lovci_pokladov.components.menu;
 
-import static com.example.lovci_pokladov.objects.ConstantsCatalog.MENU_PAGES;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.MENU_PAGES;
 
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
@@ -17,9 +17,9 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
+
 
 public class AnimatedMenu extends LinearLayout {
 
@@ -43,11 +43,13 @@ public class AnimatedMenu extends LinearLayout {
 
     private void init() {
         menuClickListener = (MenuClickListener) getContext();
-        LayoutInflater.from(getContext()).inflate(R.layout.menu_layout, this, true);
+        LayoutInflater.from(getContext()).inflate(R.layout.layout_animated_menu, this, true);
 
         cardView = findViewById(R.id.menu_card);
         menuButton = findViewById(R.id.menu_button);
         menuLayout = findViewById(R.id.menu_layout);
+        ImageButton menuButton = findViewById(R.id.menu_button);
+
 
         for (MENU_PAGES page : MENU_PAGES.values()) {
             AppCompatButton button = new AppCompatButton(getContext());
@@ -79,6 +81,7 @@ public class AnimatedMenu extends LinearLayout {
 
         menuButton.setImageDrawable(closeMenuDrawable);
         menuButton.setOnClickListener(view -> toggleMenu());
+
     }
 
     private void toggleMenu() {
@@ -98,9 +101,9 @@ public class AnimatedMenu extends LinearLayout {
     }
 
     private void animateCardView(int targetWidth, boolean isClosing) {
-        int currentWidth = cardView.getWidth();
-        int currentHeight = cardView.getHeight();
+        int currentWidth = cardView.getWidth(), currentHeight = cardView.getHeight();
         int targetHeight;
+        long duration = 200;
 
         // when the menu is being opened, I want the height to match the content.
         //But since it's animated I can't use wrap_content, so I measure the height of the content.
@@ -112,14 +115,14 @@ public class AnimatedMenu extends LinearLayout {
             targetHeight = cardView.getMeasuredHeight();
         }
 
-        ValueAnimator widthAnimator = createAnimator(currentWidth, targetWidth, animation -> {
+        ValueAnimator widthAnimator = createAnimator(currentWidth, targetWidth,duration, animation -> {
             int animatedValue = (int) animation.getAnimatedValue();
             ViewGroup.LayoutParams params = cardView.getLayoutParams();
             params.width = animatedValue;
             cardView.setLayoutParams(params);
         });
 
-        ValueAnimator heightAnimator = createAnimator(currentHeight, targetHeight, animation -> {
+        ValueAnimator heightAnimator = createAnimator(currentHeight, targetHeight, duration, animation -> {
             int animatedValue = (int) animation.getAnimatedValue();
             ViewGroup.LayoutParams params = cardView.getLayoutParams();
             params.height = animatedValue;
@@ -135,8 +138,9 @@ public class AnimatedMenu extends LinearLayout {
         animatorSet.start();
     }
 
-    private ValueAnimator createAnimator(int startValue, int endValue, ValueAnimator.AnimatorUpdateListener updateListener) {
+    private ValueAnimator createAnimator(int startValue, int endValue,long duration ,ValueAnimator.AnimatorUpdateListener updateListener) {
         ValueAnimator animator = ValueAnimator.ofInt(startValue, endValue);
+        animator.setDuration(duration);
         animator.addUpdateListener(animation -> {
             updateListener.onAnimationUpdate(animation);
         });
