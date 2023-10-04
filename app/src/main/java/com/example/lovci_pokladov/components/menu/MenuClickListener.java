@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.menu;
+package com.example.lovci_pokladov.components.menu;
 
 import androidx.fragment.app.Fragment;
 
