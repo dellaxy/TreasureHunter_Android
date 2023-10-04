@@ -20,6 +20,7 @@ import androidx.cardview.widget.CardView;
 
 import com.example.lovci_pokladov.R;
 
+
 public class AnimatedMenu extends LinearLayout {
 
     private boolean isMenuOpen = false;
@@ -47,6 +48,8 @@ public class AnimatedMenu extends LinearLayout {
         cardView = findViewById(R.id.menu_card);
         menuButton = findViewById(R.id.menu_button);
         menuLayout = findViewById(R.id.menu_layout);
+        ImageButton menuButton = findViewById(R.id.menu_button);
+
 
         for (MENU_PAGES page : MENU_PAGES.values()) {
             AppCompatButton button = new AppCompatButton(getContext());
@@ -78,6 +81,7 @@ public class AnimatedMenu extends LinearLayout {
 
         menuButton.setImageDrawable(closeMenuDrawable);
         menuButton.setOnClickListener(view -> toggleMenu());
+
     }
 
     private void toggleMenu() {
