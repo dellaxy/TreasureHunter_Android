@@ -6,14 +6,19 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.models.LocationMarker;
@@ -30,7 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Random;
 
-public class GameFragment extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class GameFragment extends Fragment implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
     private LocationMarker marker;
@@ -39,21 +44,23 @@ public class GameFragment extends AppCompatActivity implements OnMapReadyCallbac
     private int areaRadius, markerTolerance=5;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_game);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.layout_game, container, false);
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         getMarkerData();
+
+        return rootView;
     }
 
     private void getMarkerData(){
-        int id = getIntent().getIntExtra("markerId", 0);
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Bundle args = getArguments();
+        int id = args != null ? args.getInt("markerId",0) : 0;
+        DatabaseHelper databaseHelper = new DatabaseHelper(requireContext());
         marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
         markerLocation = marker.getPosition();
     }
@@ -83,22 +90,21 @@ public class GameFragment extends AppCompatActivity implements OnMapReadyCallbac
 
 
     @Override
-    public void onLocationChanged(android.location.Location location) {
+    public void onLocationChanged(Location location) {
         double currentLatitude = location.getLatitude(),
                 currentLongitude = location.getLongitude();
 
         float distanceFromArea = calculateDistance(currentLatitude, currentLongitude, areaCenter.latitude, areaCenter.longitude);
         float distanceFromMarker = calculateDistance(currentLatitude, currentLongitude, markerLocation.latitude, markerLocation.longitude);
         if (distanceFromMarker <= markerTolerance && isInsideArea){
-            Toast.makeText(this, "You found the treasure!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "You found the treasure!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
-            finish();
         }
         if (distanceFromArea <= areaRadius && !isInsideArea) {
-            Toast.makeText(this, "You entered the target area!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "You entered the target area!", Toast.LENGTH_SHORT).show();
             isInsideArea = true;
         } else if (distanceFromArea > areaRadius && isInsideArea) {
-            Toast.makeText(this, "You left the target area!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "You left the target area!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
         }
     }
@@ -113,22 +119,21 @@ public class GameFragment extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
             getLastKnownLocation();
 
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            LocationManager locationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, this);
             generateArea();
-
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
 
     private void getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
                 if (location != null) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 20f));
@@ -141,7 +146,7 @@ public class GameFragment extends AppCompatActivity implements OnMapReadyCallbac
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
                 getLastKnownLocation();
             }

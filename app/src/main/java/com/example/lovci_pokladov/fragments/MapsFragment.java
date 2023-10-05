@@ -234,9 +234,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         acceptButton.setOnClickListener(v -> {
             int markerId = (int) v.getTag();
-            // ADD CODE TO START GAME LEVEL
-            closeLocationInfo();
+            Bundle bundle = new Bundle();
+            bundle.putInt("markerId", markerId);
+
+            GameFragment gameFragment = new GameFragment();
+            gameFragment.setArguments(bundle);
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, gameFragment)
+                    .addToBackStack(null)
+                    .commit();
         });
+
     }
 
     public void closeLocationInfo() {
