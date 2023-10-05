@@ -19,6 +19,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.service_interfaces.MenuClickListener;
 
 
 public class AnimatedMenu extends LinearLayout {
