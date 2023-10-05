@@ -25,14 +25,13 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
         Fragment existingFragment = fragmentManager.findFragmentByTag(fragmentTag);
 
         if (existingFragment == null) {
-            transaction.add(R.id.fragment_container, newFragment, fragmentTag);
-            transaction.show(newFragment);
+            transaction.replace(R.id.fragment_container, newFragment, fragmentTag);
         } else {
-            transaction.show(existingFragment);
+            transaction.replace(R.id.fragment_container, existingFragment, fragmentTag);
         }
-        transaction.setReorderingAllowed(true)
-        .addToBackStack(null)
-        .commit();
+
+        transaction.addToBackStack(null)
+                .commit();
     }
 
     @Override

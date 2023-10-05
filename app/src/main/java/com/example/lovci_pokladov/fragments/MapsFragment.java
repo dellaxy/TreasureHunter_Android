@@ -244,6 +244,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     .replace(R.id.fragment_container, gameFragment)
                     .addToBackStack(null)
                     .commit();
+
+            closeLocationInfo();
         });
 
     }
