@@ -45,7 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private boolean isTableExists(SQLiteDatabase db, String tableName) {
         Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{tableName});
         boolean tableExists = false;
-        if (cursor != null) {
+        if (Utils.isNotNull(cursor)) {
             if (cursor.getCount() > 0) {
                 tableExists = true;
             }

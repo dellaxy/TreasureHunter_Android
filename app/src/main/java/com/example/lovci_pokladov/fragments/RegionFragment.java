@@ -36,7 +36,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private GeoJSONLoader geoJSONLoader;
     private TextView regionNameTextView;
-    private Map<Integer, Polygon> polygonMap;
+    private Map<Integer, Polygon> regionsPolygonMap;
     private int selectedRegionId = -1;
 
     @Override
@@ -48,7 +48,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         geoJSONLoader = new GeoJSONLoader(requireContext());
-        polygonMap = new HashMap<>();
+        regionsPolygonMap = new HashMap<>();
         return view;
     }
 
@@ -66,7 +66,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         SharedPreferences preferences = getActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
         int selectedRegion = preferences.getInt("selectedRegion", -1);
         if (selectedRegion != -1) {
-            Polygon selectedPolygon = polygonMap.get(selectedRegion);
+            Polygon selectedPolygon = regionsPolygonMap.get(selectedRegion);
             if (selectedPolygon != null) {
                 setSelectedRegion(selectedPolygon);
             }
@@ -90,7 +90,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
                 regionPolygon.setClickable(true);
                 regionPolygon.setTag(regionInfo);
 
-                polygonMap.put(region.getId(), regionPolygon);
+                regionsPolygonMap.put(region.getId(), regionPolygon);
 
                 mMap.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
                     @Override
@@ -112,7 +112,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
             this.regionNameTextView.setText("Slovakia");
             return;
         } else {
-            Polygon previousSelectedPolygon = polygonMap.get(selectedRegionId);
+            Polygon previousSelectedPolygon = regionsPolygonMap.get(selectedRegionId);
             changePolygonColor(previousSelectedPolygon, ColorPalette.PRIMARY.getColor(128));
             changePolygonColor(selectedPolygon, ColorPalette.PRIMARY.getColor(220));
         }

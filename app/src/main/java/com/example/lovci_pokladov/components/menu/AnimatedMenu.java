@@ -19,6 +19,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.service_interfaces.MenuClickListener;
 
 
@@ -68,7 +69,7 @@ public class AnimatedMenu extends LinearLayout {
 
             button.setText(page.getPageName());
             button.setOnClickListener(view -> {
-                if (menuClickListener != null) {
+                if (Utils.isNotNull(menuClickListener)) {
                     menuClickListener.onMenuItemClick(page.getFragmentClass());
                 }
                 toggleMenu();
