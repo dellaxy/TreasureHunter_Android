@@ -5,7 +5,7 @@ import static com.example.lovci_pokladov.models.ConstantsCatalog.MENU_PAGES;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.PorterDuff;
+import android.graphics.Color;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -15,10 +15,10 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.cardview.widget.CardView;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.components.rounded_button.RoundedButton;
 import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.service_interfaces.MenuClickListener;
 
@@ -50,11 +50,19 @@ public class AnimatedMenu extends LinearLayout {
         cardView = findViewById(R.id.menu_card);
         menuButton = findViewById(R.id.menu_button);
         menuLayout = findViewById(R.id.menu_layout);
-        ImageButton menuButton = findViewById(R.id.menu_button);
 
+        addButtonsToLayout();
+        openMenuDrawable = (AnimatedVectorDrawable) getResources().getDrawable(R.drawable.menu_icon_opened, getContext().getTheme());
+        closeMenuDrawable = (AnimatedVectorDrawable) getResources().getDrawable(R.drawable.menu_icon_closed, getContext().getTheme());
 
+        menuButton.setImageDrawable(closeMenuDrawable);
+        menuButton.setOnClickListener(view -> toggleMenu());
+
+    }
+
+    private void addButtonsToLayout(){
         for (MENU_PAGES page : MENU_PAGES.values()) {
-            AppCompatButton button = new AppCompatButton(getContext());
+            RoundedButton button = new RoundedButton(getContext(), page.getPageName(), getResources().getColor(R.color.secondary_light), Color.BLACK);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     getResources().getDimensionPixelSize(R.dimen.DEFAULT_MENU)
@@ -63,11 +71,6 @@ public class AnimatedMenu extends LinearLayout {
                     TypedValue.COMPLEX_UNIT_DIP, 15, getResources().getDisplayMetrics()));
 
             button.setLayoutParams(layoutParams);
-            button.setBackgroundResource(R.drawable.rounded_button);
-            button.getBackground().setColorFilter(getResources().getColor(R.color.secondary_light), PorterDuff.Mode.SRC_ATOP);
-            button.setBackground(button.getBackground());
-
-            button.setText(page.getPageName());
             button.setOnClickListener(view -> {
                 if (Utils.isNotNull(menuClickListener)) {
                     menuClickListener.onMenuItemClick(page.getFragmentClass());
@@ -77,13 +80,6 @@ public class AnimatedMenu extends LinearLayout {
 
             menuLayout.addView(button);
         }
-
-        openMenuDrawable = (AnimatedVectorDrawable) getResources().getDrawable(R.drawable.menu_icon_opened, getContext().getTheme());
-        closeMenuDrawable = (AnimatedVectorDrawable) getResources().getDrawable(R.drawable.menu_icon_closed, getContext().getTheme());
-
-        menuButton.setImageDrawable(closeMenuDrawable);
-        menuButton.setOnClickListener(view -> toggleMenu());
-
     }
 
     private void toggleMenu() {
