@@ -277,4 +277,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        closeLocationInfo();
+        mMap.clear();
+    }
+
 }

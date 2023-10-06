@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -37,18 +38,13 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     private GeoJSONLoader geoJSONLoader;
     private TextView regionNameTextView;
     private Map<Integer, Polygon> regionsPolygonMap;
-    private int selectedRegionId = -1;
+    private int selectedRegionId;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_regions, container, false);
-
         regionNameTextView = view.findViewById(R.id.regionNameText);
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        geoJSONLoader = new GeoJSONLoader(requireContext());
-        regionsPolygonMap = new HashMap<>();
+        initParams();
         return view;
     }
 
@@ -62,9 +58,19 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         getSelectedRegion();
     }
 
+    private void initParams(){
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        geoJSONLoader = new GeoJSONLoader(requireContext());
+        regionsPolygonMap = new HashMap<>();
+        selectedRegionId = -1;
+    }
+
     private void getSelectedRegion(){
-        SharedPreferences preferences = getActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        SharedPreferences preferences = requireActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
         int selectedRegion = preferences.getInt("selectedRegion", -1);
+        Toast.makeText(requireContext(), "Selected region: " + selectedRegion, Toast.LENGTH_SHORT).show();
         if (selectedRegion != -1) {
             Polygon selectedPolygon = regionsPolygonMap.get(selectedRegion);
             if (selectedPolygon != null) {
@@ -143,7 +149,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("selectedRegion", selectedRegionId);
         editor.apply();
-        selectedRegionId = -1;
+        mMap.clear();
     }
 
 
