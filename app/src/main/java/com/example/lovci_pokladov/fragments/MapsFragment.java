@@ -30,6 +30,7 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
+import com.example.lovci_pokladov.objects.Utils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -148,7 +149,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             } else {
                 markers = allMarkers;
             }
-        if (markers != null && !markers.isEmpty()) {
+        if (Utils.isNotEmpty(markers)) {
             for (LocationMarker marker : markers){
                 addMarker(marker);
             }
@@ -234,9 +235,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         acceptButton.setOnClickListener(v -> {
             int markerId = (int) v.getTag();
-            // ADD CODE TO START GAME LEVEL
+            Bundle bundle = new Bundle();
+            bundle.putInt("markerId", markerId);
+
+            GameFragment gameFragment = new GameFragment();
+            gameFragment.setArguments(bundle);
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, gameFragment)
+                    .addToBackStack(null)
+                    .commit();
+
             closeLocationInfo();
         });
+
     }
 
     public void closeLocationInfo() {
@@ -263,6 +275,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
             popupWindow.getContentView().startAnimation(slideOutAnimation);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        closeLocationInfo();
+        mMap.clear();
     }
 
 }
