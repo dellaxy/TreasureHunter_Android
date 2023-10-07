@@ -36,19 +36,14 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private GeoJSONLoader geoJSONLoader;
     private TextView regionNameTextView;
-    private Map<Integer, Polygon> polygonMap;
-    private int selectedRegionId = -1;
+    private Map<Integer, Polygon> regionsPolygonMap;
+    private int selectedRegionId;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_regions, container, false);
-
         regionNameTextView = view.findViewById(R.id.regionNameText);
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        geoJSONLoader = new GeoJSONLoader(requireContext());
-        polygonMap = new HashMap<>();
+        initParams();
         return view;
     }
 
@@ -62,11 +57,20 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         getSelectedRegion();
     }
 
+    private void initParams(){
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        geoJSONLoader = new GeoJSONLoader(requireContext());
+        regionsPolygonMap = new HashMap<>();
+        selectedRegionId = -1;
+    }
+
     private void getSelectedRegion(){
-        SharedPreferences preferences = getActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
+        SharedPreferences preferences = requireActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
         int selectedRegion = preferences.getInt("selectedRegion", -1);
         if (selectedRegion != -1) {
-            Polygon selectedPolygon = polygonMap.get(selectedRegion);
+            Polygon selectedPolygon = regionsPolygonMap.get(selectedRegion);
             if (selectedPolygon != null) {
                 setSelectedRegion(selectedPolygon);
             }
@@ -90,7 +94,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
                 regionPolygon.setClickable(true);
                 regionPolygon.setTag(regionInfo);
 
-                polygonMap.put(region.getId(), regionPolygon);
+                regionsPolygonMap.put(region.getId(), regionPolygon);
 
                 mMap.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
                     @Override
@@ -112,7 +116,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
             this.regionNameTextView.setText("Slovakia");
             return;
         } else {
-            Polygon previousSelectedPolygon = polygonMap.get(selectedRegionId);
+            Polygon previousSelectedPolygon = regionsPolygonMap.get(selectedRegionId);
             changePolygonColor(previousSelectedPolygon, ColorPalette.PRIMARY.getColor(128));
             changePolygonColor(selectedPolygon, ColorPalette.PRIMARY.getColor(220));
         }
@@ -143,7 +147,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("selectedRegion", selectedRegionId);
         editor.apply();
-        selectedRegionId = -1;
+        mMap.clear();
     }
 
 
