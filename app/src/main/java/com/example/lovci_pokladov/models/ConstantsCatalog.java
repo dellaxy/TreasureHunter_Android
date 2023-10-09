@@ -17,8 +17,7 @@ public class ConstantsCatalog {
     public static final String PROGRESS_TABLE = "progress";
 
     // Activity request codes
-    public static final int GAME_ACTIVITY_REQUEST_CODE = 100;
-    public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    public static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
 
     public static final LatLng SLOVAKIA_LOCATION = new LatLng(48.669026, 19.699024);
 
@@ -49,7 +48,7 @@ public class ConstantsCatalog {
         REGIONS("Region Select", new RegionFragment());
 
         private final String pageName;
-        private final Fragment fragmentClass;  // Change the type to Fragment class
+        private final Fragment fragmentClass;
 
         MENU_PAGES(String pageName, Fragment fragmentClass) {
             this.pageName = pageName;
