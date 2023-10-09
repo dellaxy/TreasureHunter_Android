@@ -1,9 +1,11 @@
 package com.example.lovci_pokladov.fragments;
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -27,6 +29,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.activities.GameActivity;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
@@ -62,7 +65,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        databaseHelper = new DatabaseHelper(requireContext());
+        databaseHelper = new DatabaseHelper(requireContext(), DATABASE_NAME);
 
         LayoutInflater popupInflater = (LayoutInflater) requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View popUpView = popupInflater.inflate(R.layout.location_popup, null);
@@ -235,16 +238,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         acceptButton.setOnClickListener(v -> {
             int markerId = (int) v.getTag();
-            Bundle bundle = new Bundle();
-            bundle.putInt("markerId", markerId);
-
-            GameFragment gameFragment = new GameFragment();
-            gameFragment.setArguments(bundle);
-
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, gameFragment)
-                    .addToBackStack(null)
-                    .commit();
+            Intent intent = new Intent(requireContext(), GameActivity.class);
+            intent.putExtra("markerId", markerId);
+            startActivity(intent);
 
             closeLocationInfo();
         });
@@ -283,5 +279,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         closeLocationInfo();
         mMap.clear();
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMap != null) {
+            loadDataFromDatabase();
+        }
+    }
 }

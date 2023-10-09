@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.service_interfaces;
+package com.example.lovci_pokladov.services;
 
 import androidx.fragment.app.Fragment;
 

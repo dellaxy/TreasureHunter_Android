@@ -22,8 +22,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private Context context;
-    public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    public DatabaseHelper(Context context, String databaseName) {
+        super(context, databaseName, null, DATABASE_VERSION);
         this.context = context;
     }
 
@@ -37,12 +37,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void onOpen(SQLiteDatabase db) {
-        if (!isTableExists(db, LEVELS_TABLE)) {
+        if (!tableExists(db, LEVELS_TABLE)) {
             copyTableFromAssets(db, LEVELS_TABLE);
         }
     }
 
-    private boolean isTableExists(SQLiteDatabase db, String tableName) {
+    private boolean tableExists(SQLiteDatabase db, String tableName) {
         Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{tableName});
         boolean tableExists = false;
         if (Utils.isNotNull(cursor)) {
