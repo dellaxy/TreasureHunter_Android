@@ -12,16 +12,37 @@ import com.google.android.gms.maps.model.LatLng;
 public class ConstantsCatalog {
     // Database constants
     public static final String DATABASE_NAME = "treasure_hunters.db";
-    public static final String LEVELS_TABLE = "levels";
-    public static final String LEVEL_STAGES_TABLE = "level_stages";
-    public static final String PROGRESS_TABLE = "progress";
 
     // Activity request codes
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
 
     public static final LatLng SLOVAKIA_LOCATION = new LatLng(48.669026, 19.699024);
 
+    public enum DATABASE_COLLECTIONS{
+        MARKERS("markers"),
+        LEVELS("levels"),
+        LEVEL_CHECKPOINTS("level_checkpoints"),
+        ACHIEVEMENTS("achievements");
 
+        private final String collectionName;
+
+        DATABASE_COLLECTIONS(String collectionName){
+            this.collectionName = collectionName;
+        }
+
+        public String getCollectionName(){
+            return this.collectionName;
+        }
+
+        public static boolean contains(String tableName) {
+            for (DATABASE_COLLECTIONS enumValue : DATABASE_COLLECTIONS.values()) {
+                if (enumValue.getCollectionName().equals(tableName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
     public enum ColorPalette {
         PRIMARY(69, 107, 141),
         SECONDARY(69, 107, 141),
