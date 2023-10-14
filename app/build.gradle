@@ -15,6 +15,9 @@ android {
         versionCode 1
         versionName "1.0"
 
+        buildConfigField("String", "MONGO_DB_LOGIN", MONGO_DB_LOGIN)
+        buildConfigField("String", "MONGO_DB_PASSWORD", MONGO_DB_PASSWORD)
+
         renderscriptTargetApi 33
         renderscriptSupportModeEnabled true
 
@@ -33,6 +36,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
     packagingOptions {
             resources.excludes.add("META-INF/*")
