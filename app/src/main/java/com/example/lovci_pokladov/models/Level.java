@@ -17,7 +17,6 @@ public class Level {
         this.sequenceNumber = sequenceNumber;
         this.position = position;
         this.description = description;
-        this.checkpoints = null;
     }
 
     public int getId() {
