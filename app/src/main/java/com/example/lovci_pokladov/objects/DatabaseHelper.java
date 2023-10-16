@@ -7,7 +7,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
+import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.models.LevelCheckpoint;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.google.android.gms.maps.model.LatLng;
@@ -135,17 +137,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return markers;
     }
 
+    public List<Level> getLevelsForMarker(int id){
+        SQLiteDatabase database = getReadableDatabase();
+        List<Level> levels = new ArrayList<>();
+        try {
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", new String[]{String.valueOf(id)});
+            while(cursor.moveToNext()){
+                int levelId = cursor.getInt(cursor.getColumnIndex("id"));
+                int levelDifficulty = cursor.getInt(cursor.getColumnIndex("difficulty"));
+                int levelSequenceNumber = cursor.getInt(cursor.getColumnIndex("sequence_number"));
+                float levelLat = cursor.getFloat(cursor.getColumnIndex("lat"));
+                float levelLong = cursor.getFloat(cursor.getColumnIndex("long"));
+                String levelDescription = cursor.getString(cursor.getColumnIndex("description"));
+                levels.add(new Level(levelId, levelDifficulty, levelSequenceNumber, new LatLng(levelLat, levelLong), levelDescription));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        Log.d("markerLevelsService", levels.toString());
+        return levels;
+    }
+
     public List<LevelCheckpoint> getCheckpointsForLevel(int id){
         SQLiteDatabase database = getReadableDatabase();
         List<LevelCheckpoint> checkpoints = new ArrayList<>();
         try {
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVEL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", new String[]{String.valueOf(id)});
             while(cursor.moveToNext()){
+                int checkpointId = cursor.getInt(cursor.getColumnIndex("id"));
                 String checkpointText = cursor.getString(cursor.getColumnIndex("text"));
                 boolean checkpointFinal = cursor.getInt(cursor.getColumnIndex("final")) == 0;
                 float checkpointLat = cursor.getFloat(cursor.getColumnIndex("lat"));
                 float checkpointLong = cursor.getFloat(cursor.getColumnIndex("long"));
-                checkpoints.add(new LevelCheckpoint(checkpointText, checkpointFinal, new LatLng(checkpointLat, checkpointLong)));
+                checkpoints.add(new LevelCheckpoint(checkpointId, checkpointText, checkpointFinal, new LatLng(checkpointLat, checkpointLong)));
             }
         } catch (Exception e) {
             e.printStackTrace();

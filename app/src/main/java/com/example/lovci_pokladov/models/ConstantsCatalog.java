@@ -21,8 +21,8 @@ public class ConstantsCatalog {
     public enum DATABASE_COLLECTIONS{
         MARKERS("markers"),
         LEVELS("levels"),
-        LEVEL_CHECKPOINTS("level_checkpoints"),
-        ACHIEVEMENTS("achievements");
+        LEVEL_CHECKPOINTS("level_checkpoints");
+        //ACHIEVEMENTS("achievements");
 
         private final String collectionName;
 

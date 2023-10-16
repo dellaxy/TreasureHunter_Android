@@ -13,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.Utils;
@@ -33,6 +35,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.List;
 import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
@@ -48,7 +51,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        checkGpsStatus();
+        //checkGpsStatus();
+        getMarkerData();
     }
 
     private void checkGpsStatus() {
@@ -87,6 +91,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         DatabaseHelper databaseHelper = new DatabaseHelper(this, DATABASE_NAME);
         marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
         markerLocation = marker.getPosition();
+        List<Level> levels = databaseHelper.getLevelsForMarker(marker.getId());
+        marker.setLevels(levels);
+        Log.d("marker", marker.toString());
+        Log.d("markerLevels", levels.toString());
     }
 
     private void generateArea() {
