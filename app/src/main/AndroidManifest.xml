@@ -34,7 +34,7 @@
             android:name=".fragments.MapsFragment"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,9 +43,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".fragments.GameFragment"
-            android:exported="false"
-            android:label="@string/title_activity_maps" />
+            android:name=".activities.GameActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -2,15 +2,17 @@ package com.example.lovci_pokladov.models;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.List;
+
 public class LocationMarker {
     private final LatLng position;
-    private final int id, color, difficulty;
+    private final int id, color;
     private final String title, icon, description;
+    private List<Level> levels;
 
-    public LocationMarker(int id, double lat, double lng, String title, int color, String icon, int difficulty, String description) {
-        this.difficulty = difficulty;
+    public LocationMarker(int id, LatLng position, String title, int color, String icon, String description) {
         this.description = description;
-        this.position = new LatLng(lat, lng);
+        this.position = position;
         this.id = id;
         this.title = title;
         this.color = color;
@@ -33,10 +35,6 @@ public class LocationMarker {
         return color;
     }
 
-    public int getDifficulty() {
-        return difficulty;
-    }
-
     public String getIcon() {
         return icon;
     }
@@ -45,4 +43,11 @@ public class LocationMarker {
         return description;
     }
 
+    public List<Level> getLevels() {
+        return levels;
+    }
+
+    public void setLevels(List<Level> levels) {
+        this.levels = levels;
+    }
 }
