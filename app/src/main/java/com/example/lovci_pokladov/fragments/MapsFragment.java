@@ -1,7 +1,6 @@
 package com.example.lovci_pokladov.fragments;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.content.Context;
@@ -64,7 +63,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        databaseHelper = new DatabaseHelper(requireContext(), DATABASE_NAME);
+        databaseHelper = new DatabaseHelper(requireContext());
 
         LayoutInflater popupInflater = (LayoutInflater) requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View popUpView = popupInflater.inflate(R.layout.location_popup, null);

@@ -1,6 +1,5 @@
 package com.example.lovci_pokladov.activities;
 
-import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 
 import android.Manifest;
@@ -88,7 +87,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void getMarkerData(){
         int id = getIntent().getIntExtra("markerId", 0);
-        DatabaseHelper databaseHelper = new DatabaseHelper(this, DATABASE_NAME);
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
         marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
         markerLocation = marker.getPosition();
         List<Level> levels = databaseHelper.getLevelsForMarker(marker.getId());
