@@ -26,41 +26,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private Context context;
-    public DatabaseHelper(Context context, String databaseName) {
-        super(context, databaseName, null, DATABASE_VERSION);
+    public DatabaseHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
+        if (!databaseExists()) {
+            copyDatabaseFromAssets();
+        }
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
+    @Override
     public void onOpen(SQLiteDatabase db) {
-        if (!tableExists(db, DATABASE_COLLECTIONS.MARKERS.getCollectionName())) {
-            copyDatabaseFromAssets(db);
-        }
     }
 
-    private boolean tableExists(SQLiteDatabase db, String tableName) {
-        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{tableName});
-        boolean tableExists = false;
-        if (Utils.isNotNull(cursor)) {
-            if (cursor.getCount() > 0) {
-                tableExists = true;
+    private boolean databaseExists() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+        boolean exists = false;
+        while (cursor.moveToNext()) {
+            String tableName = cursor.getString(0);
+            if (DATABASE_COLLECTIONS.contains(tableName)) {
+                exists = true;
+                break;
             }
-            cursor.close();
         }
-        return tableExists;
+        cursor.close();
+        db.close();
+        return exists;
     }
 
-    private void copyDatabaseFromAssets(SQLiteDatabase db) {
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
+    private void copyDatabaseFromAssets() {
+        InputStream inputStream;
+        OutputStream outputStream;
+        SQLiteDatabase db = getWritableDatabase();
 
         try {
             inputStream = context.getAssets().open(DATABASE_NAME);
@@ -91,6 +96,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        db.close();
     }
 
 
