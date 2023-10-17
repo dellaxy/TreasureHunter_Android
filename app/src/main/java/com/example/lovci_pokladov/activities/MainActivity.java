@@ -1,16 +1,21 @@
-package com.example.lovci_pokladov;
+package com.example.lovci_pokladov.activities;
 
+import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.example.lovci_pokladov.fragments.GameFragment;
+import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.fragments.MapsFragment;
 import com.example.lovci_pokladov.objects.Utils;
-import com.example.lovci_pokladov.service_interfaces.MenuClickListener;
+import com.example.lovci_pokladov.services.MenuClickListener;
 
 public class MainActivity extends AppCompatActivity implements MenuClickListener {
     private FragmentManager fragmentManager;
@@ -21,11 +26,17 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+        }
+
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, new MapsFragment(), "MapsFragment")
                 .addToBackStack(null)
                 .commit();
+
     }
 
     @Override
@@ -46,21 +57,13 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
         }
     }
 
-
-
-    @Override
-    public void onBackPressed() {
-        currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-
-        if (currentFragment instanceof GameFragment) {
-            showExitConfirmationDialog();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
     private void showExitConfirmationDialog() {
     }
 
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
 }

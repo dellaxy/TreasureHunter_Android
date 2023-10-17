@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -27,6 +28,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.activities.GameActivity;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
@@ -37,7 +39,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -78,7 +79,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap = googleMap;
         getMapPreferences();
         loadDataFromDatabase();
-        googleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                LocationMarker clickedMarker = (LocationMarker) marker.getTag();
+                showLocationInfo(clickedMarker);
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
+                return true;
+            }
+        });
+
+        /*googleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
                 float currentZoom = cameraPosition.zoom;
@@ -93,7 +104,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
             }
-        });
+        });*/
     }
 
     private void getMapPreferences() {
@@ -181,19 +192,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         mMap.addCircle(circleOptions);
         Marker marker = mMap.addMarker(new MarkerOptions()
-                .position(markerLocation)
-                .icon(bitmapDescriptorFromVector(requireContext(), customMarker.getIcon(), markerColor)));
+                .position(markerLocation));
+                //.icon(bitmapDescriptorFromVector(requireContext(), customMarker.getIcon(), markerColor)));
         marker.setTag(customMarker);
-
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                LocationMarker clickedMarker = (LocationMarker) marker.getTag();
-                showLocationInfo(clickedMarker);
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
-                return true;
-            }
-        });
     }
 
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, String iconName, int color) {
@@ -235,16 +236,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         acceptButton.setOnClickListener(v -> {
             int markerId = (int) v.getTag();
-            Bundle bundle = new Bundle();
-            bundle.putInt("markerId", markerId);
-
-            GameFragment gameFragment = new GameFragment();
-            gameFragment.setArguments(bundle);
-
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, gameFragment)
-                    .addToBackStack(null)
-                    .commit();
+            Intent intent = new Intent(requireContext(), GameActivity.class);
+            intent.putExtra("markerId", markerId);
+            startActivity(intent);
 
             closeLocationInfo();
         });
@@ -283,5 +277,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         closeLocationInfo();
         mMap.clear();
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMap != null) {
+            loadDataFromDatabase();
+        }
+    }
 }

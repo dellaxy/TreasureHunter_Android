@@ -20,7 +20,7 @@ import androidx.cardview.widget.CardView;
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.rounded_button.RoundedButton;
 import com.example.lovci_pokladov.objects.Utils;
-import com.example.lovci_pokladov.service_interfaces.MenuClickListener;
+import com.example.lovci_pokladov.services.MenuClickListener;
 
 
 public class AnimatedMenu extends LinearLayout {
