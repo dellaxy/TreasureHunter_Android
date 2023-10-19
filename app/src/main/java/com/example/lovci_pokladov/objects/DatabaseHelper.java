@@ -2,17 +2,17 @@ package com.example.lovci_pokladov.objects;
 
 import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_COLLECTIONS;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
+import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToLevel;
+import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToMarker;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.models.LevelCheckpoint;
 import com.example.lovci_pokladov.models.LocationMarker;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,7 +22,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper{
 
     private static final int DATABASE_VERSION = 1;
     private Context context;
@@ -77,7 +77,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             while ((length = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, length);
             }
-
             outputStream.flush();
             outputStream.close();
             inputStream.close();
@@ -103,14 +102,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public LocationMarker getMarkerById(int id) {
         SQLiteDatabase database = getReadableDatabase();
         LocationMarker marker = null;
-
         try {
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(id)});
-
+            String[] selectionArgs = {String.valueOf(id)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, "id = ?", selectionArgs);
             if (cursor.moveToFirst()) {
-                marker = getLocationMarkerFromCursor(cursor);
+                marker = mapCursorToMarker(cursor);
             }
-
             cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,15 +121,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<LocationMarker> getAllMarkers() {
         SQLiteDatabase database = getReadableDatabase();
         List<LocationMarker> markers = new ArrayList<>();
-
         try {
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, null, null);
-
             while (cursor.moveToNext()) {
-                LocationMarker marker = getLocationMarkerFromCursor(cursor);
+                LocationMarker marker = mapCursorToMarker(cursor);
                 markers.add(marker);
             }
-
             cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,41 +137,49 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return markers;
     }
 
-    public List<Level> getLevelsForMarker(int id){
+    public Level getLevelBySequence(int markerId, int sequenceNumber){
         SQLiteDatabase database = getReadableDatabase();
-        List<Level> levels = new ArrayList<>();
+        Level level = null;
         try {
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", new String[]{String.valueOf(id)});
-            while(cursor.moveToNext()){
-                int levelId = cursor.getInt(cursor.getColumnIndex("id"));
-                int levelDifficulty = cursor.getInt(cursor.getColumnIndex("difficulty"));
-                int levelSequenceNumber = cursor.getInt(cursor.getColumnIndex("sequence_number"));
-                float levelLat = cursor.getFloat(cursor.getColumnIndex("lat"));
-                float levelLong = cursor.getFloat(cursor.getColumnIndex("long"));
-                String levelDescription = cursor.getString(cursor.getColumnIndex("description"));
-                levels.add(new Level(levelId, levelDifficulty, levelSequenceNumber, new LatLng(levelLat, levelLong), levelDescription));
+            String[] selectionArgs = {String.valueOf(markerId), String.valueOf(sequenceNumber)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ? AND sequence = ?", selectionArgs);
+            if(cursor.moveToFirst()) {
+                level = mapCursorToLevel(cursor);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             database.close();
         }
-        Log.d("markerLevelsService", levels.toString());
+        return level;
+    }
+    public List<Level> getLevelsForMarker(int markerId){
+        SQLiteDatabase database = getReadableDatabase();
+        List<Level> levels = new ArrayList<>();
+        try {
+            String [] selectionArgs = {String.valueOf(markerId)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", selectionArgs);
+            while(cursor.moveToNext()){
+                Level level = mapCursorToLevel(cursor);
+                levels.add(level);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
         return levels;
     }
 
-    public List<LevelCheckpoint> getCheckpointsForLevel(int id){
+    public List<LevelCheckpoint> getCheckpointsForLevel(int levelId){
         SQLiteDatabase database = getReadableDatabase();
         List<LevelCheckpoint> checkpoints = new ArrayList<>();
         try {
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVEL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", new String[]{String.valueOf(id)});
+            String[] selectionArgs = {String.valueOf(levelId)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVEL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs);
             while(cursor.moveToNext()){
-                int checkpointId = cursor.getInt(cursor.getColumnIndex("id"));
-                String checkpointText = cursor.getString(cursor.getColumnIndex("text"));
-                boolean checkpointFinal = cursor.getInt(cursor.getColumnIndex("final")) == 0;
-                float checkpointLat = cursor.getFloat(cursor.getColumnIndex("lat"));
-                float checkpointLong = cursor.getFloat(cursor.getColumnIndex("long"));
-                checkpoints.add(new LevelCheckpoint(checkpointId, checkpointText, checkpointFinal, new LatLng(checkpointLat, checkpointLong)));
+                LevelCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
+                checkpoints.add(checkpoint);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -187,20 +189,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return checkpoints;
     }
 
-
     private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs) {
         return database.query(table, columns, selection, selectionArgs, null, null, null);
-    }
-
-    private LocationMarker getLocationMarkerFromCursor(Cursor cursor) {
-        int locationID = cursor.getInt(cursor.getColumnIndex("id"));
-        float locationLat = cursor.getFloat(cursor.getColumnIndex("lat"));
-        float locationLong = cursor.getFloat(cursor.getColumnIndex("long"));
-        int locationColor = cursor.getInt(cursor.getColumnIndex("color"));
-        String locationIcon = cursor.getString(cursor.getColumnIndex("icon"));
-        String locationTitle = cursor.getString(cursor.getColumnIndex("name"));
-        String locationDescription = cursor.getString(cursor.getColumnIndex("description"));
-
-        return new LocationMarker(locationID, new LatLng(locationLat,locationLong), locationTitle, locationColor, locationIcon, locationDescription);
     }
 }
