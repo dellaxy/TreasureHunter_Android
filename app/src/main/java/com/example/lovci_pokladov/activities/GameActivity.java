@@ -56,7 +56,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         getMarkerData();
 
         textToSpeechService = new TextToSpeechService();
-        textToSpeechService.execute("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
+        textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
     }
 
     private void checkGpsStatus() {
@@ -189,7 +189,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onDestroy() {
         super.onDestroy();
         if (textToSpeechService != null) {
-            textToSpeechService.cancel(true);
+            textToSpeechService.cancel();
         }
     }
 }

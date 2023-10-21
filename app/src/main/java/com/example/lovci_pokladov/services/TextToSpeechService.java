@@ -1,8 +1,14 @@
 package com.example.lovci_pokladov.services;
 
-import android.os.AsyncTask;
+import static com.example.lovci_pokladov.objects.Utils.isNull;
+
+import android.os.Handler;
+import android.os.Looper;
 
 import com.example.lovci_pokladov.BuildConfig;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import darren.googlecloudtts.GoogleCloudTTS;
 import darren.googlecloudtts.GoogleCloudTTSFactory;
@@ -11,29 +17,41 @@ import darren.googlecloudtts.parameter.AudioConfig;
 import darren.googlecloudtts.parameter.AudioEncoding;
 import darren.googlecloudtts.parameter.VoiceSelectionParams;
 
-public class TextToSpeechService extends AsyncTask<String, Void, Void> {
+public class TextToSpeechService{
     GoogleCloudTTS googleCloudTTS;
     VoicesList voicesList;
     String languageCode, voiceName;
+    ExecutorService executorService;
     public TextToSpeechService() {
         googleCloudTTS = GoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
+        startService();
     }
 
-    @Override
-    protected Void doInBackground(String... strings) {
-        voicesList = googleCloudTTS.load();
-        languageCode = voicesList.getLanguageCodes()[14];
-        voiceName = voicesList.getVoiceNames(languageCode)[6];
-        googleCloudTTS.setVoiceSelectionParams(new VoiceSelectionParams(languageCode, voiceName))
-                .setAudioConfig(new AudioConfig(AudioEncoding.MP3, 1f , 0f));
-        googleCloudTTS.start(strings[0]);
-        return null;
+    protected void startService(){
+        executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executorService.execute(() -> {
+            if(isNull(voicesList)){
+                voicesList = googleCloudTTS.load();
+            }
+            languageCode = voicesList.getLanguageCodes()[14];
+            voiceName = voicesList.getVoiceNames(languageCode)[7];
+            googleCloudTTS.setVoiceSelectionParams(new VoiceSelectionParams(languageCode, voiceName))
+                    .setAudioConfig(new AudioConfig(AudioEncoding.MP3, 1f , 0f));
+            handler.post(() -> {
+
+            });
+        });
     }
 
-    private void getVoiceName(VoicesList voicesList, String languageCode) {
-        String[] voiceNames = voicesList.getVoiceNames(languageCode);
-        for (String voiceName : voiceNames) {
+    public void synthesizeText(String text) {
+        executorService.execute(() -> {
+            googleCloudTTS.start(text);
+        });
+    }
 
-        }
+    public void cancel(){
+        executorService.shutdownNow();
     }
 }
