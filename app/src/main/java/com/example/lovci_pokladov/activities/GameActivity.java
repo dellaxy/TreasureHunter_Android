@@ -1,6 +1,7 @@
 package com.example.lovci_pokladov.activities;
 
 import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
+import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 
 import android.Manifest;
 import android.content.Context;
@@ -23,7 +24,6 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
-import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -45,7 +45,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationMarker marker;
     private boolean isInsideArea = false;
     private LatLng markerLocation, areaCenter;
-    private int areaRadius, markerTolerance=5;
+    private int AREA_RADIUS, MARKER_TOLERANCE =5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +102,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void generateArea() {
-        areaRadius = new Random().nextInt(50 - 25) + 25;
-        int maxDistanceFromMarker = areaRadius - 10;
+        AREA_RADIUS = new Random().nextInt(50 - 25) + 25;
+        int maxDistanceFromMarker = AREA_RADIUS - 10;
         int distanceFromMarker = new Random().nextInt(maxDistanceFromMarker);
         double randomAngle = new Random().nextDouble() * 2 * Math.PI;
 
@@ -113,7 +113,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         areaCenter = new LatLng(newLat, newLng);
         mMap.addCircle(new CircleOptions()
                 .center(areaCenter)
-                .radius(areaRadius)
+                .radius(AREA_RADIUS)
                 .strokeWidth(5)
                 .strokeColor(Color.BLUE)
                 .fillColor(Color.argb(100, 0, 0, 255)));
@@ -131,23 +131,23 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         double currentLongitude = location.getLongitude();
 
         float distance = calculateDistance(currentLatitude, currentLongitude, areaCenter.latitude, areaCenter.longitude);
-        if(distance < markerTolerance && isInsideArea){
+        if(distance < MARKER_TOLERANCE && isInsideArea){
             Toast.makeText(this, "You found the treasure!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
             finish();
         }
-        if (distance <= areaRadius && !isInsideArea) {
+        if (distance <= AREA_RADIUS && !isInsideArea) {
             Toast.makeText(this, "You entered the target area!", Toast.LENGTH_SHORT).show();
             isInsideArea = true;
-        } else if (distance > areaRadius && isInsideArea) {
+        } else if (distance > AREA_RADIUS && isInsideArea) {
             Toast.makeText(this, "You left the target area!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
         }
     }
 
-    private float calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    private float calculateDistance(double playerLat, double playerLon, double finishLat, double finishLon) {
         float[] result = new float[1];
-        Location.distanceBetween(lat1, lon1, lat2, lon2, result);
+        Location.distanceBetween(playerLat, playerLon, finishLat, finishLon, result);
         return result[0];
     }
 
@@ -170,7 +170,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void getLastKnownLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-                if (Utils.isNotNull(location)) {
+                if (isNotNull(location)) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 20f));
                 }
@@ -188,9 +188,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (textToSpeechService != null) {
+        if (isNotNull(textToSpeechService)) {
             textToSpeechService.cancel();
         }
     }
+
 }
 
