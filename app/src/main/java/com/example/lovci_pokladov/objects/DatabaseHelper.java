@@ -158,7 +158,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         List<Level> levels = new ArrayList<>();
         try {
             String [] selectionArgs = {String.valueOf(markerId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", selectionArgs);
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", selectionArgs, "sequence ASC");
             while(cursor.moveToNext()){
                 Level level = mapCursorToLevel(cursor);
                 levels.add(level);
@@ -191,5 +191,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs) {
         return database.query(table, columns, selection, selectionArgs, null, null, null);
+    }
+
+    private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs, String orderBy) {
+        return database.query(table, columns, selection, selectionArgs, null, null, orderBy);
     }
 }
