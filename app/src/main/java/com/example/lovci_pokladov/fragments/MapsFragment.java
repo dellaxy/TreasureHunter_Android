@@ -2,6 +2,7 @@ package com.example.lovci_pokladov.fragments;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATION;
+import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 
 import android.content.Context;
 import android.content.Intent;
@@ -275,12 +276,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public void onPause() {
         super.onPause();
         closeLocationInfo();
-        mMap.clear();
+        if (isNotNull(mMap)) {
+            mMap.clear();
+        }
     }
     @Override
     public void onResume() {
         super.onResume();
-        if (mMap != null) {
+        if (isNotNull(mMap)) {
             loadDataFromDatabase();
         }
     }
