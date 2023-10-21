@@ -17,6 +17,7 @@ android {
 
         buildConfigField("String", "MONGO_DB_LOGIN", MONGO_DB_LOGIN)
         buildConfigField("String", "MONGO_DB_PASSWORD", MONGO_DB_PASSWORD)
+        buildConfigField("String", "TTS_API_KEY", TTS_API_KEY)
 
         renderscriptTargetApi 33
         renderscriptSupportModeEnabled true
@@ -57,4 +58,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation 'com.github.Dimezis:BlurView:version-2.0.3'
+    implementation 'com.github.changemyminds:Google-Cloud-TTS-Android:1.0.2'
 }
