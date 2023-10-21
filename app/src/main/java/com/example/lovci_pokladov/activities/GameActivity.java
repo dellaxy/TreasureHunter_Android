@@ -24,6 +24,7 @@ import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.Utils;
+import com.example.lovci_pokladov.services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -40,6 +41,7 @@ import java.util.Random;
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
+    private TextToSpeechService textToSpeechService;
     private LocationMarker marker;
     private boolean isInsideArea = false;
     private LatLng markerLocation, areaCenter;
@@ -52,6 +54,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //checkGpsStatus();
         getMarkerData();
+
+        textToSpeechService = new TextToSpeechService();
+        textToSpeechService.execute("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
     }
 
     private void checkGpsStatus() {
@@ -179,7 +184,13 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (textToSpeechService != null) {
+            textToSpeechService.cancel(true);
+        }
     }
 }
 
