@@ -193,8 +193,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         mMap.addCircle(circleOptions);
         Marker marker = mMap.addMarker(new MarkerOptions()
-                .position(markerLocation));
-                //.icon(bitmapDescriptorFromVector(requireContext(), customMarker.getIcon(), markerColor)));
+                .position(markerLocation)
+                .icon(bitmapDescriptorFromVector(requireContext(), customMarker.getIcon(), markerColor)));
         marker.setTag(customMarker);
     }
 

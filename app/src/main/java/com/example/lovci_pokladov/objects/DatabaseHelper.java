@@ -9,6 +9,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 
 import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.models.LevelCheckpoint;
@@ -97,7 +98,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
         db.close();
     }
-
 
     public LocationMarker getMarkerById(int id) {
         SQLiteDatabase database = getReadableDatabase();
@@ -196,4 +196,15 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs, String orderBy) {
         return database.query(table, columns, selection, selectionArgs, null, null, orderBy);
     }
+
+    private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs, String orderBy, String joinClause) {
+        String query = "SELECT " + TextUtils.join(",", columns) +
+                " FROM " + table +
+                (joinClause != null ? " " + joinClause : "") +
+                (selection != null ? " WHERE " + selection : "") +
+                (orderBy != null ? " ORDER BY " + orderBy : "");
+
+        return database.rawQuery(query, selectionArgs);
+    }
+
 }

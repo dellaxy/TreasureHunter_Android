@@ -13,7 +13,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,7 +34,6 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.List;
 import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
@@ -44,8 +42,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextToSpeechService textToSpeechService;
     private LocationMarker marker;
     private boolean isInsideArea = false;
-    private LatLng markerLocation, areaCenter;
+    private LatLng markerLocation, areaCenter, levelStartLocation;
     private int AREA_RADIUS, MARKER_TOLERANCE =5;
+    private Level currentLevel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +55,17 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         getMarkerData();
 
         textToSpeechService = new TextToSpeechService();
-        textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
+        //textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
+    }
+
+    private void getMarkerData(){
+        int id = getIntent().getIntExtra("markerId", 0);
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
+        // IF MARKER IS NOT IN PROGRESS -> USE FIRST LEVEL
+        // OTHERWISE USE MARKER/PROGRESS (LEVEL SEQUENCE) -> dbHelper.getLevelBySequence()
+        currentLevel = databaseHelper.getLevelBySequence(id, 1);
+        //currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
     }
 
     private void checkGpsStatus() {
@@ -87,18 +96,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 finish();
             }
         }
-    }
-
-
-    private void getMarkerData(){
-        int id = getIntent().getIntExtra("markerId", 0);
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
-        markerLocation = marker.getPosition();
-        List<Level> levels = databaseHelper.getLevelsForMarker(marker.getId());
-        marker.setLevels(levels);
-        Log.d("marker", marker.toString());
-        Log.d("markerLevels", levels.toString());
     }
 
     private void generateArea() {
