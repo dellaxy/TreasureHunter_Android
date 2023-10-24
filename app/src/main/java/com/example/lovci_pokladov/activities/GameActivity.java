@@ -62,9 +62,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         int id = getIntent().getIntExtra("markerId", 0);
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
-        // IF MARKER IS NOT IN PROGRESS -> USE FIRST LEVEL
-        // OTHERWISE USE MARKER/PROGRESS (LEVEL SEQUENCE) -> dbHelper.getLevelBySequence()
-        currentLevel = databaseHelper.getLevelBySequence(id, 1);
+        int markerProgressStage = databaseHelper.getMarkerProgress(id);
+        currentLevel = databaseHelper.getLevelBySequence(id, markerProgressStage);
+        levelStartLocation = currentLevel.getPosition();
         //currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
     }
 
@@ -124,10 +124,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
-        double currentLatitude = location.getLatitude();
-        double currentLongitude = location.getLongitude();
+        LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
-        float distance = calculateDistance(currentLatitude, currentLongitude, areaCenter.latitude, areaCenter.longitude);
+        float distance = calculateDistance(currentLocation, areaCenter);
         if(distance < MARKER_TOLERANCE && isInsideArea){
             Toast.makeText(this, "You found the treasure!", Toast.LENGTH_SHORT).show();
             isInsideArea = false;
@@ -142,9 +141,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private float calculateDistance(double playerLat, double playerLon, double finishLat, double finishLon) {
+    private float calculateDistance(LatLng playerLocation, LatLng finishLocation) {
         float[] result = new float[1];
-        Location.distanceBetween(playerLat, playerLon, finishLat, finishLon, result);
+        Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, finishLocation.latitude, finishLocation.longitude, result);
         return result[0];
     }
 
