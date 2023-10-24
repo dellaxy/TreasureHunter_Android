@@ -22,7 +22,9 @@ public class ConstantsCatalog {
         MARKERS("markers"),
         LEVELS("levels"),
         LEVEL_CHECKPOINTS("level_checkpoints"),
-        ACHIEVEMENTS("achievements");
+        ACHIEVEMENTS("achievements"),
+        FINISHED("finished"),
+        PROGRESS("progress");
 
         private final String collectionName;
 

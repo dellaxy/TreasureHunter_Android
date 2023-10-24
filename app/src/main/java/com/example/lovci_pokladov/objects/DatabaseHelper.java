@@ -1,6 +1,7 @@
 package com.example.lovci_pokladov.objects;
 
 import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_COLLECTIONS;
+import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_COLLECTIONS.FINISHED;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToLevel;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToMarker;
@@ -122,7 +123,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase database = getReadableDatabase();
         List<LocationMarker> markers = new ArrayList<>();
         try {
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, null, null);
+            String selection = "id NOT IN (SELECT marker_id FROM " + FINISHED.getCollectionName() + ")";
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, selection, null);
             while (cursor.moveToNext()) {
                 LocationMarker marker = mapCursorToMarker(cursor);
                 markers.add(marker);
@@ -187,6 +189,22 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             database.close();
         }
         return checkpoints;
+    }
+
+    public int getMarkerProgress(int markerId){
+        SQLiteDatabase database = getReadableDatabase();
+        int progress = 1;
+        try{
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), new String[]{"level_stage"}, "marker_id = ?", new String[]{String.valueOf(markerId)});
+            if(cursor.moveToFirst()){
+                progress = cursor.getInt(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return progress;
     }
 
     private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs) {
