@@ -59,7 +59,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
 
     private void initParams(){
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.homeMap);
         mapFragment.getMapAsync(this);
         geoJSONLoader = new GeoJSONLoader(requireContext());
         regionsPolygonMap = new HashMap<>();

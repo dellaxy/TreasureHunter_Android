@@ -1,7 +1,6 @@
 package com.example.lovci_pokladov.activities;
 
 import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_NOT_STARTED;
-import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_STARTED;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 import static com.example.lovci_pokladov.objects.Utils.isNull;
@@ -18,11 +17,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.models.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.models.Level;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.services.Observable;
@@ -32,6 +31,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
@@ -48,16 +49,23 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        initData();
-        getMarkerData();
-        }
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
+        mapFragment.getMapAsync(this);
 
-    private void initData() {
+        initMarkerData();
+    }
+
+    private void onInit() {
         currentLevelState = new Observable<>();
         currentLevelState.onChangeListener(levelState -> {
                 switch ((LevelState) levelState) {
                     case LEVEL_NOT_STARTED: {
-                        Log.d("LEVEL_STATE", "LEVEL_NOT_STARTED");
+                        mMap.addCircle(new CircleOptions()
+                                .center(levelStartLocation)
+                                .radius(AREA_RADIUS)
+                                .strokeWidth(5)
+                                .strokeColor(ColorPalette.SECONDARY.getColor())
+                                .fillColor(ColorPalette.SECONDARY.getColor(200)));
                         break;
                     }
                     case LEVEL_STARTED: {
@@ -71,15 +79,14 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         );
+
         currentLevelState.setValue(LEVEL_NOT_STARTED);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-
         textToSpeechService = new TextToSpeechService();
         //textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
     }
 
-    private void getMarkerData(){
+    private void initMarkerData() {
         int id = getIntent().getIntExtra("markerId", 0);
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         //LocationMarker marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
@@ -122,20 +129,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLocation, 16f));
     }*/
 
-
-
     @Override
     public void onLocationChanged(Location location) {
         playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        switch(currentLevelState.getValue()){
+        switch (currentLevelState.getValue()) {
             case LEVEL_NOT_STARTED: {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Level not started. Get ready to play!");
-                builder.show();
-
-                if (calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS) {
-                    currentLevelState.setValue(LEVEL_STARTED);
-                    Toast.makeText(this, "Level started!", Toast.LENGTH_SHORT).show();
+                boolean isInsideArea = calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS;
+                if (calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS && !isInsideArea) {
+                    //open modal
+                } else if (calculateDistance(playerLocation, levelStartLocation) > AREA_RADIUS && isInsideArea) {
+                    //close modal
                 }
                 break;
             }
@@ -166,9 +169,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            onInit();
+
             mMap.setMyLocationEnabled(true);
             getLastKnownLocation();
-
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, this);
         } else {
@@ -190,10 +194,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -207,6 +209,5 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         LEVEL_STARTED,
         LEVEL_COMPLETED
     }
-
 }
 
