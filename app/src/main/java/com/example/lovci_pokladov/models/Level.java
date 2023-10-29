@@ -8,7 +8,6 @@ public class Level {
     private final int id, difficulty, sequenceNumber;
     private final LatLng position;
     private final String description;
-
     private List<LevelCheckpoint> checkpoints;
 
     public Level(int id, int difficulty, int sequenceNumber, LatLng position, String description) {

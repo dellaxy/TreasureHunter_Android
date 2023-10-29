@@ -1,58 +1,79 @@
 package com.example.lovci_pokladov.activities;
 
+import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_NOT_STARTED;
+import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_STARTED;
 import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
+import static com.example.lovci_pokladov.objects.Utils.isNull;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.models.Level;
-import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
+import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
     private TextToSpeechService textToSpeechService;
-    private LocationMarker marker;
-    private boolean isInsideArea = false;
-    private LatLng markerLocation, areaCenter, levelStartLocation;
-    private int AREA_RADIUS, MARKER_TOLERANCE =5;
+    private LatLng levelStartLocation, playerLocation;
+    private int AREA_RADIUS;
     private Level currentLevel;
+    private Observable<LevelState> currentLevelState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        //checkGpsStatus();
+        initData();
         getMarkerData();
+        }
+
+    private void initData() {
+        currentLevelState = new Observable<>();
+        currentLevelState.onChangeListener(levelState -> {
+                switch ((LevelState) levelState) {
+                    case LEVEL_NOT_STARTED: {
+                        Log.d("LEVEL_STATE", "LEVEL_NOT_STARTED");
+                        break;
+                    }
+                    case LEVEL_STARTED: {
+                        Log.d("LEVEL_STATE", "LEVEL_STARTED");
+                        break;
+                    }
+                    case LEVEL_COMPLETED: {
+                        Log.d("LEVEL_STATE", "LEVEL_COMPLETED");
+                        break;
+                    }
+                }
+            }
+        );
+        currentLevelState.setValue(LEVEL_NOT_STARTED);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
 
         textToSpeechService = new TextToSpeechService();
         //textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
@@ -61,44 +82,25 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void getMarkerData(){
         int id = getIntent().getIntExtra("markerId", 0);
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
+        //LocationMarker marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
         int markerProgressStage = databaseHelper.getMarkerProgress(id);
         currentLevel = databaseHelper.getLevelBySequence(id, markerProgressStage);
-        levelStartLocation = currentLevel.getPosition();
-        //currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
-    }
-
-    private void checkGpsStatus() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-        if (!isGpsEnabled) {
-            Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivityForResult(gpsIntent, LOCATION_PERMISSION_REQUEST_CODE);
+        if (isNull(currentLevel)) {
+            //create an error handler class that when something from the DB is not found it will check if the DB update is needed
+            Toast.makeText(this, "No level found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
+        levelStartLocation = currentLevel.getPosition();
+        AREA_RADIUS = 6;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-            if (isGpsEnabled) {
-                fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-                mapFragment.getMapAsync(this);
-
-                getMarkerData();
-            } else {
-                finish();
-            }
-        }
     }
 
-    private void generateArea() {
+    /*private void generateArea() {
         AREA_RADIUS = new Random().nextInt(50 - 25) + 25;
         int maxDistanceFromMarker = AREA_RADIUS - 10;
         int distanceFromMarker = new Random().nextInt(maxDistanceFromMarker);
@@ -118,33 +120,45 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.addMarker(new MarkerOptions()
                 .position(markerLocation));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLocation, 16f));
-    }
+    }*/
 
 
 
     @Override
     public void onLocationChanged(Location location) {
-        LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        switch(currentLevelState.getValue()){
+            case LEVEL_NOT_STARTED: {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Level not started. Get ready to play!");
+                builder.show();
 
-        float distance = calculateDistance(currentLocation, areaCenter);
-        if(distance < MARKER_TOLERANCE && isInsideArea){
-            Toast.makeText(this, "You found the treasure!", Toast.LENGTH_SHORT).show();
-            isInsideArea = false;
-            finish();
-        }
-        if (distance <= AREA_RADIUS && !isInsideArea) {
-            Toast.makeText(this, "You entered the target area!", Toast.LENGTH_SHORT).show();
-            isInsideArea = true;
-        } else if (distance > AREA_RADIUS && isInsideArea) {
-            Toast.makeText(this, "You left the target area!", Toast.LENGTH_SHORT).show();
-            isInsideArea = false;
+                if (calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS) {
+                    currentLevelState.setValue(LEVEL_STARTED);
+                    Toast.makeText(this, "Level started!", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+            case LEVEL_STARTED: {
+
+                break;
+            }
+
+            case LEVEL_COMPLETED: {
+
+                break;
+            }
         }
     }
 
     private float calculateDistance(LatLng playerLocation, LatLng finishLocation) {
-        float[] result = new float[1];
-        Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, finishLocation.latitude, finishLocation.longitude, result);
-        return result[0];
+        if (playerLocation != null && finishLocation != null) {
+            float[] result = new float[1];
+            Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, finishLocation.latitude, finishLocation.longitude, result);
+            return result[0];
+        } else {
+            return Float.MAX_VALUE;
+        }
     }
 
     @Override
@@ -157,7 +171,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, this);
-            generateArea();
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         }
@@ -187,6 +200,12 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (isNotNull(textToSpeechService)) {
             textToSpeechService.cancel();
         }
+    }
+
+    public enum LevelState {
+        LEVEL_NOT_STARTED,
+        LEVEL_STARTED,
+        LEVEL_COMPLETED
     }
 
 }
