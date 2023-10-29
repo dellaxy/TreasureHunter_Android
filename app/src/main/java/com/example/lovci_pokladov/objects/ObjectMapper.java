@@ -17,7 +17,7 @@ class ObjectMapper {
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_DESCRIPTION = "description";
     private static final String COLUMN_DIFFICULTY = "difficulty";
-    private static final String COLUMN_SEQUENCE_NUMBER = "sequence_number";
+    private static final String COLUMN_SEQUENCE_NUMBER = "sequence";
     private static final String COLUMN_AREA_SIZE = "area_size";
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_FINAL = "final";

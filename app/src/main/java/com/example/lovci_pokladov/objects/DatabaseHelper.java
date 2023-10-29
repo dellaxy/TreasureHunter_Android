@@ -145,7 +145,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         try {
             String[] selectionArgs = {String.valueOf(markerId), String.valueOf(sequenceNumber)};
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ? AND sequence = ?", selectionArgs);
-            if(cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) {
                 level = mapCursorToLevel(cursor);
             }
         } catch (Exception e) {
