@@ -61,7 +61,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_maps, container, false);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.homeMap);
         mapFragment.getMapAsync(this);
 
         databaseHelper = new DatabaseHelper(requireContext());
@@ -73,7 +73,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         return view;
     }
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -127,7 +126,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(SLOVAKIA_LOCATION, 8.0f));
         }
     }
-
 
     private LatLng getCenterOfPolygon(PolygonOptions polygon) {
         List<LatLng> points = polygon.getPoints();
@@ -216,9 +214,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void showLocationInfo(LocationMarker marker) {
-        if (isPopupOpen) {
-            return;
-        }
+        if (isPopupOpen) return;
+
         TextView locationName = popupWindow.getContentView().findViewById(R.id.treasureTitle);
         TextView locationDescription = popupWindow.getContentView().findViewById(R.id.treasureDescription);
         Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
@@ -234,7 +231,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         isPopupOpen = true;
 
         closeButton.setOnClickListener(v -> closeLocationInfo());
-
         acceptButton.setOnClickListener(v -> {
             int markerId = (int) v.getTag();
             Intent intent = new Intent(requireContext(), GameActivity.class);
@@ -243,7 +239,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
             closeLocationInfo();
         });
-
     }
 
     public void closeLocationInfo() {
@@ -267,7 +262,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 public void onAnimationRepeat(Animation animation) {
                 }
             });
-
             popupWindow.getContentView().startAnimation(slideOutAnimation);
         }
     }
