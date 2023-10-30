@@ -17,9 +17,10 @@ import com.example.lovci_pokladov.fragments.MapsFragment;
 import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.MenuClickListener;
 
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity implements MenuClickListener {
     private FragmentManager fragmentManager;
-    private Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +49,9 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         String fragmentTag = selectedFragment.getClass().getSimpleName();
         Fragment existingFragment = fragmentManager.findFragmentByTag(fragmentTag);
-        currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
+        Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
 
-        if (!Utils.isNotNull(currentFragment) || !currentFragment.getTag().equals(fragmentTag)) {
+        if (!Utils.isNotNull(currentFragment) || !Objects.equals(currentFragment.getTag(), fragmentTag)) {
             if (Utils.isNotNull(existingFragment)) {
                 transaction.replace(R.id.fragment_container, existingFragment, fragmentTag);
             } else {
@@ -60,10 +61,6 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
                 .commit();
         }
     }
-
-    private void showExitConfirmationDialog() {
-    }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
