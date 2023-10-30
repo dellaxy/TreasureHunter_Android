@@ -46,9 +46,7 @@ public class TextToSpeechService{
     }
 
     public void synthesizeText(String text) {
-        executorService.execute(() -> {
-            googleCloudTTS.start(text);
-        });
+        executorService.execute(() -> googleCloudTTS.start(text));
     }
 
     public void cancel(){
