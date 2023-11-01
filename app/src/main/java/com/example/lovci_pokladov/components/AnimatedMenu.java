@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.components.menu;
+package com.example.lovci_pokladov.components;
 
 import static com.example.lovci_pokladov.models.ConstantsCatalog.MENU_PAGES;
 
@@ -18,7 +18,6 @@ import android.widget.LinearLayout;
 import androidx.cardview.widget.CardView;
 
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.components.rounded_button.RoundedButton;
 import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.MenuClickListener;
 

@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.components.rounded_button;
+package com.example.lovci_pokladov.components;
 
 import android.content.Context;
 import android.content.res.TypedArray;

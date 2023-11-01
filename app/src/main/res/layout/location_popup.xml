@@ -8,55 +8,171 @@
 
     <androidx.cardview.widget.CardView
     android:layout_width="match_parent"
-    android:layout_height="250dp"
-    android:layout_margin="10dp"
+    android:layout_height="500dp"
+    android:layout_marginTop="80dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
     app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="20dp">
+    app:cardCornerRadius="10dp">
 
-    <RelativeLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/imageView"
+            <LinearLayout
+                android:id="@+id/locationGroup"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:alpha=".3"
-                android:scaleX="1.6"
-                android:scaleY="1.6"
-                android:src="@drawable/nitra"
-                android:translationX="65dp"
-                android:translationY="30dp" />
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="20dp">
-
-            <TextView
-                android:id="@+id/treasureTitle"
-                android:layout_width="325dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:fontFamily="sans-serif-black"
-                android:paddingBottom="15dp"
-                android:text="Treasure Title"
-                android:textColor="#353535"
-                android:textSize="24sp"
-                android:typeface="normal" />
+                android:orientation="vertical"
+                android:paddingStart="25dp"
+                android:paddingTop="25dp"
+                android:paddingEnd="25dp">
 
-            <TextView
-                android:id="@+id/treasureDescription"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/missionTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/roboto_bold"
+                    android:text="Treasure Hunt"
+                    android:textAllCaps="true"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/missionLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="3dp"
+                    android:fontFamily="@font/roboto_bold"
+                    android:text="Nové Zámky"
+                    android:textAllCaps="true"
+                    android:textColor="@color/gray"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/missionRegion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="3dp"
+                    android:fontFamily="@font/roboto"
+                    android:text="Banskobystrický kraj"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:text="Nové Zámky"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/actionButtonsGroup"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/treasureTitle"
-                android:text=""
-                android:textColor="#494949"
-                android:textSize="18sp"
-                android:typeface="normal" />
+                android:layout_below="@id/locationGroup"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="25dp">
 
-        </RelativeLayout>
+                <LinearLayout
+                    android:id="@+id/infoActionButton"
+                    android:layout_width="80dp"
+                    android:layout_height="70dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_button"
+                    android:backgroundTint="@color/light_gray"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-            <com.example.lovci_pokladov.components.rounded_button.RoundedButton
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/question_mark"
+                        app:tint="@color/secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_bold"
+                        android:text="info"
+                        android:textAllCaps="true"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/statsActionButton"
+                    android:layout_width="80dp"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_button"
+                    android:backgroundTint="@color/light_gray"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/query_stats"
+                        app:tint="@color/secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_bold"
+                        android:text="stats"
+                        android:textAllCaps="true"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navigationActionButton"
+                    android:layout_width="80dp"
+                    android:layout_height="70dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_button"
+                    android:backgroundTint="@color/light_gray"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/navigate"
+                        app:tint="@color/secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto_bold"
+                        android:text="navigate"
+                        android:textAllCaps="true"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_below="@id/actionButtonsGroup"
+                android:background="@color/light_gray" />
+
+
+            <com.example.lovci_pokladov.components.RoundedButton
                 android:id="@+id/acceptGameButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -72,13 +188,12 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="15dp"
-                android:background="@drawable/close"
-                android:scaleX="1.3"
-                android:scaleY="1.3" />
+                android:layout_margin="5dp"
+                android:background="@drawable/cancel"
+                android:scaleX=".8"
+                android:scaleY=".8" />
 
-    </RelativeLayout>
+        </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
 </RelativeLayout>
