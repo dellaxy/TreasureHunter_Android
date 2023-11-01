@@ -22,7 +22,6 @@ import androidx.core.app.ActivityCompat;
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.models.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.models.Level;
-import com.example.lovci_pokladov.models.LevelCheckpoint;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.TextToSpeechService;
@@ -34,10 +33,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolygonOptions;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
@@ -76,7 +72,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case LEVEL_STARTED: {
                         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
                             currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
-                            generatePlayArea();
+                            //generatePlayArea();
                             startGame();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -118,101 +114,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void startGame() {
 
-    }
-
-    private void generatePlayArea() {
-        List<LatLng> playAreaVertices = calculatePlayAreaVerticesWithRadii();
-
-        if (playAreaVertices.size() >= 3) {
-            // Create a polygon on the map to represent the play area
-            PolygonOptions polygonOptions = new PolygonOptions()
-                    .addAll(playAreaVertices)
-                    .strokeWidth(5)
-                    .strokeColor(ColorPalette.PRIMARY.getColor()) // Customize the color as needed
-                    .fillColor(ColorPalette.PRIMARY.getColor(100)); // Customize the fill color as needed
-
-            mMap.addPolygon(polygonOptions);
-        }
-    }
-
-    private List<LatLng> calculatePlayAreaVerticesWithRadii() {
-        List<LatLng> checkpointPositions = new ArrayList<>();
-
-        // Collect the positions of checkpoints
-        for (LevelCheckpoint checkpoint : currentLevel.getCheckpoints()) {
-            checkpointPositions.add(checkpoint.getPosition());
-        }
-
-        // Calculate the convex hull vertices using the Jarvis March algorithm
-        List<LatLng> hull = jarvisMarch(checkpointPositions);
-
-        // Expand the vertices based on checkpoint radii
-        List<LatLng> expandedVertices = new ArrayList<>();
-
-        for (LatLng vertex : hull) {
-            // Expand the vertex based on checkpoint radii
-            double expandDistance = getMaxCheckpointRadius();
-            LatLng expandedVertex = new LatLng(
-                    vertex.latitude + expandDistance,
-                    vertex.longitude + expandDistance
-            );
-            expandedVertices.add(expandedVertex);
-        }
-
-        return expandedVertices;
-    }
-
-    private double getMaxCheckpointRadius() {
-        double maxRadius = 0;
-
-        for (LevelCheckpoint checkpoint : currentLevel.getCheckpoints()) {
-            double radius = checkpoint.getAreaSize();
-            if (radius > maxRadius) {
-                maxRadius = radius;
-            }
-        }
-
-        return maxRadius;
-    }
-
-    // Jarvis March algorithm for finding the convex hull of a set of points
-    private List<LatLng> jarvisMarch(List<LatLng> points) {
-        List<LatLng> hull = new ArrayList<>();
-
-        if (points.size() < 3) {
-            // Convex hull is not possible with less than 3 points
-            return hull;
-        }
-
-        // Find the point with the lowest latitude (and leftmost if tied)
-        LatLng startPoint = points.get(0);
-        for (LatLng point : points) {
-            if (point.latitude < startPoint.latitude || (point.latitude == startPoint.latitude && point.longitude < startPoint.longitude)) {
-                startPoint = point;
-            }
-        }
-
-        LatLng currentPoint = startPoint;
-        do {
-            hull.add(currentPoint);
-            LatLng nextPoint = points.get(0);
-
-            for (LatLng point : points) {
-                if (nextPoint.equals(currentPoint) || isLeftOf(currentPoint, nextPoint, point)) {
-                    nextPoint = point;
-                }
-            }
-
-            currentPoint = nextPoint;
-        } while (!currentPoint.equals(startPoint));
-
-        return hull;
-    }
-
-    // Helper function to check if a point is to the left of a line formed by two other points
-    private boolean isLeftOf(LatLng a, LatLng b, LatLng c) {
-        return (b.longitude - a.longitude) * (c.latitude - a.latitude) -
-                (b.latitude - a.latitude) * (c.longitude - a.longitude) > 0;
     }
 
 

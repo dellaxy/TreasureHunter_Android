@@ -82,8 +82,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                LocationMarker clickedMarker = (LocationMarker) marker.getTag();
-                showLocationInfo(clickedMarker);
+                int clickedMarker = (int) marker.getTag();
+                openMissionPopup(clickedMarker);
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
                 return true;
             }
@@ -193,7 +193,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         Marker marker = mMap.addMarker(new MarkerOptions()
                 .position(markerLocation)
                 .icon(bitmapDescriptorFromVector(requireContext(), customMarker.getIcon(), markerColor)));
-        marker.setTag(customMarker);
+        marker.setTag(customMarker.getId());
     }
 
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, String iconName, int color) {
@@ -213,16 +213,22 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private void showLocationInfo(LocationMarker marker) {
+    private void openMissionPopup(int markerId) {
         if (isPopupOpen) return;
 
         TextView locationName = popupWindow.getContentView().findViewById(R.id.treasureTitle);
         TextView locationDescription = popupWindow.getContentView().findViewById(R.id.treasureDescription);
         Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
         ImageButton closeButton = popupWindow.getContentView().findViewById(R.id.closeButton);
-        acceptButton.setTag(marker.getId());
-        locationName.setText(marker.getTitle());
-        locationDescription.setText(marker.getDescription());
+        try (DatabaseHelper databaseHelper = new DatabaseHelper(requireContext())) {
+            LocationMarker marker = databaseHelper.getMarkerById(markerId);
+            locationName.setText(marker.getTitle());
+            locationDescription.setText(marker.getDescription());
+            acceptButton.setTag(marker.getId());
+            int difficulty = databaseHelper.getMarkerDifficulty(markerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Animation slideInAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_in_from_top);
         popupWindow.getContentView().startAnimation(slideInAnimation);
@@ -230,18 +236,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         isPopupOpen = true;
 
-        closeButton.setOnClickListener(v -> closeLocationInfo());
+        closeButton.setOnClickListener(v -> closeMissionPopup());
         acceptButton.setOnClickListener(v -> {
-            int markerId = (int) v.getTag();
+            int acceptedMarkerId = (int) v.getTag();
             Intent intent = new Intent(requireContext(), GameActivity.class);
-            intent.putExtra("markerId", markerId);
+            intent.putExtra("markerId", acceptedMarkerId);
             startActivity(intent);
 
-            closeLocationInfo();
+            closeMissionPopup();
         });
     }
 
-    public void closeLocationInfo() {
+    public void closeMissionPopup() {
         if (isPopupOpen) {
             Animation slideOutAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_out_to_top);
             slideOutAnimation.setAnimationListener(new Animation.AnimationListener() {
@@ -269,7 +275,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onPause() {
         super.onPause();
-        closeLocationInfo();
+        closeMissionPopup();
         if (isNotNull(mMap)) {
             mMap.clear();
         }
