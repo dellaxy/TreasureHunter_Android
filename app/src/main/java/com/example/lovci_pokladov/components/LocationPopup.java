@@ -13,7 +13,7 @@ public class LocationPopup extends LinearLayout {
 
     public LocationPopup(Context context) {
         super(context);
-        LayoutInflater.from(getContext()).inflate(R.layout.location_popup, this, true);
+        LayoutInflater.from(getContext()).inflate(R.layout.layout_mission_popup, this, true);
     }
 
     public void setData(String missionTitle, String missionDescription, String missionLocation, String missionRegion, int missionDifficulty) {;
