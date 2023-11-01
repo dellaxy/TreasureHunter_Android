@@ -5,7 +5,6 @@ import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATI
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -22,14 +21,13 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.activities.GameActivity;
+import com.example.lovci_pokladov.components.LocationPopup;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
@@ -66,9 +64,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         databaseHelper = new DatabaseHelper(requireContext());
 
-        LayoutInflater popupInflater = (LayoutInflater) requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View popUpView = popupInflater.inflate(R.layout.location_popup, null);
-        popupWindow = new PopupWindow(popUpView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        LocationPopup locationPopup = new LocationPopup(requireContext());
+        popupWindow = new PopupWindow(locationPopup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         popupWindow.setAnimationStyle(android.R.style.Animation_Translucent);
 
         return view;
@@ -216,7 +213,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private void openMissionPopup(int markerId) {
         if (isPopupOpen) return;
 
-        TextView locationName = popupWindow.getContentView().findViewById(R.id.treasureTitle);
+        Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
+        ImageButton closeButton = popupWindow.getContentView().findViewById(R.id.closeButton);
+
+        Animation slideInAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_in_from_side);
+        popupWindow.getContentView().startAnimation(slideInAnimation);
+        popupWindow.showAtLocation(requireActivity().getWindow().getDecorView().getRootView(), Gravity.CENTER, 0, 0);
+
+        isPopupOpen = true;
+
+        closeButton.setOnClickListener(v -> closeMissionPopup());
+
+/*        TextView locationName = popupWindow.getContentView().findViewById(R.id.treasureTitle);
         TextView locationDescription = popupWindow.getContentView().findViewById(R.id.treasureDescription);
         Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
         ImageButton closeButton = popupWindow.getContentView().findViewById(R.id.closeButton);
@@ -244,12 +252,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             startActivity(intent);
 
             closeMissionPopup();
-        });
+        });*/
     }
 
     public void closeMissionPopup() {
         if (isPopupOpen) {
-            Animation slideOutAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_out_to_top);
+            Animation slideOutAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_out_to_side);
             slideOutAnimation.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
