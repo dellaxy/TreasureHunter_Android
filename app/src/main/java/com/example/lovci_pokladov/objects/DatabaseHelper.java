@@ -100,11 +100,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.close();
     }
 
-    public LocationMarker getMarkerById(int id) {
+    public LocationMarker getMarkerById(int markerId) {
         SQLiteDatabase database = getReadableDatabase();
         LocationMarker marker = null;
         try {
-            String[] selectionArgs = {String.valueOf(id)};
+            String[] selectionArgs = {String.valueOf(markerId)};
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, "id = ?", selectionArgs);
             if (cursor.moveToFirst()) {
                 marker = mapCursorToMarker(cursor);
@@ -117,6 +117,24 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
 
         return marker;
+    }
+
+    public int getMarkerDifficulty(int markerId){
+        SQLiteDatabase database = getReadableDatabase();
+        int difficulty = 0;
+        try{
+            String query = "SELECT AVG(difficulty) FROM " + DATABASE_COLLECTIONS.LEVELS.getCollectionName() + " WHERE marker_id = ?";
+            String[] selectionArgs = {String.valueOf(markerId)};
+            Cursor cursor = database.rawQuery(query, selectionArgs);
+            if(cursor.moveToFirst()){
+                difficulty = cursor.getInt(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return difficulty;
     }
 
     public List<LocationMarker> getAllMarkers() {
