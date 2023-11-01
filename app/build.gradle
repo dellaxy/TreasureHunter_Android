@@ -42,6 +42,18 @@ android {
     packagingOptions {
             resources.excludes.add("META-INF/*")
     }
+    sourceSets {
+        main {
+            res {
+                srcDirs = [
+                        'src\\main\\res\\layouts\\fragments',
+                        'src\\main\\res\\layouts\\activities',
+                        'src\\main\\res\\layouts\\components',
+                        'src\\main\\res\\layouts',
+                        'src\\main\\res']
+            }
+        }
+    }
 }
 
 dependencies {
