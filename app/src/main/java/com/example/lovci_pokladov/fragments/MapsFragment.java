@@ -11,16 +11,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -51,9 +44,7 @@ import java.util.List;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
-    private DatabaseHelper databaseHelper;
-    private boolean isPopupOpen = false;
-    private PopupWindow popupWindow;
+    private LocationPopup popupWindow;
     private int regionId = -1;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,12 +52,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.homeMap);
         mapFragment.getMapAsync(this);
-
-        databaseHelper = new DatabaseHelper(requireContext());
-
-        LocationPopup locationPopup = new LocationPopup(requireContext());
-        popupWindow = new PopupWindow(locationPopup, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        popupWindow.setAnimationStyle(android.R.style.Animation_Translucent);
+        popupWindow = new LocationPopup(requireContext());
 
         return view;
     }
@@ -80,7 +66,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 int clickedMarker = (int) marker.getTag();
-                openMissionPopup(clickedMarker);
+                popupWindow.openPopup(clickedMarker);
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
                 return true;
             }
@@ -148,14 +134,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void loadDataFromDatabase() {
-        List<LocationMarker> markers, allMarkers = databaseHelper.getAllMarkers();
-            if (regionId != -1) {
-                GeoJSONLoader jsonLoader = new GeoJSONLoader(requireContext());
-                PolygonOptions regionPolygon = jsonLoader.getRegionPolygon(regionId);
-                markers = getMarkersInsideRegion(regionPolygon, allMarkers);
-            } else {
-                markers = allMarkers;
-            }
+        List<LocationMarker> markers, allMarkers = new ArrayList<>();
+        try (DatabaseHelper databaseHelper = new DatabaseHelper(requireContext())){
+            allMarkers = databaseHelper.getAllMarkers();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error loading data from database", Toast.LENGTH_SHORT).show();
+        }
+        if (regionId != -1) {
+            GeoJSONLoader jsonLoader = new GeoJSONLoader(requireContext());
+            PolygonOptions regionPolygon = jsonLoader.getRegionPolygon(regionId);
+            markers = getMarkersInsideRegion(regionPolygon, allMarkers);
+        } else {
+            markers = allMarkers;
+        }
         if (Utils.isNotEmpty(markers)) {
             for (LocationMarker marker : markers){
                 addMarker(marker);
@@ -210,80 +201,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private void openMissionPopup(int markerId) {
-        if (isPopupOpen) return;
-
-        Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
-        ImageButton closeButton = popupWindow.getContentView().findViewById(R.id.closeButton);
-
-        Animation slideInAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_in_from_side);
-        popupWindow.getContentView().startAnimation(slideInAnimation);
-        popupWindow.showAtLocation(requireActivity().getWindow().getDecorView().getRootView(), Gravity.CENTER, 0, 0);
-
-        isPopupOpen = true;
-
-        closeButton.setOnClickListener(v -> closeMissionPopup());
-
-/*        TextView locationName = popupWindow.getContentView().findViewById(R.id.treasureTitle);
-        TextView locationDescription = popupWindow.getContentView().findViewById(R.id.treasureDescription);
-        Button acceptButton = popupWindow.getContentView().findViewById(R.id.acceptGameButton);
-        ImageButton closeButton = popupWindow.getContentView().findViewById(R.id.closeButton);
-        try (DatabaseHelper databaseHelper = new DatabaseHelper(requireContext())) {
-            LocationMarker marker = databaseHelper.getMarkerById(markerId);
-            locationName.setText(marker.getTitle());
-            locationDescription.setText(marker.getDescription());
-            acceptButton.setTag(marker.getId());
-            int difficulty = databaseHelper.getMarkerDifficulty(markerId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Animation slideInAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_in_from_top);
-        popupWindow.getContentView().startAnimation(slideInAnimation);
-        popupWindow.showAtLocation(requireActivity().getWindow().getDecorView().getRootView(), Gravity.TOP, 0, 0);
-
-        isPopupOpen = true;
-
-        closeButton.setOnClickListener(v -> closeMissionPopup());
-        acceptButton.setOnClickListener(v -> {
-            int acceptedMarkerId = (int) v.getTag();
-            Intent intent = new Intent(requireContext(), GameActivity.class);
-            intent.putExtra("markerId", acceptedMarkerId);
-            startActivity(intent);
-
-            closeMissionPopup();
-        });*/
-    }
-
-    public void closeMissionPopup() {
-        if (isPopupOpen) {
-            Animation slideOutAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.slide_out_to_side);
-            slideOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                }
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            popupWindow.dismiss();
-                            isPopupOpen = false;
-                        }
-                    }, 10);
-                }
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                }
-            });
-            popupWindow.getContentView().startAnimation(slideOutAnimation);
-        }
-    }
-
     @Override
     public void onPause() {
         super.onPause();
-        closeMissionPopup();
+        popupWindow.closePopup();
         if (isNotNull(mMap)) {
             mMap.clear();
         }
