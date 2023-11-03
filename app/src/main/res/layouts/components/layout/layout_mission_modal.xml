@@ -34,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:fontFamily="@font/roboto_bold"
-                    android:text="Treasure Hunt"
+                    android:text="Title"
                     android:textAllCaps="true"
                     android:textColor="@color/black"
                     android:textSize="20sp"
@@ -46,7 +46,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="3dp"
                     android:fontFamily="@font/roboto_bold"
-                    android:text="Nové Zámky"
+                    android:text="Location"
                     android:textAllCaps="true"
                     android:textColor="@color/gray"
                     android:textSize="18sp"
@@ -58,17 +58,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="3dp"
                     android:fontFamily="@font/roboto"
-                    android:text="Banskobystrický kraj"
+                    android:text="Region"
                     android:textColor="@color/black"
                     android:textSize="14sp" />
 
-                <!--<TextView
+                <TextView
+                    android:id="@+id/missionCountry"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/roboto"
-                    android:text="Nové Zámky"
+                    android:text="Country"
                     android:textColor="@color/black"
-                    android:textSize="14sp" />-->
+                    android:textSize="14sp" />
 
             </LinearLayout>
 
