@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.components.LocationPopup;
+import com.example.lovci_pokladov.components.MissionModal;
 import com.example.lovci_pokladov.models.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
@@ -44,7 +44,7 @@ import java.util.List;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
-    private LocationPopup popupWindow;
+    private MissionModal popupWindow;
     private int regionId = -1;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,7 +52,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.homeMap);
         mapFragment.getMapAsync(this);
-        popupWindow = new LocationPopup(requireContext());
+        popupWindow = new MissionModal(requireContext());
 
         return view;
     }
