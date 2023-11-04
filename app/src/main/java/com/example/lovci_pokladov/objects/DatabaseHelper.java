@@ -1,8 +1,8 @@
 package com.example.lovci_pokladov.objects;
 
-import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_COLLECTIONS;
-import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_COLLECTIONS.FINISHED;
-import static com.example.lovci_pokladov.models.ConstantsCatalog.DATABASE_NAME;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_COLLECTIONS;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_COLLECTIONS.FINISHED;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_NAME;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToLevel;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToMarker;
 
@@ -12,9 +12,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 
-import com.example.lovci_pokladov.models.Level;
-import com.example.lovci_pokladov.models.LevelCheckpoint;
-import com.example.lovci_pokladov.models.LocationMarker;
+import com.example.lovci_pokladov.entities.Level;
+import com.example.lovci_pokladov.entities.LevelCheckpoint;
+import com.example.lovci_pokladov.entities.LocationMarker;
 
 import java.io.File;
 import java.io.FileOutputStream;

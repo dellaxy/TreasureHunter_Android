@@ -1,6 +1,6 @@
 package com.example.lovci_pokladov.activities;
 
-import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

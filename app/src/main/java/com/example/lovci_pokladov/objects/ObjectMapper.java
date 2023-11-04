@@ -2,9 +2,9 @@ package com.example.lovci_pokladov.objects;
 
 import android.database.Cursor;
 
-import com.example.lovci_pokladov.models.Level;
-import com.example.lovci_pokladov.models.LevelCheckpoint;
-import com.example.lovci_pokladov.models.LocationMarker;
+import com.example.lovci_pokladov.entities.Level;
+import com.example.lovci_pokladov.entities.LevelCheckpoint;
+import com.example.lovci_pokladov.entities.LocationMarker;
 import com.google.android.gms.maps.model.LatLng;
 
 class ObjectMapper {

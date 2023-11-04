@@ -1,6 +1,6 @@
 package com.example.lovci_pokladov.components;
 
-import static com.example.lovci_pokladov.models.ConstantsCatalog.MENU_PAGES;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.MENU_PAGES;
 
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;

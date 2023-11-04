@@ -1,7 +1,8 @@
 package com.example.lovci_pokladov.activities;
 
+import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_NOT_STARTED;
 import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_STARTED;
-import static com.example.lovci_pokladov.models.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 import static com.example.lovci_pokladov.objects.Utils.isNull;
 
@@ -20,8 +21,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.models.ConstantsCatalog.ColorPalette;
-import com.example.lovci_pokladov.models.Level;
+import com.example.lovci_pokladov.components.RegularModal;
+import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
+import com.example.lovci_pokladov.entities.Level;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.TextToSpeechService;
@@ -39,9 +41,11 @@ import java.util.Objects;
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
+    private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
     private LatLng levelStartLocation;
     private int AREA_RADIUS;
+    private boolean isInsideArea = false;
     private Level currentLevel;
     private Observable<LevelState> currentLevelState;
 
@@ -72,7 +76,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case LEVEL_STARTED: {
                         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
                             currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
-                            //generatePlayArea();
+                            mMap.clear();
                             startGame();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -87,10 +91,19 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         );
 
-        currentLevelState.setValue(LEVEL_STARTED);
+        currentLevelState.setValue(LEVEL_NOT_STARTED);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService();
+
         //textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
+
+        gameStartModal = new RegularModal(this) {
+            @Override
+            public void acceptButtonClicked() {
+                currentLevelState.setValue(LEVEL_STARTED);
+            }
+        };
+        gameStartModal.setModalText(currentLevel.getDescription());
     }
 
     private void initMarkerData() {
@@ -113,7 +126,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void startGame() {
-
+        Toast.makeText(this, "Game started", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -123,16 +136,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLng playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
         switch (currentLevelState.getValue()) {
             case LEVEL_NOT_STARTED: {
-                boolean isInsideArea = calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS;
                 if (calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS && !isInsideArea) {
-                    //open modal
+                    isInsideArea = true;
+                    gameStartModal.openPopup();
                 } else if (calculateDistance(playerLocation, levelStartLocation) > AREA_RADIUS && isInsideArea) {
-                    //close modal
+                    isInsideArea = false;
+                    gameStartModal.closePopup();
                 }
                 break;
             }
             case LEVEL_STARTED: {
-
                 break;
             }
 
@@ -163,7 +176,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMyLocationEnabled(true);
             getLastKnownLocation();
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400, 1, this);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         }
