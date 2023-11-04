@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.models;
+package com.example.lovci_pokladov.entities;
 
 import android.graphics.Color;
 

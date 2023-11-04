@@ -36,7 +36,7 @@ public class TextToSpeechService{
                 voicesList = googleCloudTTS.load();
             }
             languageCode = voicesList.getLanguageCodes()[14];
-            voiceName = voicesList.getVoiceNames(languageCode)[7];
+            voiceName = voicesList.getVoiceNames(languageCode)[5];
             googleCloudTTS.setVoiceSelectionParams(new VoiceSelectionParams(languageCode, voiceName))
                     .setAudioConfig(new AudioConfig(AudioEncoding.MP3, 1f , 0f));
             handler.post(() -> {

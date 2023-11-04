@@ -1,7 +1,7 @@
 package com.example.lovci_pokladov.fragments;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.example.lovci_pokladov.models.ConstantsCatalog.SLOVAKIA_LOCATION;
+import static com.example.lovci_pokladov.entities.ConstantsCatalog.SLOVAKIA_LOCATION;
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 
 import android.content.Context;
@@ -21,7 +21,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.MissionModal;
-import com.example.lovci_pokladov.models.LocationMarker;
+import com.example.lovci_pokladov.entities.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
 import com.example.lovci_pokladov.objects.Utils;
