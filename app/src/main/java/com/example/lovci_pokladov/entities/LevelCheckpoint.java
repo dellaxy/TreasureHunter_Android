@@ -1,9 +1,8 @@
 package com.example.lovci_pokladov.entities;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.quadtree.PointQuadTree;
 
-public class LevelCheckpoint implements PointQuadTree.Item {
+public class LevelCheckpoint {
     private int id, areaSize;
     private final String text;
     private final boolean finalCheckpoint;
