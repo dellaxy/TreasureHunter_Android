@@ -22,15 +22,16 @@ public class TextToSpeechService{
     VoicesList voicesList;
     String languageCode, voiceName;
     ExecutorService executorService;
+    Handler handler;
     public TextToSpeechService() {
         googleCloudTTS = GoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
+        executorService = Executors.newSingleThreadExecutor();
+        handler = new Handler(Looper.getMainLooper());
+
         startService();
     }
 
     protected void startService(){
-        executorService = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-
         executorService.execute(() -> {
             if(isNull(voicesList)){
                 voicesList = googleCloudTTS.load();
@@ -49,7 +50,12 @@ public class TextToSpeechService{
         executorService.execute(() -> googleCloudTTS.start(text));
     }
 
+    public void postTaskToMainThread(Runnable runnable) {
+        handler.post(runnable);
+    }
+
     public void cancel(){
         executorService.shutdownNow();
+        googleCloudTTS.stop();
     }
 }

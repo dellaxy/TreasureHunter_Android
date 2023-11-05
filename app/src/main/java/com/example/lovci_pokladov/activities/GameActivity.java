@@ -1,5 +1,6 @@
 package com.example.lovci_pokladov.activities;
 
+import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_COMPLETED;
 import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_NOT_STARTED;
 import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_STARTED;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
@@ -24,6 +25,7 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.RegularModal;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.entities.Level;
+import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.TextToSpeechService;
@@ -36,6 +38,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.List;
 import java.util.Objects;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
@@ -47,6 +50,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int AREA_RADIUS;
     private boolean isInsideArea = false;
     private Level currentLevel;
+    private List<LevelCheckpoint> undiscoveredCheckpoints;
     private Observable<LevelState> currentLevelState;
 
     @Override
@@ -76,6 +80,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case LEVEL_STARTED: {
                         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
                             currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
+                            undiscoveredCheckpoints = currentLevel.getCheckpoints();
                             mMap.clear();
                             startGame();
                         } catch (Exception e) {
@@ -94,8 +99,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLevelState.setValue(LEVEL_NOT_STARTED);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService();
-
-        //textToSpeechService.synthesizeText("The objective is to locate a treasure near Nitra Castle. The task is relatively easy, and there should be no guards protecting the treasure. Good luck!");
 
         gameStartModal = new RegularModal(this) {
             @Override
@@ -116,7 +119,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             e.printStackTrace();
         }
         if (isNull(currentLevel)) {
-            //create an error handler class that when something from the DB is not found it will check if the DB update is needed
+            //TODO: create an error handler class that when something from the DB is not found it will check if the DB update is needed
             Toast.makeText(this, "No level found", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -126,44 +129,57 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void startGame() {
-        Toast.makeText(this, "Game started", Toast.LENGTH_SHORT).show();
+        for (LevelCheckpoint checkpoint : currentLevel.getCheckpoints()) {
+            mMap.addCircle(new CircleOptions()
+                    .center(checkpoint.getPosition())
+                    .radius(checkpoint.getAreaSize())
+                    .strokeWidth(5)
+                    .strokeColor(ColorPalette.SECONDARY.getColor())
+                    .fillColor(ColorPalette.SECONDARY.getColor(200)));
+        }
     }
-
-
 
     @Override
     public void onLocationChanged(Location location) {
         LatLng playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
         switch (currentLevelState.getValue()) {
             case LEVEL_NOT_STARTED: {
-                if (calculateDistance(playerLocation, levelStartLocation) < AREA_RADIUS && !isInsideArea) {
+                if (isPlayerInsideArea(playerLocation, levelStartLocation, AREA_RADIUS) && !isInsideArea) {
                     isInsideArea = true;
                     gameStartModal.openPopup();
-                } else if (calculateDistance(playerLocation, levelStartLocation) > AREA_RADIUS && isInsideArea) {
+                } else if (!isPlayerInsideArea(playerLocation, levelStartLocation, AREA_RADIUS) && isInsideArea) {
                     isInsideArea = false;
                     gameStartModal.closePopup();
                 }
                 break;
             }
             case LEVEL_STARTED: {
-                break;
-            }
-
-            case LEVEL_COMPLETED: {
-
+                //TODO: Change to QaudTree or Grid
+                if (isNotNull(undiscoveredCheckpoints)) {
+                    for (LevelCheckpoint checkpoint : undiscoveredCheckpoints) {
+                        if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
+                            undiscoveredCheckpoints.remove(checkpoint);
+                            textToSpeechService.postTaskToMainThread(() -> {
+                                gameStartModal.setModalText(checkpoint.getText());
+                                gameStartModal.openPopup();
+                            });
+                            textToSpeechService.synthesizeText(checkpoint.getText());
+                            if (checkpoint.isFinalCheckpoint()) {
+                                currentLevelState.setValue(LEVEL_COMPLETED);
+                            }
+                            break;
+                        }
+                    }
+                }
                 break;
             }
         }
     }
 
-    private float calculateDistance(LatLng playerLocation, LatLng finishLocation) {
-        if (playerLocation != null && finishLocation != null) {
-            float[] result = new float[1];
-            Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, finishLocation.latitude, finishLocation.longitude, result);
-            return result[0];
-        } else {
-            return Float.MAX_VALUE;
-        }
+    private boolean isPlayerInsideArea(LatLng playerLocation, LatLng checkedLocation, int locationRadius) {
+        float[] distance = new float[1];
+        Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, checkedLocation.latitude, checkedLocation.longitude, distance);
+        return distance[0] < locationRadius;
     }
 
     @Override
