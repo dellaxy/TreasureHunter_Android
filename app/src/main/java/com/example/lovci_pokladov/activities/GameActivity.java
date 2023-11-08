@@ -65,7 +65,22 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void onInit() {
+        String[]
+                levelSeqStrings = {"first", "second", "third", "fourth"},
+                introTexts = {
+                        "You've reached the starting point of the %s level. Time to embark on your journey.",
+                        "Welcome to the %s level, the next leg of your treasure hunt!",
+                        "Prepare to explore the wonders of the %s level. Let the adventure begin.",
+                        "You're now at the beginning of the %s level. Your quest awaits!",
+                        "The journey continues at the %s level. Get ready for more adventures.",
+                        "Here you stand at the start of the %s level. Excitement is in the air.",
+                        "The next chapter in your story unfolds in the %s level. Let's explore!",
+                };
+
         currentLevelState = new Observable<>();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        textToSpeechService = new TextToSpeechService();
+
         currentLevelState.onChangeListener(levelState -> {
                 switch ((LevelState) levelState) {
                     case LEVEL_NOT_STARTED: {
@@ -95,10 +110,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         );
-
         currentLevelState.setValue(LEVEL_NOT_STARTED);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        textToSpeechService = new TextToSpeechService();
 
         gameStartModal = new RegularModal(this) {
             @Override
@@ -106,7 +118,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 currentLevelState.setValue(LEVEL_STARTED);
             }
         };
-        gameStartModal.setModalText(currentLevel.getDescription());
+
+        gameStartModal.setModalText(String.format(introTexts[(int) (Math.random() * introTexts.length)], levelSeqStrings[currentLevel.getSequenceNumber() - 1]));
     }
 
     private void initMarkerData() {

@@ -36,17 +36,18 @@ public class MissionModal extends BaseModal {
         closeButton.setOnClickListener(v -> closePopup());
         acceptButton.setOnClickListener(v -> acceptMission());
 
-        TextView missionDescription = findViewById(R.id.missionDescription);
-        LinearLayout statsLayout = findViewById(R.id.missionStats);
+        TextView missionDescription = modalView.findViewById(R.id.missionDescription);
+        LinearLayout statsLayout = modalView.findViewById(R.id.missionStats);
+
         View.OnClickListener buttonClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.infoActionButton) {
-                    missionDescription.setVisibility(View.VISIBLE);
-                    statsLayout.setVisibility(View.GONE);
+                    missionDescription.setVisibility(VISIBLE);
+                    statsLayout.setVisibility(GONE);
                 } else if (v.getId() == R.id.statsActionButton) {
-                    missionDescription.setVisibility(View.GONE);
-                    statsLayout.setVisibility(View.VISIBLE);
+                    missionDescription.setVisibility(GONE);
+                    statsLayout.setVisibility(VISIBLE);
                 } else if (v.getId() == R.id.navigationActionButton) {
 
                 }
