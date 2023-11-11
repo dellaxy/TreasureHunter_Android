@@ -3,8 +3,10 @@ package com.example.lovci_pokladov.activities;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +15,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.components.TutorialOverlay;
 import com.example.lovci_pokladov.fragments.MapsFragment;
 import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.MenuClickListener;
@@ -34,7 +37,11 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
                 .replace(R.id.fragment_container, new MapsFragment(), "MapsFragment")
                 .addToBackStack(null)
                 .commit();
+    }
 
+    private boolean isTutorialSeen(){
+        SharedPreferences preferences = getSharedPreferences("TUTORIAL", MODE_PRIVATE);
+        return preferences.getBoolean("isTutorialSeen", false);
     }
 
     private void checkPermissions() {
@@ -42,6 +49,11 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         }
+    }
+
+    private boolean permissionsGranted(){
+        return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
@@ -65,6 +77,17 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (permissionsGranted()) {
+                if (!isTutorialSeen()) {
+                    TutorialOverlay tutorialOverlay = new TutorialOverlay(this);
+                    addContentView(tutorialOverlay, new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.MATCH_PARENT));
+                }
+            }
+        }
     }
 
 }

@@ -172,10 +172,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     for (LevelCheckpoint checkpoint : undiscoveredCheckpoints) {
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                             undiscoveredCheckpoints.remove(checkpoint);
-                            textToSpeechService.postTaskToMainThread(() -> {
+                            /*textToSpeechService.postTaskToMainThread(() -> {
                                 gameStartModal.setModalText(checkpoint.getText());
                                 gameStartModal.openPopup();
-                            });
+                            });*/
                             textToSpeechService.synthesizeText(checkpoint.getText());
                             if (checkpoint.isFinalCheckpoint()) {
                                 currentLevelState.setValue(LEVEL_COMPLETED);
