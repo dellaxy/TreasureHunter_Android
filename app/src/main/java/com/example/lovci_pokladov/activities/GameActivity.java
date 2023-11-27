@@ -14,7 +14,10 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,10 +25,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.lovci_pokladov.R;
+import com.example.lovci_pokladov.components.CheckpointTextCard;
 import com.example.lovci_pokladov.components.RegularModal;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.entities.Level;
 import com.example.lovci_pokladov.entities.LevelCheckpoint;
+import com.example.lovci_pokladov.entities.TimeCounter;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.TextToSpeechService;
@@ -52,7 +57,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Level currentLevel;
     private List<LevelCheckpoint> undiscoveredCheckpoints;
     private Observable<LevelState> currentLevelState;
-
+    private TimeCounter timeCounter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,9 +99,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     case LEVEL_STARTED: {
                         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
+                            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
+                            RelativeLayout activeLevelLayout = findViewById(R.id.activeLevelLayout);
                             currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
                             undiscoveredCheckpoints = currentLevel.getCheckpoints();
+
+                            mapFragment.getView().setVisibility(View.GONE);
+                            activeLevelLayout.setVisibility(View.VISIBLE);
                             mMap.clear();
+
                             startGame();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -104,7 +115,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                         break;
                     }
                     case LEVEL_COMPLETED: {
-                        Log.d("LEVEL_STATE", "LEVEL_COMPLETED");
+                        timeCounter.stopTimer();
+
                         break;
                     }
                 }
@@ -124,7 +136,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void initMarkerData() {
         int id = getIntent().getIntExtra("markerId", 0);
-        //LocationMarker marker = (id > 0) ? databaseHelper.getMarkerById(id) : null;
         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
             int markerProgressStage = databaseHelper.getMarkerProgress(id);
             currentLevel = databaseHelper.getLevelBySequence(id, markerProgressStage);
@@ -142,14 +153,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void startGame() {
-        for (LevelCheckpoint checkpoint : currentLevel.getCheckpoints()) {
-            mMap.addCircle(new CircleOptions()
-                    .center(checkpoint.getPosition())
-                    .radius(checkpoint.getAreaSize())
-                    .strokeWidth(5)
-                    .strokeColor(ColorPalette.SECONDARY.getColor())
-                    .fillColor(ColorPalette.SECONDARY.getColor(200)));
-        }
+        textToSpeechService.synthesizeText(currentLevel.getDescription());
+        TextView timeCounterView = findViewById(R.id.timeCounter);
+        timeCounter = new TimeCounter(timeCounterView);
+        timeCounter.startTimer();
     }
 
     @Override
@@ -172,10 +179,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     for (LevelCheckpoint checkpoint : undiscoveredCheckpoints) {
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                             undiscoveredCheckpoints.remove(checkpoint);
-                            /*textToSpeechService.postTaskToMainThread(() -> {
-                                gameStartModal.setModalText(checkpoint.getText());
-                                gameStartModal.openPopup();
-                            });*/
+                            addCheckpointToUi(checkpoint.getText());
+
                             textToSpeechService.synthesizeText(checkpoint.getText());
                             if (checkpoint.isFinalCheckpoint()) {
                                 currentLevelState.setValue(LEVEL_COMPLETED);
@@ -188,6 +193,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+
+    private void addCheckpointToUi(String checkpointText) {
+        LinearLayout checkpointLayout = findViewById(R.id.checkpointList);
+
+        if (checkpointLayout != null) {
+            CheckpointTextCard checkpointCard = new CheckpointTextCard(this, checkpointText);
+            checkpointLayout.addView(checkpointCard);
+        }
+    }
+
 
     private boolean isPlayerInsideArea(LatLng playerLocation, LatLng checkedLocation, int locationRadius) {
         float[] distance = new float[1];

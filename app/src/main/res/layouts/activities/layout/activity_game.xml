@@ -12,23 +12,44 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         map:mapId="@string/map_id"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:context=".activities.GameActivity" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/activeLevelLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="0dp"
+        android:visibility="gone"
+        android:padding="12dp"
         tools:layout_editor_absoluteY="278dp">
 
+        <TextView
+            android:id="@+id/timeCounter"
+            android:layout_width="wrap_content"
+            android:layout_height="80dp"
+            android:minWidth="140dp"
+            android:textColor="@color/black"
+            android:textSize="60dp"></TextView>
 
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/checkpointRecyclerView"
+        <ScrollView
+            android:id="@+id/checkpointScrollView"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:visibility="visible" />
-    </LinearLayout>
+            android:layout_height="0dp"
+            android:layout_below="@+id/timeCounter"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="30dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="20dp">
+
+            <LinearLayout
+                android:id="@+id/checkpointList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"></LinearLayout>
+
+        </ScrollView>
+
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

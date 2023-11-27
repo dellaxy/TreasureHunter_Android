@@ -1,4 +1,4 @@
-package com.example.lovci_pokladov.entities;
+package com.example.lovci_pokladov.components;
 
 import android.content.Context;
 import android.view.Gravity;
