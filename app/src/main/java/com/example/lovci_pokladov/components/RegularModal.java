@@ -4,7 +4,6 @@ import android.content.Context;
 import android.widget.TextView;
 
 import com.example.lovci_pokladov.R;
-import com.example.lovci_pokladov.entities.BaseModal;
 
 public abstract class RegularModal extends BaseModal {
 

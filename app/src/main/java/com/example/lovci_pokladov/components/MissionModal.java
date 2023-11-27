@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.activities.GameActivity;
-import com.example.lovci_pokladov.entities.BaseModal;
 import com.example.lovci_pokladov.entities.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 
