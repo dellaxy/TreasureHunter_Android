@@ -50,6 +50,10 @@ android {
                         'src\\main\\res\\layouts\\activities',
                         'src\\main\\res\\layouts\\components',
                         'src\\main\\res\\layouts',
+                        'src\\main\\res\\drawables\\icons',
+                        'src\\main\\res\\drawables\\images',
+                        'src\\main\\res\\drawables\\shapes',
+                        'src\\main\\res\\drawables',
                         'src\\main\\res']
             }
         }
