@@ -9,6 +9,8 @@ import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.entities.LocationMarker;
 import com.google.android.gms.maps.model.LatLng;
 
+import kotlin.Suppress;
+
 class ObjectMapper {
 
     private static final String
@@ -28,7 +30,7 @@ class ObjectMapper {
             COLUMN_LOCK_CODE = "lock_code",
             COLUMN_COINS = "coins";
 
-
+    @Suppress(names = "Range")
     public static LocationMarker mapCursorToMarker(Cursor cursor) {
         int locationID = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         float locationLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
@@ -41,6 +43,7 @@ class ObjectMapper {
         return new LocationMarker(locationID, new LatLng(locationLat, locationLong), locationTitle, locationColor, locationIcon, locationDescription);
     }
 
+    @Suppress(names = "Range")
     public static Level mapCursorToLevel(Cursor cursor) {
         int levelId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         int levelDifficulty = cursor.getInt(cursor.getColumnIndex(COLUMN_DIFFICULTY));
@@ -52,6 +55,7 @@ class ObjectMapper {
         return new Level(levelId, levelDifficulty, levelSequenceNumber, new LatLng(levelLat, levelLong), levelDescription);
     }
 
+    @Suppress(names = "Range")
     public static LevelCheckpoint mapCursorToCheckpoint(Cursor cursor) {
         int checkpointId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         int checkpointAreaSizeIndex = cursor.getColumnIndex(COLUMN_AREA_SIZE);
@@ -63,6 +67,7 @@ class ObjectMapper {
         return new LevelCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, null);
     }
 
+    @Suppress(names = "Range")
     public static FinalCheckpoint mapCursorToFinalCheckpoint(Cursor cursor) {
         int checkpointId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         int checkpointAreaSizeIndex = cursor.getColumnIndex(COLUMN_AREA_SIZE);
@@ -77,6 +82,7 @@ class ObjectMapper {
         return new FinalCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointLockType, checkpointLockCode, checkpointCoins, null);
     }
 
+    @Suppress(names = "Range")
     public static Item mapCursorToItem(Cursor cursor) {
         int itemId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         String itemDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));

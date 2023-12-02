@@ -8,6 +8,8 @@ import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 import static com.example.lovci_pokladov.objects.Utils.isNull;
 
 import android.Manifest;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,6 +17,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.CheckpointTextCard;
 import com.example.lovci_pokladov.components.RegularModal;
@@ -47,6 +51,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
@@ -54,13 +59,14 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
     private LatLng levelStartLocation;
-    private int AREA_RADIUS;
+    private int AREA_RADIUS, markerId, levelCount;
     private boolean isInsideArea = false;
     private Level currentLevel;
     private List<LevelCheckpoint> undiscoveredCheckpoints;
     private Observable<LevelState> currentLevelState;
     private TimeCounter timeCounter;
     private FinalCheckpoint finalCheckpoint;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,9 +129,31 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                         break;
                     }
                     case LEVEL_COMPLETED: {
+                        try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
+                            if (currentLevel.getSequenceNumber() == levelCount) {
+                                databaseHelper.updateFinished(markerId);
+                            } else {
+                                databaseHelper.updateMarkerProgress(markerId, currentLevel.getSequenceNumber());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         timeCounter.stopTimer();
-                        clearGameLayout();
                         activeLevelLayout.setVisibility(View.GONE);
+                        completedLevelLayout.setVisibility(View.VISIBLE);
+                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                        locationManager.removeUpdates(this);
+                        clearGameLayout();
+
+                        AtomicBoolean treasureOpened = new AtomicBoolean(false);
+                        LottieAnimationView treasureChest = findViewById(R.id.treasureChest);
+                        treasureChest.setOnClickListener(v -> {
+                            if (!treasureOpened.get()) {
+                                openTreasure(treasureChest);
+                                treasureOpened.set(true);
+                            }
+                        });
+
                         break;
                     }
                 }
@@ -144,10 +172,11 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void initMarkerData() {
-        int id = getIntent().getIntExtra("markerId", 0);
+        markerId = getIntent().getIntExtra("markerId", 0);
         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
-            int markerProgressStage = databaseHelper.getMarkerProgress(id);
-            currentLevel = databaseHelper.getLevelBySequence(id, markerProgressStage);
+            levelCount = databaseHelper.getLevelCountForMarker(markerId);
+            int upcomingLevelStage = databaseHelper.getMarkerProgress(markerId);
+            currentLevel = databaseHelper.getLevelBySequence(markerId, upcomingLevelStage);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -171,6 +200,22 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void clearGameLayout() {
         LinearLayout checkpointLayout = findViewById(R.id.checkpointList);
         checkpointLayout.removeAllViews();
+    }
+
+    private void openTreasure(LottieAnimationView treasureChest) {
+        ImageView item = findViewById(R.id.itemIcon);
+        item.setImageDrawable(finalCheckpoint.getItem().getImage());
+        item.setAlpha(0f);
+        item.setTranslationY(100f);
+        ObjectAnimator itemAnimator = ObjectAnimator.ofFloat(item, "alpha", 0f, 1f);
+        ObjectAnimator itemTranslationAnimator = ObjectAnimator.ofFloat(item, "translationY", 100f, 0f);
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(itemAnimator, itemTranslationAnimator);
+        animatorSet.setDuration(1000);
+
+        animatorSet.start();
+        treasureChest.playAnimation();
+
     }
 
     @Override
