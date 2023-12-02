@@ -9,6 +9,7 @@ public class Level {
     private final LatLng position;
     private final String description;
     private List<LevelCheckpoint> checkpoints;
+    private FinalCheckpoint finalCheckpoint;
 
     public Level(int id, int difficulty, int sequenceNumber, LatLng position, String description) {
         this.id = id;
@@ -42,7 +43,15 @@ public class Level {
         return checkpoints;
     }
 
+    public FinalCheckpoint getFinalCheckpoint() {
+        return finalCheckpoint;
+    }
+
     public void setCheckpoints(List<LevelCheckpoint> checkpoints) {
         this.checkpoints = checkpoints;
+    }
+
+    public void setFinalCheckpoint(FinalCheckpoint finalCheckpoint) {
+        this.finalCheckpoint = finalCheckpoint;
     }
 }
