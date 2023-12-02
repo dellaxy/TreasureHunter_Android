@@ -5,30 +5,23 @@ import com.google.android.gms.maps.model.LatLng;
 public class LevelCheckpoint {
     private int id, areaSize;
     private final String text;
-    private final boolean finalCheckpoint;
     private final LatLng position;
-    public LevelCheckpoint(int id, String text, boolean finalCheckpoint, LatLng position) {
-        this.id = id;
-        this.text = text;
-        this.finalCheckpoint = finalCheckpoint;
-        this.position = position;
-        this.areaSize = 3;
-    }
+    private Item item;
 
-    public LevelCheckpoint(int id, String text, boolean finalCheckpoint, LatLng position, int areaSize) {
+    public LevelCheckpoint(int id, String text, LatLng position, int areaSize, Item item) {
         this.id = id;
         this.text = text;
-        this.finalCheckpoint = finalCheckpoint;
         this.position = position;
         this.areaSize = areaSize;
+        this.item = item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public String getText() {
         return text;
-    }
-
-    public boolean isFinalCheckpoint() {
-        return finalCheckpoint;
     }
 
     public LatLng getPosition() {
@@ -41,5 +34,9 @@ public class LevelCheckpoint {
 
     public int getAreaSize() {
         return areaSize;
+    }
+
+    public Item getItem() {
+        return item;
     }
 }

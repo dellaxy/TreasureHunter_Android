@@ -28,6 +28,7 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.CheckpointTextCard;
 import com.example.lovci_pokladov.components.RegularModal;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
+import com.example.lovci_pokladov.entities.FinalCheckpoint;
 import com.example.lovci_pokladov.entities.Level;
 import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.entities.TimeCounter;
@@ -43,6 +44,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,6 +60,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private List<LevelCheckpoint> undiscoveredCheckpoints;
     private Observable<LevelState> currentLevelState;
     private TimeCounter timeCounter;
+    private FinalCheckpoint finalCheckpoint;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,24 +88,29 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLevelState = new Observable<>();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService();
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
+        RelativeLayout activeLevelLayout = findViewById(R.id.activeLevelLayout);
+        RelativeLayout completedLevelLayout = findViewById(R.id.completedLevelLayout);
 
         currentLevelState.onChangeListener(levelState -> {
-                switch ((LevelState) levelState) {
-                    case LEVEL_NOT_STARTED: {
-                        mMap.addCircle(new CircleOptions()
-                                .center(levelStartLocation)
-                                .radius(AREA_RADIUS)
-                                .strokeWidth(5)
-                                .strokeColor(ColorPalette.SECONDARY.getColor())
-                                .fillColor(ColorPalette.SECONDARY.getColor(200)));
+            switch ((LevelState) levelState) {
+                case LEVEL_NOT_STARTED: {
+                    mMap.addCircle(new CircleOptions()
+                            .center(levelStartLocation)
+                            .radius(AREA_RADIUS)
+                            .strokeWidth(5)
+                            .strokeColor(ColorPalette.SECONDARY.getColor())
+                            .fillColor(ColorPalette.SECONDARY.getColor(200)));
                         break;
                     }
                     case LEVEL_STARTED: {
                         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
-                            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
-                            RelativeLayout activeLevelLayout = findViewById(R.id.activeLevelLayout);
                             currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
+                            currentLevel.setFinalCheckpoint(databaseHelper.getFinalCheckpointForLevel(currentLevel.getId()));
+
+                            finalCheckpoint = currentLevel.getFinalCheckpoint();
                             undiscoveredCheckpoints = currentLevel.getCheckpoints();
+                            undiscoveredCheckpoints.add(currentLevel.getFinalCheckpoint());
 
                             mapFragment.getView().setVisibility(View.GONE);
                             activeLevelLayout.setVisibility(View.VISIBLE);
@@ -116,7 +124,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     case LEVEL_COMPLETED: {
                         timeCounter.stopTimer();
-
+                        clearGameLayout();
+                        activeLevelLayout.setVisibility(View.GONE);
                         break;
                     }
                 }
@@ -159,6 +168,11 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         timeCounter.startTimer();
     }
 
+    private void clearGameLayout() {
+        LinearLayout checkpointLayout = findViewById(R.id.checkpointList);
+        checkpointLayout.removeAllViews();
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         LatLng playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
@@ -176,18 +190,23 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             case LEVEL_STARTED: {
                 //TODO: Change to QaudTree or Grid
                 if (isNotNull(undiscoveredCheckpoints)) {
-                    for (LevelCheckpoint checkpoint : undiscoveredCheckpoints) {
+                    Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
+                    while (iterator.hasNext()) {
+                        LevelCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
-                            undiscoveredCheckpoints.remove(checkpoint);
+                            iterator.remove();
                             textToSpeechService.synthesizeText(checkpoint.getText());
                             textToSpeechService.postTaskToMainThread(() -> addCheckpointToUi(checkpoint.getText()));
-                            if (checkpoint.isFinalCheckpoint()) {
+
+                            if (checkpoint.getClass() == FinalCheckpoint.class) {
                                 currentLevelState.setValue(LEVEL_COMPLETED);
+                                break;
                             }
                             break;
                         }
                     }
                 }
+
                 break;
             }
         }

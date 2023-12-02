@@ -46,17 +46,20 @@ public class ConstantsCatalog {
         }
     }
 
-    public enum DATABASE_COLLECTIONS{
+    public enum DATABASE_COLLECTIONS {
         MARKERS("markers"),
         LEVELS("levels"),
         LEVEL_CHECKPOINTS("level_checkpoints"),
+        FINAL_CHECKPOINTS("final_checkpoints"),
+        LOCK_TYPES("lock_types"),
+        ITEMS("items"),
         ACHIEVEMENTS("achievements"),
         FINISHED("finished"),
         PROGRESS("progress");
 
         private final String collectionName;
 
-        DATABASE_COLLECTIONS(String collectionName){
+        DATABASE_COLLECTIONS(String collectionName) {
             this.collectionName = collectionName;
         }
 
