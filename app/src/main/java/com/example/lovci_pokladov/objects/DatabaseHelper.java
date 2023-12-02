@@ -6,6 +6,7 @@ import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_NAME
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToLevel;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToMarker;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -175,22 +176,22 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
         return level;
     }
-    public List<Level> getLevelsForMarker(int markerId){
+
+    public int getLevelCountForMarker(int markerId) {
         SQLiteDatabase database = getReadableDatabase();
-        List<Level> levels = new ArrayList<>();
+        int levelCount = 0;
         try {
-            String [] selectionArgs = {String.valueOf(markerId)};
+            String[] selectionArgs = {String.valueOf(markerId)};
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", selectionArgs, "sequence ASC");
-            while(cursor.moveToNext()){
-                Level level = mapCursorToLevel(cursor);
-                levels.add(level);
+            while (cursor.moveToNext()) {
+                levelCount++;
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             database.close();
         }
-        return levels;
+        return levelCount;
     }
 
     public List<LevelCheckpoint> getCheckpointsForLevel(int levelId){
@@ -201,7 +202,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVEL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs);
             while(cursor.moveToNext()) {
                 LevelCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
-                if (cursor.getColumnIndex("item_id") != -1 && !cursor.isNull(cursor.getColumnIndex("item_id"))) {
+                if (!cursor.isNull(cursor.getColumnIndex("item_id")) && cursor.getColumnIndex("item_id") != -1) {
                     Item item = getItem(cursor.getInt(cursor.getColumnIndex("item_id")));
                     checkpoint.setItem(item);
                 }
@@ -259,9 +260,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase database = getReadableDatabase();
         int progress = 1;
         try {
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), new String[]{"level_stage"}, "marker_id = ?", new String[]{String.valueOf(markerId)});
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), new String[]{"level_stage"}, "marker_id = ?", new String[]{String.valueOf(markerId)}, "level_stage DESC");
             if (cursor.moveToFirst()) {
-                progress = cursor.getInt(0);
+                progress = cursor.getInt(cursor.getColumnIndex("level_stage")) + 1;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,6 +270,37 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             database.close();
         }
         return progress;
+    }
+
+    public void updateMarkerProgress(int markerId, int levelId) {
+        SQLiteDatabase database = getWritableDatabase();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("marker_id", markerId);
+            values.put("level_stage", levelId);
+            database.insert(DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), null, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+    }
+
+    public void updateFinished(int markerId) {
+        SQLiteDatabase database = getWritableDatabase();
+        try {
+            database.beginTransaction();
+            database.delete(DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), "marker_id = ?", new String[]{String.valueOf(markerId)});
+            ContentValues values = new ContentValues();
+            values.put("marker_id", markerId);
+            database.insert(DATABASE_COLLECTIONS.FINISHED.getCollectionName(), null, values);
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.endTransaction();
+            database.close();
+        }
     }
 
     private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs) {
