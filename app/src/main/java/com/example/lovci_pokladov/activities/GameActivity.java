@@ -8,6 +8,7 @@ import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 import static com.example.lovci_pokladov.objects.Utils.isNull;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -16,6 +17,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -141,10 +143,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                         timeCounter.stopTimer();
                         activeLevelLayout.setVisibility(View.GONE);
                         completedLevelLayout.setVisibility(View.VISIBLE);
+                        completedLevelLayout.findViewById(R.id.backToMapButton).setOnClickListener(v -> finish());
                         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                         locationManager.removeUpdates(this);
                         clearGameLayout();
-
                         AtomicBoolean treasureOpened = new AtomicBoolean(false);
                         LottieAnimationView treasureChest = findViewById(R.id.treasureChest);
                         treasureChest.setOnClickListener(v -> {
@@ -205,17 +207,36 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void openTreasure(LottieAnimationView treasureChest) {
         ImageView item = findViewById(R.id.itemIcon);
         item.setImageDrawable(finalCheckpoint.getItem().getImage());
-        item.setAlpha(0f);
-        item.setTranslationY(100f);
-        ObjectAnimator itemAnimator = ObjectAnimator.ofFloat(item, "alpha", 0f, 1f);
-        ObjectAnimator itemTranslationAnimator = ObjectAnimator.ofFloat(item, "translationY", 100f, 0f);
+        item.setVisibility(View.INVISIBLE);
+
+        ObjectAnimator translationAnimator = ObjectAnimator.ofFloat(item, "translationY", 0, -400);
+        translationAnimator.setDuration(300);
+
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(itemAnimator, itemTranslationAnimator);
-        animatorSet.setDuration(1000);
+        animatorSet.playTogether(translationAnimator);
 
-        animatorSet.start();
+        treasureChest.addAnimatorListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                new Handler().postDelayed(() -> {
+                    animatorSet.start();
+                    new Handler().postDelayed(() -> item.setVisibility(View.VISIBLE), 150);
+                }, 850);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
         treasureChest.playAnimation();
-
     }
 
     @Override
