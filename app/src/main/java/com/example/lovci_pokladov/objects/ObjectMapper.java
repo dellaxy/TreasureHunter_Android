@@ -87,8 +87,9 @@ class ObjectMapper {
         int itemId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         String itemDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));
         String itemIconName = cursor.getString(cursor.getColumnIndex(COLUMN_ICON_NAME));
+        String itemName = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
 
-        return new Item(itemId, itemIconName, itemDescription);
+        return new Item(itemId, itemIconName, itemDescription, itemName);
     }
 }
 

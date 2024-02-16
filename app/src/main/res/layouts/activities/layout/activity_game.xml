@@ -33,6 +33,33 @@
             android:textColor="@color/black"
             android:textSize="60dp"></TextView>
 
+        <RelativeLayout
+            android:id="@+id/image_text_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:id="@+id/keyfragment_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="10dp"
+                android:text="0/3"
+                android:textColor="@color/primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/key_fragment"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/keyfragment_count"
+                android:src="@drawable/fragment" />
+
+        </RelativeLayout>
+
         <ScrollView
             android:id="@+id/checkpointScrollView"
             android:layout_width="match_parent"
