@@ -6,13 +6,13 @@ import java.io.InputStream;
 
 public class Item {
     private int id;
-    private String imagePath;
-    private String description;
+    private String iconName, description, name;
 
-    public Item(int id, String imagePath, String description) {
+    public Item(int id, String iconName, String description, String name) {
         this.id = id;
-        this.imagePath = imagePath;
+        this.iconName = iconName;
         this.description = description;
+        this.name = name;
     }
 
     public int getId() {
@@ -23,13 +23,21 @@ public class Item {
         return description;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public Drawable getImage() {
         try {
-            InputStream ims = getClass().getResourceAsStream("/res/drawable/" + imagePath);
+            InputStream ims = getClass().getResourceAsStream("/res/drawable/" + iconName);
             return Drawable.createFromStream(ims, null);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public boolean isKeyFragment() {
+        return iconName.equals("fragment.png");
     }
 }

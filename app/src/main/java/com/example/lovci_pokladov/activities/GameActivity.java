@@ -68,6 +68,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Observable<LevelState> currentLevelState;
     private TimeCounter timeCounter;
     private FinalCheckpoint finalCheckpoint;
+    private int keyFragmentsFound = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,7 +156,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 treasureOpened.set(true);
                             }
                         });
-
                         break;
                     }
                 }
@@ -227,11 +227,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onAnimationEnd(Animator animation) {
             }
-
             @Override
             public void onAnimationCancel(Animator animation) {
             }
-
             @Override
             public void onAnimationRepeat(Animator animation) {
             }
@@ -257,22 +255,31 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //TODO: Change to QaudTree or Grid
                 if (isNotNull(undiscoveredCheckpoints)) {
                     Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
+
                     while (iterator.hasNext()) {
                         LevelCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                             iterator.remove();
                             textToSpeechService.synthesizeText(checkpoint.getText());
-                            textToSpeechService.postTaskToMainThread(() -> addCheckpointToUi(checkpoint.getText()));
+                            textToSpeechService.postTaskToMainThread(() -> {
+                                addCheckpointToUi(checkpoint.getText());
+                            });
+                            if (isNotNull(checkpoint.getItem())) {
+                                if (checkpoint.getItem().isKeyFragment()) {
+                                    keyFragmentsFound++;
+                                    keyFragmentFound();
+                                } else {
+                                    //TODO: add item to inventory
+                                }
+                            }
 
                             if (checkpoint.getClass() == FinalCheckpoint.class) {
-                                currentLevelState.setValue(LEVEL_COMPLETED);
-                                break;
+                                finalCheckpointFound();
                             }
                             break;
                         }
                     }
                 }
-
                 break;
             }
         }
@@ -292,6 +299,37 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         float[] distance = new float[1];
         Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, checkedLocation.latitude, checkedLocation.longitude, distance);
         return distance[0] < locationRadius;
+    }
+
+    private void keyFragmentFound() {
+        switch (keyFragmentsFound) {
+            case 1: {
+                textToSpeechService.synthesizeText("You found a key fragment. Keep searching for the rest.");
+                break;
+            }
+            case 2: {
+                textToSpeechService.synthesizeText("You found another key fragment. Keep searching for the last one.");
+
+                break;
+            }
+            case 3: {
+                textToSpeechService.synthesizeText("You found the last key fragment. Now you can open the treasure chest.");
+                break;
+            }
+        }
+        textToSpeechService.postTaskToMainThread(() -> {
+            TextView keyFragmentTextview = findViewById(R.id.keyfragment_count);
+            keyFragmentTextview.setText(keyFragmentsFound + "/3");
+        });
+    }
+
+    private void finalCheckpointFound() {
+        if (keyFragmentsFound == 3) {
+            textToSpeechService.synthesizeText("You found the treasure chest. Tap on it to open it.");
+            currentLevelState.setValue(LEVEL_COMPLETED);
+        } else {
+            textToSpeechService.synthesizeText("You found the treasure chest, but it's locked. You need to find all the key fragments to open it.");
+        }
     }
 
     @Override

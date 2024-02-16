@@ -53,7 +53,6 @@ public class ConstantsCatalog {
         FINAL_CHECKPOINTS("final_checkpoints"),
         LOCK_TYPES("lock_types"),
         ITEMS("items"),
-        ACHIEVEMENTS("achievements"),
         FINISHED("finished"),
         PROGRESS("progress");
 
