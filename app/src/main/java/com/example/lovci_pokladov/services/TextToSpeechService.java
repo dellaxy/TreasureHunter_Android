@@ -2,6 +2,7 @@ package com.example.lovci_pokladov.services;
 
 import static com.example.lovci_pokladov.objects.Utils.isNull;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -17,25 +18,30 @@ import darren.googlecloudtts.parameter.AudioConfig;
 import darren.googlecloudtts.parameter.AudioEncoding;
 import darren.googlecloudtts.parameter.VoiceSelectionParams;
 
-public class TextToSpeechService{
+public class TextToSpeechService {
     GoogleCloudTTS googleCloudTTS;
     VoicesList voicesList;
     String languageCode, voiceName;
     ExecutorService executorService;
     Handler handler;
-    public TextToSpeechService() {
+    PreferencesManager profilePreferences;
+
+    public TextToSpeechService(Context context) {
         googleCloudTTS = GoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
         executorService = Executors.newSingleThreadExecutor();
         handler = new Handler(Looper.getMainLooper());
+        profilePreferences = PreferencesManager.getInstance(context);
 
         startService();
     }
 
-    protected void startService(){
+    protected void startService() {
         executorService.execute(() -> {
-            if(isNull(voicesList)){voicesList = googleCloudTTS.load();}
-            languageCode = voicesList.getLanguageCodes()[14];
-            voiceName = voicesList.getVoiceNames(languageCode)[8];
+            if (isNull(voicesList)) {
+                voicesList = googleCloudTTS.load();
+            }
+            languageCode = voicesList.getLanguageCodes()[15];
+            voiceName = profilePreferences.getTTSVoice();
             googleCloudTTS.setVoiceSelectionParams(new VoiceSelectionParams(languageCode, voiceName))
                     .setAudioConfig(new AudioConfig(AudioEncoding.MP3, .95f, 0f));
         });

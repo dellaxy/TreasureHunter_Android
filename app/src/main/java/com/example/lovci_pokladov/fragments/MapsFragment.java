@@ -1,11 +1,9 @@
 package com.example.lovci_pokladov.fragments;
 
-import static android.content.Context.MODE_PRIVATE;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.SLOVAKIA_LOCATION;
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -21,10 +19,11 @@ import androidx.fragment.app.Fragment;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.MissionModal;
+import com.example.lovci_pokladov.entities.ConstantsCatalog;
 import com.example.lovci_pokladov.entities.LocationMarker;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
-import com.example.lovci_pokladov.objects.Utils;
+import com.example.lovci_pokladov.services.PreferencesManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -46,6 +45,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private MissionModal popupWindow;
     private int regionId = -1;
+    private PreferencesManager preferencesManager;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_maps, container, false);
@@ -94,8 +94,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style);
         mMap.setMapStyle(style);
         mMap.setMinZoomPreference(5.0f);
-        SharedPreferences preferences = requireActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
-        regionId = preferences.getInt("selectedRegion", -1);
+        preferencesManager = PreferencesManager.getInstance(requireContext());
+        regionId = preferencesManager.getSelectedRegion(-1);
         moveCameraToRegion();
     }
 
@@ -103,7 +103,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         if (regionId != -1) {
             GeoJSONLoader jsonLoader = new GeoJSONLoader(requireContext());
             PolygonOptions regionPolygon = jsonLoader.getRegionPolygon(regionId);
+            regionPolygon.fillColor(ConstantsCatalog.ColorPalette.PRIMARY.getColor(32));
+            regionPolygon.strokeColor(ConstantsCatalog.ColorPalette.PRIMARY.getColor(150));
+            regionPolygon.strokeWidth(8);
             LatLng center = getCenterOfPolygon(regionPolygon);
+            mMap.addPolygon(regionPolygon);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 8.0f));
         } else {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(SLOVAKIA_LOCATION, 8.0f));
@@ -147,12 +151,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         } else {
             markers = allMarkers;
         }
-        if (Utils.isNotEmpty(markers)) {
-            for (LocationMarker marker : markers){
+        if (markers.size() > 0) {
+            for (LocationMarker marker : markers) {
                 addMarker(marker);
             }
         } else {
-            Toast.makeText(requireContext(), "No markers found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "There are no missions in this area", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -207,13 +211,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         popupWindow.closePopup();
         if (isNotNull(mMap)) {
             mMap.clear();
-        }
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (isNotNull(mMap)) {
-            loadDataFromDatabase();
         }
     }
 }
