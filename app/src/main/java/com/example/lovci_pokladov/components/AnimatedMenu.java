@@ -14,12 +14,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.MenuClickListener;
+import com.example.lovci_pokladov.services.Observable;
+import com.example.lovci_pokladov.services.PreferencesManager;
 
 
 public class AnimatedMenu extends LinearLayout {
@@ -31,6 +34,7 @@ public class AnimatedMenu extends LinearLayout {
     private AnimatedVectorDrawable closeMenuDrawable;
     private LinearLayout menuLayout;
     private MenuClickListener menuClickListener;
+    private PreferencesManager preferencesManager;
 
     public AnimatedMenu(Context context) {
         super(context);
@@ -43,6 +47,7 @@ public class AnimatedMenu extends LinearLayout {
     }
 
     private void init() {
+        preferencesManager = PreferencesManager.getInstance(getContext());
         menuClickListener = (MenuClickListener) getContext();
         LayoutInflater.from(getContext()).inflate(R.layout.layout_animated_menu, this, true);
 
@@ -56,6 +61,13 @@ public class AnimatedMenu extends LinearLayout {
 
         menuButton.setImageDrawable(closeMenuDrawable);
         menuButton.setOnClickListener(view -> toggleMenu());
+
+        setCoinAmount(preferencesManager.getPlayerCoins());
+
+        Observable<Integer> playerCoinsObservable = preferencesManager.getPlayerCoinsObservable();
+        playerCoinsObservable.onChangeListener(playerCoins -> {
+            setCoinAmount((Integer) playerCoins);
+        });
 
     }
 
@@ -135,13 +147,18 @@ public class AnimatedMenu extends LinearLayout {
         animatorSet.start();
     }
 
-    private ValueAnimator createAnimator(int startValue, int endValue,long duration ,ValueAnimator.AnimatorUpdateListener updateListener) {
+    private ValueAnimator createAnimator(int startValue, int endValue, long duration, ValueAnimator.AnimatorUpdateListener updateListener) {
         ValueAnimator animator = ValueAnimator.ofInt(startValue, endValue);
         animator.setDuration(duration);
         animator.addUpdateListener(animation -> {
             updateListener.onAnimationUpdate(animation);
         });
         return animator;
+    }
+
+    private void setCoinAmount(int amount) {
+        TextView coinsTextView = findViewById(R.id.token_text);
+        coinsTextView.setText(String.valueOf(amount));
     }
 
 }

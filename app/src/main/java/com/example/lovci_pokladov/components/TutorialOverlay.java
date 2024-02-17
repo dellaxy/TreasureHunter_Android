@@ -1,12 +1,12 @@
 package com.example.lovci_pokladov.components;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.STARTING_TEXT;
+import com.example.lovci_pokladov.services.PreferencesManager;
 import com.example.lovci_pokladov.services.TextToSpeechService;
 
 
@@ -16,6 +16,7 @@ public class TutorialOverlay extends RelativeLayout {
     private int currentTextIndex = 0;
     private STARTING_TEXT[] texts = STARTING_TEXT.values();
     private TextToSpeechService textToSpeechService;
+    private PreferencesManager preferencesManager;
 
     public TutorialOverlay(Context context) {
         super(context);
@@ -25,7 +26,7 @@ public class TutorialOverlay extends RelativeLayout {
     private void init(){
         inflate(getContext(), R.layout.layout_tutorial_window, this);
         texts = STARTING_TEXT.values();
-        textToSpeechService = new TextToSpeechService();
+        textToSpeechService = new TextToSpeechService(this.getContext());
         tutorialText = findViewById(R.id.tutorialTextView);
 
         showNextText();
@@ -48,11 +49,9 @@ public class TutorialOverlay extends RelativeLayout {
         }
     }
 
-    private void setTutorialAsSeen(){
-        SharedPreferences preferences = getContext().getSharedPreferences("TUTORIAL", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean("isTutorialSeen", true);
-        editor.apply();
+    private void setTutorialAsSeen() {
+        preferencesManager = PreferencesManager.getInstance(getContext());
+        preferencesManager.setTutorialSeen();
     }
 
 

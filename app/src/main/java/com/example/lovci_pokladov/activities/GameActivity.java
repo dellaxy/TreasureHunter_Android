@@ -96,7 +96,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         currentLevelState = new Observable<>();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        textToSpeechService = new TextToSpeechService();
+        textToSpeechService = new TextToSpeechService(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
         RelativeLayout activeLevelLayout = findViewById(R.id.activeLevelLayout);
         RelativeLayout completedLevelLayout = findViewById(R.id.completedLevelLayout);
@@ -259,11 +259,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                     while (iterator.hasNext()) {
                         LevelCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
-                            iterator.remove();
-                            textToSpeechService.synthesizeText(checkpoint.getText());
-                            textToSpeechService.postTaskToMainThread(() -> {
-                                addCheckpointToUi(checkpoint.getText());
-                            });
                             if (isNotNull(checkpoint.getItem())) {
                                 if (checkpoint.getItem().isKeyFragment()) {
                                     keyFragmentsFound++;
@@ -272,10 +267,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     //TODO: add item to inventory
                                 }
                             }
-
                             if (checkpoint.getClass() == FinalCheckpoint.class) {
                                 finalCheckpointFound();
+                            } else {
+                                iterator.remove();
+                                textToSpeechService.synthesizeText(checkpoint.getText());
+                                textToSpeechService.postTaskToMainThread(() -> {
+                                    addCheckpointToUi(checkpoint.getText());
+                                });
                             }
+
                             break;
                         }
                     }

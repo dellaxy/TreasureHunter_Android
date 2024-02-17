@@ -1,11 +1,9 @@
 package com.example.lovci_pokladov.fragments;
 
-import static android.content.Context.MODE_PRIVATE;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.SLOVAKIA_LOCATION;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,6 +18,7 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
 import com.example.lovci_pokladov.entities.Region;
 import com.example.lovci_pokladov.objects.GeoJSONLoader;
+import com.example.lovci_pokladov.services.PreferencesManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -38,11 +37,13 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     private TextView regionNameTextView;
     private Map<Integer, Polygon> regionsPolygonMap;
     private int selectedRegionId;
+    private PreferencesManager profilePreferences;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_regions, container, false);
         regionNameTextView = view.findViewById(R.id.regionNameText);
+        profilePreferences = PreferencesManager.getInstance(requireContext());
         initParams();
         return view;
     }
@@ -67,8 +68,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void getSelectedRegion(){
-        SharedPreferences preferences = requireActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
-        int selectedRegion = preferences.getInt("selectedRegion", -1);
+        int selectedRegion = profilePreferences.getSelectedRegion(-1);
         if (selectedRegion != -1) {
             Polygon selectedPolygon = regionsPolygonMap.get(selectedRegion);
             if (selectedPolygon != null) {
@@ -143,10 +143,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onPause() {
         super.onPause();
-        SharedPreferences preferences = requireActivity().getSharedPreferences("MapPreferences", MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("selectedRegion", selectedRegionId);
-        editor.apply();
+        profilePreferences.setSelectedRegion(selectedRegionId);
         mMap.clear();
     }
 

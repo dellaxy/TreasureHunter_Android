@@ -3,7 +3,6 @@ package com.example.lovci_pokladov.activities;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 
 import android.Manifest;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.RelativeLayout;
@@ -19,11 +18,13 @@ import com.example.lovci_pokladov.components.TutorialOverlay;
 import com.example.lovci_pokladov.fragments.MapsFragment;
 import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.MenuClickListener;
+import com.example.lovci_pokladov.services.PreferencesManager;
 
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements MenuClickListener {
     private FragmentManager fragmentManager;
+    private PreferencesManager profilePreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +40,9 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
                 .commit();
     }
 
-    private boolean isTutorialSeen(){
-        SharedPreferences preferences = getSharedPreferences("TUTORIAL", MODE_PRIVATE);
-        return preferences.getBoolean("isTutorialSeen", false);
+    private boolean isTutorialSeen() {
+        profilePreferences = PreferencesManager.getInstance(this);
+        return profilePreferences.isTutorialSeen();
     }
 
     private void checkPermissions() {
