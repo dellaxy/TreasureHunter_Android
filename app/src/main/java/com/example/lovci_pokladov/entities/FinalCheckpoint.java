@@ -4,14 +4,12 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class FinalCheckpoint extends LevelCheckpoint {
 
-    private String lockType;
-    private String lockCode;
+    private int lockType;
     private int coins;
 
-    public FinalCheckpoint(int id, String text, LatLng position, int areaSize, String lockType, String lockCode, int coins, Item reward) {
+    public FinalCheckpoint(int id, String text, LatLng position, int areaSize, int keyFragments, int coins, Item reward) {
         super(id, text, position, areaSize, reward);
-        this.lockType = lockType;
-        this.lockCode = lockCode;
+        this.lockType = keyFragments;
         this.coins = coins;
     }
 
@@ -19,12 +17,8 @@ public class FinalCheckpoint extends LevelCheckpoint {
         return super.getItem();
     }
 
-    public String getLockType() {
+    public int getKeyFragmentsAmount() {
         return lockType;
-    }
-
-    public String getLockCode() {
-        return lockCode;
     }
 
     public int getCoins() {

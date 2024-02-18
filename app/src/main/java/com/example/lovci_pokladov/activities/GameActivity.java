@@ -12,13 +12,17 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -40,6 +44,7 @@ import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.entities.TimeCounter;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
 import com.example.lovci_pokladov.services.Observable;
+import com.example.lovci_pokladov.services.PreferencesManager;
 import com.example.lovci_pokladov.services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -62,13 +67,14 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextToSpeechService textToSpeechService;
     private LatLng levelStartLocation;
     private int AREA_RADIUS, markerId, levelCount;
-    private boolean isInsideArea = false;
+    private boolean isInsideArea = false, navigateToLocation;
     private Level currentLevel;
     private List<LevelCheckpoint> undiscoveredCheckpoints;
     private Observable<LevelState> currentLevelState;
     private TimeCounter timeCounter;
     private FinalCheckpoint finalCheckpoint;
     private int keyFragmentsFound = 0;
+    private PreferencesManager profilePreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +103,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLevelState = new Observable<>();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService(this);
+        profilePreferences = PreferencesManager.getInstance(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
         RelativeLayout activeLevelLayout = findViewById(R.id.activeLevelLayout);
         RelativeLayout completedLevelLayout = findViewById(R.id.completedLevelLayout);
@@ -144,7 +151,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                         timeCounter.stopTimer();
                         activeLevelLayout.setVisibility(View.GONE);
                         completedLevelLayout.setVisibility(View.VISIBLE);
-                        completedLevelLayout.findViewById(R.id.backToMapButton).setOnClickListener(v -> finish());
+                        Button backToMapButton = completedLevelLayout.findViewById(R.id.backToMapButton);
+                        backToMapButton.setOnClickListener(v -> finish());
                         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                         locationManager.removeUpdates(this);
                         clearGameLayout();
@@ -154,6 +162,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             if (!treasureOpened.get()) {
                                 openTreasure(treasureChest);
                                 treasureOpened.set(true);
+                                backToMapButton.setVisibility(View.VISIBLE);
                             }
                         });
                         break;
@@ -175,6 +184,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void initMarkerData() {
         markerId = getIntent().getIntExtra("markerId", 0);
+        navigateToLocation = getIntent().getBooleanExtra("navigateToStart", false);
         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
             levelCount = databaseHelper.getLevelCountForMarker(markerId);
             int upcomingLevelStage = databaseHelper.getMarkerProgress(markerId);
@@ -190,11 +200,30 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         levelStartLocation = currentLevel.getPosition();
         AREA_RADIUS = 6;
+
+    }
+
+    private void navigateToLocation(LatLng destination, LatLng currentLocation) {
+        Log.d("GameActivity", "" + destination);
+        Log.d("GameActivity", "" + currentLocation);
+        Uri googleMapsUri = Uri.parse("http://maps.google.com/maps?saddr=" + currentLocation.latitude + "," + currentLocation.longitude + "&daddr=" + destination.latitude + "," + destination.longitude);
+        Log.d("GameActivity", "" + googleMapsUri);
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, googleMapsUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapIntent);
+        }
     }
 
     private void startGame() {
         textToSpeechService.synthesizeText(currentLevel.getDescription());
         TextView timeCounterView = findViewById(R.id.timeCounter);
+        TextView keyFragmentTextview = findViewById(R.id.keyfragment_count);
+        if (finalCheckpoint.getKeyFragmentsAmount() > 0) {
+            keyFragmentTextview.setText(keyFragmentsFound + "/" + finalCheckpoint.getKeyFragmentsAmount());
+        } else {
+            keyFragmentTextview.setVisibility(View.GONE);
+        }
         timeCounter = new TimeCounter(timeCounterView);
         timeCounter.startTimer();
     }
@@ -208,6 +237,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         ImageView item = findViewById(R.id.itemIcon);
         item.setImageDrawable(finalCheckpoint.getItem().getImage());
         item.setVisibility(View.INVISIBLE);
+        profilePreferences.setPlayerCoins(profilePreferences.getPlayerCoins() + finalCheckpoint.getCoins());
 
         ObjectAnimator translationAnimator = ObjectAnimator.ofFloat(item, "translationY", 0, -400);
         translationAnimator.setDuration(300);
@@ -276,7 +306,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     addCheckpointToUi(checkpoint.getText());
                                 });
                             }
-
                             break;
                         }
                     }
@@ -310,7 +339,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case 2: {
                 textToSpeechService.synthesizeText("You found another key fragment. Keep searching for the last one.");
-
                 break;
             }
             case 3: {
@@ -320,12 +348,12 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         textToSpeechService.postTaskToMainThread(() -> {
             TextView keyFragmentTextview = findViewById(R.id.keyfragment_count);
-            keyFragmentTextview.setText(keyFragmentsFound + "/3");
+            keyFragmentTextview.setText(keyFragmentsFound + "/" + finalCheckpoint.getKeyFragmentsAmount());
         });
     }
 
     private void finalCheckpointFound() {
-        if (keyFragmentsFound == 3) {
+        if (finalCheckpoint.getKeyFragmentsAmount() == 0 || keyFragmentsFound == finalCheckpoint.getKeyFragmentsAmount()) {
             textToSpeechService.synthesizeText("You found the treasure chest. Tap on it to open it.");
             currentLevelState.setValue(LEVEL_COMPLETED);
         } else {
@@ -355,6 +383,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (isNotNull(location)) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 20f));
+                    if (navigateToLocation && !isPlayerInsideArea(currentLocation, levelStartLocation, AREA_RADIUS)) {
+                        navigateToLocation(levelStartLocation, currentLocation);
+                    }
                 }
             });
         }
@@ -372,7 +403,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             textToSpeechService.cancel();
         }
     }
-
     public enum LevelState {
         LEVEL_NOT_STARTED,
         LEVEL_STARTED,

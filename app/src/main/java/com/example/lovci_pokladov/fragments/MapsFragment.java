@@ -213,4 +213,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             mMap.clear();
         }
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (isNotNull(mMap)) {
+            getMapPreferences();
+            loadDataFromDatabase();
+        }
+    }
 }
