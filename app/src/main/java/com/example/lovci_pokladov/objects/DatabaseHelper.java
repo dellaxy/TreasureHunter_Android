@@ -1,7 +1,6 @@
 package com.example.lovci_pokladov.objects;
 
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_COLLECTIONS;
-import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_COLLECTIONS.FINISHED;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_NAME;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToLevel;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToMarker;
@@ -221,9 +220,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase database = getReadableDatabase();
         FinalCheckpoint finalCheckpoint = null;
         try {
-            String joinClause = "INNER JOIN lock_types ON locktype_id = lock_types.id";
             String[] selectionArgs = {String.valueOf(levelId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs, null, joinClause);
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs, null);
             if (cursor.moveToFirst()) {
                 finalCheckpoint = ObjectMapper.mapCursorToFinalCheckpoint(cursor);
                 if (cursor.getColumnIndex("item_id") != -1 && !cursor.isNull(cursor.getColumnIndex("item_id"))) {

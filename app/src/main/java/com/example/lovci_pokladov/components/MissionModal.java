@@ -9,6 +9,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,7 +22,7 @@ import java.util.List;
 
 public class MissionModal extends BaseModal {
     private int missionId = -1;
-
+    private boolean navigationEnabled = false;
 
     public MissionModal(Context context) {
         super(context, R.layout.layout_mission_modal);
@@ -48,7 +49,17 @@ public class MissionModal extends BaseModal {
                     missionDescription.setVisibility(GONE);
                     statsLayout.setVisibility(VISIBLE);
                 } else if (v.getId() == R.id.navigationActionButton) {
+                    navigationEnabled = !navigationEnabled;
+                    LinearLayout navigationLayout = modalView.findViewById(R.id.navigationActionButton);
+                    ImageView navigationIcon = modalView.findViewById(R.id.navigateIcon);
 
+                    if (navigationEnabled) {
+                        navigationLayout.setBackgroundTintList(getResources().getColorStateList(R.color.secondary_light));
+                        navigationIcon.setImageTintList(getResources().getColorStateList(R.color.primary));
+                    } else {
+                        navigationLayout.setBackgroundTintList(getResources().getColorStateList(R.color.light_gray));
+                        navigationIcon.setImageTintList(getResources().getColorStateList(R.color.secondary));
+                    }
                 }
             }
         };
@@ -63,6 +74,7 @@ public class MissionModal extends BaseModal {
         if (missionId != -1) {
             Intent intent = new Intent(context, GameActivity.class);
             intent.putExtra("markerId", missionId);
+            intent.putExtra("navigateToStart", navigationEnabled);
             context.startActivity(intent);
         }
     }

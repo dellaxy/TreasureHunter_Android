@@ -26,8 +26,7 @@ class ObjectMapper {
             COLUMN_AREA_SIZE = "area_size",
             COLUMN_TEXT = "text",
             COLUMN_ICON_NAME = "icon_name",
-            COLUMN_LOCK_TYPE = "lock_type",
-            COLUMN_LOCK_CODE = "lock_code",
+            COLUMN_KEYFRAGMENTS = "key_fragments",
             COLUMN_COINS = "coins";
 
     @Suppress(names = "Range")
@@ -75,11 +74,10 @@ class ObjectMapper {
         String checkpointText = cursor.getString(cursor.getColumnIndex(COLUMN_TEXT));
         float checkpointLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
         float checkpointLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
-        String checkpointLockType = cursor.getString(cursor.getColumnIndex(COLUMN_LOCK_TYPE));
-        String checkpointLockCode = cursor.getString(cursor.getColumnIndex(COLUMN_LOCK_CODE));
+        int checkpointKeyfragments = cursor.getInt(cursor.getColumnIndex(COLUMN_KEYFRAGMENTS));
         int checkpointCoins = cursor.getInt(cursor.getColumnIndex(COLUMN_COINS));
 
-        return new FinalCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointLockType, checkpointLockCode, checkpointCoins, null);
+        return new FinalCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointKeyfragments, checkpointCoins, null);
     }
 
     @Suppress(names = "Range")
