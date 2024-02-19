@@ -14,13 +14,13 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -38,6 +38,7 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.CheckpointTextCard;
 import com.example.lovci_pokladov.components.RegularModal;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
+import com.example.lovci_pokladov.entities.DangerZone;
 import com.example.lovci_pokladov.entities.FinalCheckpoint;
 import com.example.lovci_pokladov.entities.Level;
 import com.example.lovci_pokladov.entities.LevelCheckpoint;
@@ -68,6 +69,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng levelStartLocation;
     private int AREA_RADIUS, markerId, levelCount;
     private boolean isInsideArea = false, navigateToLocation;
+    private boolean isInDangerZone = false, isNearDangerZone = false;
+    private long dangerZoneEntryTime;
     private Level currentLevel;
     private List<LevelCheckpoint> undiscoveredCheckpoints;
     private Observable<LevelState> currentLevelState;
@@ -75,6 +78,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FinalCheckpoint finalCheckpoint;
     private int keyFragmentsFound = 0;
     private PreferencesManager profilePreferences;
+    private DangerZone dangerZone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,9 +132,18 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             undiscoveredCheckpoints = currentLevel.getCheckpoints();
                             undiscoveredCheckpoints.add(currentLevel.getFinalCheckpoint());
 
-                            mapFragment.getView().setVisibility(View.GONE);
-                            activeLevelLayout.setVisibility(View.VISIBLE);
-                            mMap.clear();
+                            //mapFragment.getView().setVisibility(View.GONE);
+                            //activeLevelLayout.setVisibility(View.VISIBLE);
+                            //mMap.clear();
+
+                            dangerZone = new DangerZone(new LatLng(47.992775, 18.253922), AREA_RADIUS, "Bandit camp");
+                            mMap.addCircle(new CircleOptions()
+                                    .center(dangerZone.getPosition())
+                                    .radius(AREA_RADIUS)
+                                    .strokeWidth(5)
+                                    //red color
+                                    .strokeColor(Color.RED)
+                                    .fillColor(Color.RED));
 
                             startGame();
                         } catch (Exception e) {
@@ -204,10 +217,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void navigateToLocation(LatLng destination, LatLng currentLocation) {
-        Log.d("GameActivity", "" + destination);
-        Log.d("GameActivity", "" + currentLocation);
         Uri googleMapsUri = Uri.parse("http://maps.google.com/maps?saddr=" + currentLocation.latitude + "," + currentLocation.longitude + "&daddr=" + destination.latitude + "," + destination.longitude);
-        Log.d("GameActivity", "" + googleMapsUri);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, googleMapsUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         if (mapIntent.resolveActivity(getPackageManager()) != null) {
@@ -286,6 +296,11 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (isNotNull(undiscoveredCheckpoints)) {
                     Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
 
+                    handleDangerZoneProximity(playerLocation);
+                    if (isInDangerZone) {
+                        break;
+                    }
+
                     while (iterator.hasNext()) {
                         LevelCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
@@ -315,6 +330,36 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    private boolean isPlayerInsideArea(LatLng playerLocation, LatLng checkedLocation, int locationRadius) {
+        float[] distance = new float[1];
+        Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, checkedLocation.latitude, checkedLocation.longitude, distance);
+        return distance[0] < locationRadius;
+    }
+
+    private void handleDangerZoneProximity(LatLng playerLocation) {
+        if (dangerZone.isCloseToDangerzone(playerLocation)) {
+            if (!isNearDangerZone) {
+                isNearDangerZone = true;
+                System.out.println("Warning: You are near a danger zone!");
+            }
+
+            if (dangerZone.isInsideDangerzone(playerLocation)) {
+                if (!isInDangerZone) {
+                    isInDangerZone = true;
+                    dangerZoneEntryTime = System.currentTimeMillis();
+                } else {
+                    if (System.currentTimeMillis() - dangerZoneEntryTime >= 10000) {
+                        finish();
+                    }
+                }
+            } else {
+                isInDangerZone = false;
+            }
+        } else {
+            isNearDangerZone = false;
+        }
+    }
+
     private void addCheckpointToUi(String checkpointText) {
         LinearLayout checkpointLayout = findViewById(R.id.checkpointList);
 
@@ -322,13 +367,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             CheckpointTextCard checkpointCard = new CheckpointTextCard(this, checkpointText);
             checkpointLayout.addView(checkpointCard);
         }
-    }
-
-
-    private boolean isPlayerInsideArea(LatLng playerLocation, LatLng checkedLocation, int locationRadius) {
-        float[] distance = new float[1];
-        Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, checkedLocation.latitude, checkedLocation.longitude, distance);
-        return distance[0] < locationRadius;
     }
 
     private void keyFragmentFound() {
