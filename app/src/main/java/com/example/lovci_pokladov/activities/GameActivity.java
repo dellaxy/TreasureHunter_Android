@@ -14,7 +14,6 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -132,18 +131,17 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             undiscoveredCheckpoints = currentLevel.getCheckpoints();
                             undiscoveredCheckpoints.add(currentLevel.getFinalCheckpoint());
 
-                            //mapFragment.getView().setVisibility(View.GONE);
-                            //activeLevelLayout.setVisibility(View.VISIBLE);
-                            //mMap.clear();
+                            mapFragment.getView().setVisibility(View.GONE);
+                            activeLevelLayout.setVisibility(View.VISIBLE);
+                            mMap.clear();
 
-                            dangerZone = new DangerZone(new LatLng(47.992775, 18.253922), AREA_RADIUS, "Bandit camp");
+                            /*dangerZone = new DangerZone(new LatLng(47.992775, 18.253922), AREA_RADIUS, "Bandit camp");
                             mMap.addCircle(new CircleOptions()
                                     .center(dangerZone.getPosition())
                                     .radius(AREA_RADIUS)
                                     .strokeWidth(5)
-                                    //red color
                                     .strokeColor(Color.RED)
-                                    .fillColor(Color.RED));
+                                    .fillColor(Color.RED));*/
 
                             startGame();
                         } catch (Exception e) {
@@ -296,7 +294,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (isNotNull(undiscoveredCheckpoints)) {
                     Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
 
-                    handleDangerZoneProximity(playerLocation);
+                    //handleDangerZoneProximity(playerLocation);
                     if (isInDangerZone) {
                         break;
                     }
@@ -370,19 +368,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void keyFragmentFound() {
-        switch (keyFragmentsFound) {
-            case 1: {
-                textToSpeechService.synthesizeText("You found a key fragment. Keep searching for the rest.");
-                break;
-            }
-            case 2: {
-                textToSpeechService.synthesizeText("You found another key fragment. Keep searching for the last one.");
-                break;
-            }
-            case 3: {
-                textToSpeechService.synthesizeText("You found the last key fragment. Now you can open the treasure chest.");
-                break;
-            }
+        if (keyFragmentsFound == finalCheckpoint.getKeyFragmentsAmount()) {
+            textToSpeechService.synthesizeText("You found the last key fragment. You can now open the treasure chest.");
+        } else {
+            textToSpeechService.synthesizeText("You found a key fragment. You need to find " + (finalCheckpoint.getKeyFragmentsAmount() - keyFragmentsFound) + " more to open the treasure chest.");
         }
         textToSpeechService.postTaskToMainThread(() -> {
             TextView keyFragmentTextview = findViewById(R.id.keyfragment_count);

@@ -48,7 +48,13 @@ public class TextToSpeechService {
     }
 
     public void synthesizeText(String text) {
-        executorService.execute(() -> googleCloudTTS.start(text));
+        executorService.execute(() -> {
+            try {
+                googleCloudTTS.start(text);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void postTaskToMainThread(Runnable runnable) {
