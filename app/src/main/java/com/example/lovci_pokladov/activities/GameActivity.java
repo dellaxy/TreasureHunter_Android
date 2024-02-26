@@ -43,6 +43,7 @@ import com.example.lovci_pokladov.entities.Level;
 import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.entities.TimeCounter;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
+import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.PreferencesManager;
 import com.example.lovci_pokladov.services.TextToSpeechService;
@@ -68,7 +69,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng levelStartLocation;
     private int AREA_RADIUS, markerId, levelCount;
     private boolean isInsideArea = false, navigateToLocation;
-    private boolean isInDangerZone = false, isNearDangerZone = false;
+    private boolean isInDangerZone = false, isNearDangerZone = false, hasDangerZones = false;
     private long dangerZoneEntryTime;
     private Level currentLevel;
     private List<LevelCheckpoint> undiscoveredCheckpoints;
@@ -131,12 +132,14 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             undiscoveredCheckpoints = currentLevel.getCheckpoints();
                             undiscoveredCheckpoints.add(currentLevel.getFinalCheckpoint());
 
+                            dangerZone = new DangerZone(new LatLng(47.992775, 18.253922), AREA_RADIUS, "Bandit camp");
+                            hasDangerZones = Utils.isNotNull(dangerZone);
+
                             mapFragment.getView().setVisibility(View.GONE);
                             activeLevelLayout.setVisibility(View.VISIBLE);
                             mMap.clear();
 
-                            /*dangerZone = new DangerZone(new LatLng(47.992775, 18.253922), AREA_RADIUS, "Bandit camp");
-                            mMap.addCircle(new CircleOptions()
+                            /*mMap.addCircle(new CircleOptions()
                                     .center(dangerZone.getPosition())
                                     .radius(AREA_RADIUS)
                                     .strokeWidth(5)
@@ -204,7 +207,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             e.printStackTrace();
         }
         if (isNull(currentLevel)) {
-            //TODO: create an error handler class that when something from the DB is not found it will check if the DB update is needed
             Toast.makeText(this, "No level found", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -291,14 +293,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case LEVEL_STARTED: {
                 //TODO: Change to QaudTree or Grid
-                if (isNotNull(undiscoveredCheckpoints)) {
-                    Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
-
-                    //handleDangerZoneProximity(playerLocation);
+                if (hasDangerZones) {
+                    handleDangerZoneProximity(playerLocation);
                     if (isInDangerZone) {
                         break;
                     }
+                }
 
+                if (isNotNull(undiscoveredCheckpoints)) {
+                    Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
                     while (iterator.hasNext()) {
                         LevelCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
@@ -338,7 +341,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (dangerZone.isCloseToDangerzone(playerLocation)) {
             if (!isNearDangerZone) {
                 isNearDangerZone = true;
-                System.out.println("Warning: You are near a danger zone!");
+                textToSpeechService.synthesizeText("You are near a " + dangerZone.getMessage() + ". Be careful.");
             }
 
             if (dangerZone.isInsideDangerzone(playerLocation)) {
