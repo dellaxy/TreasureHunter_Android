@@ -27,7 +27,7 @@ public class DangerZone {
     public boolean isCloseToDangerzone(LatLng position) {
         float[] distance = new float[1];
         Location.distanceBetween(this.position.latitude, this.position.longitude, position.latitude, position.longitude, distance);
-        return distance[0] <= radius * 2;
+        return distance[0] <= radius + 6;
     }
 
     public boolean isInsideDangerzone(LatLng position) {
