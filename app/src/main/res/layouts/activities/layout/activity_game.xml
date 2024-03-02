@@ -17,7 +17,7 @@
         tools:context=".activities.GameActivity" />
 
     <RelativeLayout
-        android:id="@+id/activeLevelLayout"
+        android:id="@+id/activeGameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="0dp"
@@ -81,7 +81,7 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/completedLevelLayout"
+        android:id="@+id/completedGameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"

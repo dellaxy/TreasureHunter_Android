@@ -84,7 +84,6 @@ public class MissionModal extends BaseModal {
             Geocoder geocoder = new Geocoder(context);
 
             LocationMarker marker = databaseHelper.getMarkerById(missionId);
-            int missionDifficulty = databaseHelper.getMarkerDifficulty(missionId);
             List<Address> addressList = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude, 1);
             String location = "", region = "", country = "";
 

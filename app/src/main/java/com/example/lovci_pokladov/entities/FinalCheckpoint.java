@@ -2,8 +2,7 @@ package com.example.lovci_pokladov.entities;
 
 import com.google.android.gms.maps.model.LatLng;
 
-public class FinalCheckpoint extends LevelCheckpoint {
-
+public class FinalCheckpoint extends GameCheckpoint {
     private int lockType;
     private int coins;
 

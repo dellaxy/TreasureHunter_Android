@@ -4,17 +4,15 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-public class Level {
-    private final int id, difficulty, sequenceNumber;
+public class Game {
+    private final int id;
     private final LatLng position;
     private final String description;
-    private List<LevelCheckpoint> checkpoints;
+    private List<GameCheckpoint> checkpoints;
     private FinalCheckpoint finalCheckpoint;
 
-    public Level(int id, int difficulty, int sequenceNumber, LatLng position, String description) {
+    public Game(int id, LatLng position, String description) {
         this.id = id;
-        this.difficulty = difficulty;
-        this.sequenceNumber = sequenceNumber;
         this.position = position;
         this.description = description;
     }
@@ -22,15 +20,6 @@ public class Level {
     public int getId() {
         return id;
     }
-
-    public int getDifficulty() {
-        return difficulty;
-    }
-
-    public int getSequenceNumber() {
-        return sequenceNumber;
-    }
-
     public LatLng getPosition() {
         return position;
     }
@@ -39,7 +28,7 @@ public class Level {
         return description;
     }
 
-    public List<LevelCheckpoint> getCheckpoints() {
+    public List<GameCheckpoint> getCheckpoints() {
         return checkpoints;
     }
 
@@ -47,7 +36,7 @@ public class Level {
         return finalCheckpoint;
     }
 
-    public void setCheckpoints(List<LevelCheckpoint> checkpoints) {
+    public void setCheckpoints(List<GameCheckpoint> checkpoints) {
         this.checkpoints = checkpoints;
     }
 

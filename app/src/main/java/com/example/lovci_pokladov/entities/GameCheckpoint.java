@@ -2,13 +2,13 @@ package com.example.lovci_pokladov.entities;
 
 import com.google.android.gms.maps.model.LatLng;
 
-public class LevelCheckpoint {
+public class GameCheckpoint {
     private int id, areaSize;
     private final String text;
     private final LatLng position;
     private Item item;
 
-    public LevelCheckpoint(int id, String text, LatLng position, int areaSize, Item item) {
+    public GameCheckpoint(int id, String text, LatLng position, int areaSize, Item item) {
         this.id = id;
         this.text = text;
         this.position = position;
