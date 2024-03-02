@@ -2,7 +2,7 @@ package com.example.lovci_pokladov.objects;
 
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_COLLECTIONS;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.DATABASE_NAME;
-import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToLevel;
+import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToGame;
 import static com.example.lovci_pokladov.objects.ObjectMapper.mapCursorToMarker;
 
 import android.content.ContentValues;
@@ -13,9 +13,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 
 import com.example.lovci_pokladov.entities.FinalCheckpoint;
+import com.example.lovci_pokladov.entities.Game;
+import com.example.lovci_pokladov.entities.GameCheckpoint;
 import com.example.lovci_pokladov.entities.Item;
-import com.example.lovci_pokladov.entities.Level;
-import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.entities.LocationMarker;
 
 import java.io.File;
@@ -121,24 +121,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return marker;
     }
 
-    public int getMarkerDifficulty(int markerId){
-        SQLiteDatabase database = getReadableDatabase();
-        int difficulty = 0;
-        try{
-            String query = "SELECT AVG(difficulty) FROM " + DATABASE_COLLECTIONS.LEVELS.getCollectionName() + " WHERE marker_id = ?";
-            String[] selectionArgs = {String.valueOf(markerId)};
-            Cursor cursor = database.rawQuery(query, selectionArgs);
-            if(cursor.moveToFirst()){
-                difficulty = cursor.getInt(0);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            database.close();
-        }
-        return difficulty;
-    }
-
     public List<LocationMarker> getAllMarkers() {
         SQLiteDatabase database = getReadableDatabase();
         List<LocationMarker> markers = new ArrayList<>();
@@ -159,48 +141,31 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return markers;
     }
 
-    public Level getLevelBySequence(int markerId, int sequenceNumber){
+    public Game getGame(int markerId) {
         SQLiteDatabase database = getReadableDatabase();
-        Level level = null;
-        try {
-            String[] selectionArgs = {String.valueOf(markerId), String.valueOf(sequenceNumber)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ? AND sequence = ?", selectionArgs);
-            if (cursor.moveToFirst()) {
-                level = mapCursorToLevel(cursor);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            database.close();
-        }
-        return level;
-    }
-
-    public int getLevelCountForMarker(int markerId) {
-        SQLiteDatabase database = getReadableDatabase();
-        int levelCount = 0;
+        Game game = null;
         try {
             String[] selectionArgs = {String.valueOf(markerId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVELS.getCollectionName(), null, "marker_id = ?", selectionArgs, "sequence ASC");
-            while (cursor.moveToNext()) {
-                levelCount++;
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.GAMES.getCollectionName(), null, "marker_id = ?", selectionArgs);
+            if (cursor.moveToFirst()) {
+                game = mapCursorToGame(cursor);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             database.close();
         }
-        return levelCount;
+        return game;
     }
 
-    public List<LevelCheckpoint> getCheckpointsForLevel(int levelId){
+    public List<GameCheckpoint> getGameCheckpoints(int gameId) {
         SQLiteDatabase database = getReadableDatabase();
-        List<LevelCheckpoint> checkpoints = new ArrayList<>();
+        List<GameCheckpoint> checkpoints = new ArrayList<>();
         try {
-            String[] selectionArgs = {String.valueOf(levelId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.LEVEL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs);
-            while(cursor.moveToNext()) {
-                LevelCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
+            String[] selectionArgs = {String.valueOf(gameId)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.GAME_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs);
+            while (cursor.moveToNext()) {
+                GameCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
                 if (!cursor.isNull(cursor.getColumnIndex("item_id")) && cursor.getColumnIndex("item_id") != -1) {
                     Item item = getItem(cursor.getInt(cursor.getColumnIndex("item_id")));
                     checkpoint.setItem(item);
@@ -216,11 +181,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
 
-    public FinalCheckpoint getFinalCheckpointForLevel(int levelId) {
+    public FinalCheckpoint getFinalGameCheckpoint(int gameId) {
         SQLiteDatabase database = getReadableDatabase();
         FinalCheckpoint finalCheckpoint = null;
         try {
-            String[] selectionArgs = {String.valueOf(levelId)};
+            String[] selectionArgs = {String.valueOf(gameId)};
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs, null);
             if (cursor.moveToFirst()) {
                 finalCheckpoint = ObjectMapper.mapCursorToFinalCheckpoint(cursor);
@@ -254,41 +219,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return item;
     }
 
-    public int getMarkerProgress(int markerId) {
-        SQLiteDatabase database = getReadableDatabase();
-        int progress = 1;
-        try {
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), new String[]{"level_stage"}, "marker_id = ?", new String[]{String.valueOf(markerId)}, "level_stage DESC");
-            if (cursor.moveToFirst()) {
-                progress = cursor.getInt(cursor.getColumnIndex("level_stage")) + 1;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            database.close();
-        }
-        return progress;
-    }
-
-    public void updateMarkerProgress(int markerId, int levelId) {
-        SQLiteDatabase database = getWritableDatabase();
-        try {
-            ContentValues values = new ContentValues();
-            values.put("marker_id", markerId);
-            values.put("level_stage", levelId);
-            database.insert(DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), null, values);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            database.close();
-        }
-    }
-
     public void updateFinished(int markerId) {
         SQLiteDatabase database = getWritableDatabase();
         try {
             database.beginTransaction();
-            database.delete(DATABASE_COLLECTIONS.PROGRESS.getCollectionName(), "marker_id = ?", new String[]{String.valueOf(markerId)});
             ContentValues values = new ContentValues();
             values.put("marker_id", markerId);
             database.insert(DATABASE_COLLECTIONS.FINISHED.getCollectionName(), null, values);

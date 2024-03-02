@@ -1,8 +1,8 @@
 package com.example.lovci_pokladov.activities;
 
-import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_COMPLETED;
-import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_NOT_STARTED;
-import static com.example.lovci_pokladov.activities.GameActivity.LevelState.LEVEL_STARTED;
+import static com.example.lovci_pokladov.activities.GameActivity.GameState.GAME_COMPLETED;
+import static com.example.lovci_pokladov.activities.GameActivity.GameState.GAME_NOT_STARTED;
+import static com.example.lovci_pokladov.activities.GameActivity.GameState.GAME_STARTED;
 import static com.example.lovci_pokladov.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 import static com.example.lovci_pokladov.objects.Utils.isNotNull;
 import static com.example.lovci_pokladov.objects.Utils.isNull;
@@ -37,13 +37,11 @@ import com.example.lovci_pokladov.R;
 import com.example.lovci_pokladov.components.CheckpointTextCard;
 import com.example.lovci_pokladov.components.RegularModal;
 import com.example.lovci_pokladov.entities.ConstantsCatalog.ColorPalette;
-import com.example.lovci_pokladov.entities.DangerZone;
 import com.example.lovci_pokladov.entities.FinalCheckpoint;
-import com.example.lovci_pokladov.entities.Level;
-import com.example.lovci_pokladov.entities.LevelCheckpoint;
+import com.example.lovci_pokladov.entities.Game;
+import com.example.lovci_pokladov.entities.GameCheckpoint;
 import com.example.lovci_pokladov.entities.TimeCounter;
 import com.example.lovci_pokladov.objects.DatabaseHelper;
-import com.example.lovci_pokladov.objects.Utils;
 import com.example.lovci_pokladov.services.Observable;
 import com.example.lovci_pokladov.services.PreferencesManager;
 import com.example.lovci_pokladov.services.TextToSpeechService;
@@ -66,19 +64,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient fusedLocationClient;
     private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
-    private LatLng levelStartLocation;
-    private int AREA_RADIUS, markerId, levelCount;
+    private LatLng startLocation;
+    private int AREA_RADIUS, markerId;
     private boolean isInsideArea = false, navigateToLocation;
-    private boolean isInDangerZone = false, isNearDangerZone = false, hasDangerZones = false;
-    private long dangerZoneEntryTime;
-    private Level currentLevel;
-    private List<LevelCheckpoint> undiscoveredCheckpoints;
-    private Observable<LevelState> currentLevelState;
+    private Game currentGame;
+    private List<GameCheckpoint> undiscoveredCheckpoints;
+    private Observable<GameState> currentGameState;
     private TimeCounter timeCounter;
     private FinalCheckpoint finalCheckpoint;
     private int keyFragmentsFound = 0;
     private PreferencesManager profilePreferences;
-    private DangerZone dangerZone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,128 +87,99 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void onInit() {
-        String[]
-                levelSeqStrings = {"first", "second", "third", "fourth"},
-                introTexts = {
-                        "You've reached the starting point of the %s level. Time to embark on your journey.",
-                        "Welcome to the %s level, the next leg of your treasure hunt!",
-                        "Prepare to explore the wonders of the %s level. Let the adventure begin.",
-                        "You're now at the beginning of the %s level. Your quest awaits!",
-                        "The journey continues at the %s level. Get ready for more adventures.",
-                        "Here you stand at the start of the %s level. Excitement is in the air.",
-                        "The next chapter in your story unfolds in the %s level. Let's explore!",
-                };
-
-        currentLevelState = new Observable<>();
+        currentGameState = new Observable<>();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService(this);
         profilePreferences = PreferencesManager.getInstance(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
-        RelativeLayout activeLevelLayout = findViewById(R.id.activeLevelLayout);
-        RelativeLayout completedLevelLayout = findViewById(R.id.completedLevelLayout);
+        RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
+        RelativeLayout completedGameLayout = findViewById(R.id.completedGameLayout);
 
-        currentLevelState.onChangeListener(levelState -> {
-            switch ((LevelState) levelState) {
-                case LEVEL_NOT_STARTED: {
-                    mMap.addCircle(new CircleOptions()
-                            .center(levelStartLocation)
-                            .radius(AREA_RADIUS)
-                            .strokeWidth(5)
-                            .strokeColor(ColorPalette.SECONDARY.getColor())
-                            .fillColor(ColorPalette.SECONDARY.getColor(200)));
-                        break;
-                    }
-                    case LEVEL_STARTED: {
-                        try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
-                            currentLevel.setCheckpoints(databaseHelper.getCheckpointsForLevel(currentLevel.getId()));
-                            currentLevel.setFinalCheckpoint(databaseHelper.getFinalCheckpointForLevel(currentLevel.getId()));
-
-                            finalCheckpoint = currentLevel.getFinalCheckpoint();
-                            undiscoveredCheckpoints = currentLevel.getCheckpoints();
-                            undiscoveredCheckpoints.add(currentLevel.getFinalCheckpoint());
-
-                            dangerZone = new DangerZone(new LatLng(47.992775, 18.253922), AREA_RADIUS, "Bandit camp");
-                            hasDangerZones = Utils.isNotNull(dangerZone);
-
-                            mapFragment.getView().setVisibility(View.GONE);
-                            activeLevelLayout.setVisibility(View.VISIBLE);
-                            mMap.clear();
-
-                            /*mMap.addCircle(new CircleOptions()
-                                    .center(dangerZone.getPosition())
+        currentGameState.onChangeListener(gameState -> {
+                    switch ((GameState) gameState) {
+                        case GAME_NOT_STARTED: {
+                            mMap.addCircle(new CircleOptions()
+                                    .center(startLocation)
                                     .radius(AREA_RADIUS)
                                     .strokeWidth(5)
-                                    .strokeColor(Color.RED)
-                                    .fillColor(Color.RED));*/
+                                    .strokeColor(ColorPalette.SECONDARY.getColor())
+                                    .fillColor(ColorPalette.SECONDARY.getColor(200)));
+                            break;
+                        }
+                        case GAME_STARTED: {
+                            try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
+                                currentGame.setCheckpoints(databaseHelper.getGameCheckpoints(currentGame.getId()));
+                                currentGame.setFinalCheckpoint(databaseHelper.getFinalGameCheckpoint(currentGame.getId()));
 
-                            startGame();
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                                finalCheckpoint = currentGame.getFinalCheckpoint();
+                                undiscoveredCheckpoints = currentGame.getCheckpoints();
+                                undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
+
+                                mapFragment.getView().setVisibility(View.GONE);
+                                activeGameLayout.setVisibility(View.VISIBLE);
+                                mMap.clear();
+
+
+                                startGame();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case LEVEL_COMPLETED: {
-                        try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
-                            if (currentLevel.getSequenceNumber() == levelCount) {
+                        case GAME_COMPLETED: {
+                            try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
                                 databaseHelper.updateFinished(markerId);
-                            } else {
-                                databaseHelper.updateMarkerProgress(markerId, currentLevel.getSequenceNumber());
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                            timeCounter.stopTimer();
+                            activeGameLayout.setVisibility(View.GONE);
+                            completedGameLayout.setVisibility(View.VISIBLE);
+                            Button backToMapButton = completedGameLayout.findViewById(R.id.backToMapButton);
+                            backToMapButton.setOnClickListener(v -> finish());
+                            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                            locationManager.removeUpdates(this);
+                            clearGameLayout();
+                            AtomicBoolean treasureOpened = new AtomicBoolean(false);
+                            LottieAnimationView treasureChest = findViewById(R.id.treasureChest);
+                            treasureChest.setOnClickListener(v -> {
+                                if (!treasureOpened.get()) {
+                                    openTreasure(treasureChest);
+                                    treasureOpened.set(true);
+                                    backToMapButton.setVisibility(View.VISIBLE);
+                                }
+                            });
+                            break;
                         }
-                        timeCounter.stopTimer();
-                        activeLevelLayout.setVisibility(View.GONE);
-                        completedLevelLayout.setVisibility(View.VISIBLE);
-                        Button backToMapButton = completedLevelLayout.findViewById(R.id.backToMapButton);
-                        backToMapButton.setOnClickListener(v -> finish());
-                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                        locationManager.removeUpdates(this);
-                        clearGameLayout();
-                        AtomicBoolean treasureOpened = new AtomicBoolean(false);
-                        LottieAnimationView treasureChest = findViewById(R.id.treasureChest);
-                        treasureChest.setOnClickListener(v -> {
-                            if (!treasureOpened.get()) {
-                                openTreasure(treasureChest);
-                                treasureOpened.set(true);
-                                backToMapButton.setVisibility(View.VISIBLE);
-                            }
-                        });
-                        break;
                     }
                 }
-            }
         );
-        currentLevelState.setValue(LEVEL_NOT_STARTED);
+        currentGameState.setValue(GAME_NOT_STARTED);
 
         gameStartModal = new RegularModal(this) {
             @Override
             public void acceptButtonClicked() {
-                currentLevelState.setValue(LEVEL_STARTED);
+                currentGameState.setValue(GAME_STARTED);
             }
         };
-
-        gameStartModal.setModalText(String.format(introTexts[(int) (Math.random() * introTexts.length)], levelSeqStrings[currentLevel.getSequenceNumber() - 1]));
+        gameStartModal.setModalText("By tapping the button below, you will start your new tour. Good luck!");
     }
 
     private void initMarkerData() {
         markerId = getIntent().getIntExtra("markerId", 0);
         navigateToLocation = getIntent().getBooleanExtra("navigateToStart", false);
         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
-            levelCount = databaseHelper.getLevelCountForMarker(markerId);
-            int upcomingLevelStage = databaseHelper.getMarkerProgress(markerId);
-            currentLevel = databaseHelper.getLevelBySequence(markerId, upcomingLevelStage);
+            currentGame = databaseHelper.getGame(markerId);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (isNull(currentLevel)) {
-            Toast.makeText(this, "No level found", Toast.LENGTH_SHORT).show();
+        if (isNull(currentGame)) {
+            Toast.makeText(this, "No game found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        levelStartLocation = currentLevel.getPosition();
+        startLocation = currentGame.getPosition();
         AREA_RADIUS = 6;
-
     }
 
     private void navigateToLocation(LatLng destination, LatLng currentLocation) {
@@ -226,7 +192,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void startGame() {
-        textToSpeechService.synthesizeText(currentLevel.getDescription());
+        textToSpeechService.synthesizeText(currentGame.getDescription());
         TextView timeCounterView = findViewById(R.id.timeCounter);
         TextView keyFragmentTextview = findViewById(R.id.keyfragment_count);
         if (finalCheckpoint.getKeyFragmentsAmount() > 0) {
@@ -245,7 +211,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void openTreasure(LottieAnimationView treasureChest) {
         ImageView item = findViewById(R.id.itemIcon);
-        item.setImageDrawable(finalCheckpoint.getItem().getImage());
+        item.setImageDrawable(finalCheckpoint.getReward().getImage());
         item.setVisibility(View.INVISIBLE);
         profilePreferences.setPlayerCoins(profilePreferences.getPlayerCoins() + finalCheckpoint.getCoins());
 
@@ -280,30 +246,23 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onLocationChanged(Location location) {
         LatLng playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        switch (currentLevelState.getValue()) {
-            case LEVEL_NOT_STARTED: {
-                if (isPlayerInsideArea(playerLocation, levelStartLocation, AREA_RADIUS) && !isInsideArea) {
+        switch (currentGameState.getValue()) {
+            case GAME_NOT_STARTED: {
+                if (isPlayerInsideArea(playerLocation, startLocation, AREA_RADIUS) && !isInsideArea) {
                     isInsideArea = true;
                     gameStartModal.openPopup();
-                } else if (!isPlayerInsideArea(playerLocation, levelStartLocation, AREA_RADIUS) && isInsideArea) {
+                } else if (!isPlayerInsideArea(playerLocation, startLocation, AREA_RADIUS) && isInsideArea) {
                     isInsideArea = false;
                     gameStartModal.closePopup();
                 }
                 break;
             }
-            case LEVEL_STARTED: {
+            case GAME_STARTED: {
                 //TODO: Change to QaudTree or Grid
-                if (hasDangerZones) {
-                    handleDangerZoneProximity(playerLocation);
-                    if (isInDangerZone) {
-                        break;
-                    }
-                }
-
                 if (isNotNull(undiscoveredCheckpoints)) {
-                    Iterator<LevelCheckpoint> iterator = undiscoveredCheckpoints.iterator();
+                    Iterator<GameCheckpoint> iterator = undiscoveredCheckpoints.iterator();
                     while (iterator.hasNext()) {
-                        LevelCheckpoint checkpoint = iterator.next();
+                        GameCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                             if (isNotNull(checkpoint.getItem())) {
                                 if (checkpoint.getItem().isKeyFragment()) {
@@ -337,30 +296,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         return distance[0] < locationRadius;
     }
 
-    private void handleDangerZoneProximity(LatLng playerLocation) {
-        if (dangerZone.isCloseToDangerzone(playerLocation)) {
-            if (!isNearDangerZone) {
-                isNearDangerZone = true;
-                textToSpeechService.synthesizeText("You are near a " + dangerZone.getMessage() + ". Be careful.");
-            }
-
-            if (dangerZone.isInsideDangerzone(playerLocation)) {
-                if (!isInDangerZone) {
-                    isInDangerZone = true;
-                    dangerZoneEntryTime = System.currentTimeMillis();
-                } else {
-                    if (System.currentTimeMillis() - dangerZoneEntryTime >= 10000) {
-                        finish();
-                    }
-                }
-            } else {
-                isInDangerZone = false;
-            }
-        } else {
-            isNearDangerZone = false;
-        }
-    }
-
     private void addCheckpointToUi(String checkpointText) {
         LinearLayout checkpointLayout = findViewById(R.id.checkpointList);
 
@@ -385,7 +320,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void finalCheckpointFound() {
         if (finalCheckpoint.getKeyFragmentsAmount() == 0 || keyFragmentsFound == finalCheckpoint.getKeyFragmentsAmount()) {
             textToSpeechService.synthesizeText("You found the treasure chest. Tap on it to open it.");
-            currentLevelState.setValue(LEVEL_COMPLETED);
+            currentGameState.setValue(GAME_COMPLETED);
         } else {
             textToSpeechService.synthesizeText("You found the treasure chest, but it's locked. You need to find all the key fragments to open it.");
         }
@@ -413,8 +348,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (isNotNull(location)) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 20f));
-                    if (navigateToLocation && !isPlayerInsideArea(currentLocation, levelStartLocation, AREA_RADIUS)) {
-                        navigateToLocation(levelStartLocation, currentLocation);
+                    if (navigateToLocation && !isPlayerInsideArea(currentLocation, startLocation, AREA_RADIUS)) {
+                        navigateToLocation(startLocation, currentLocation);
                     }
                 }
             });
@@ -433,10 +368,11 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             textToSpeechService.cancel();
         }
     }
-    public enum LevelState {
-        LEVEL_NOT_STARTED,
-        LEVEL_STARTED,
-        LEVEL_COMPLETED
+
+    public enum GameState {
+        GAME_NOT_STARTED,
+        GAME_STARTED,
+        GAME_COMPLETED
     }
 }
 

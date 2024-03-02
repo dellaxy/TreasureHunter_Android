@@ -65,9 +65,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                int clickedMarker = (int) marker.getTag();
-                popupWindow.openPopup(clickedMarker);
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
+                if (mMap.getCameraPosition().zoom < 18.0f) {
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18.0f));
+                } else {
+                    int clickedMarker = (int) marker.getTag();
+                    popupWindow.openPopup(clickedMarker);
+                }
                 return true;
             }
         });
@@ -184,20 +187,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap.addCircle(circleOptions);
         Marker marker = mMap.addMarker(new MarkerOptions()
                 .position(markerLocation)
-                .icon(bitmapDescriptorFromVector(requireContext(), customMarker.getIcon(), markerColor)));
+                .icon(bitmapDescriptorFromVector(requireContext(), markerColor)));
         marker.setTag(customMarker.getId());
     }
 
-    private BitmapDescriptor bitmapDescriptorFromVector(Context context, String iconName, int color) {
-        int resourceId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
-        Drawable vectorDrawable;
-        if (resourceId != 0)
-            vectorDrawable = ContextCompat.getDrawable(context, resourceId);
-        else
-            vectorDrawable = ContextCompat.getDrawable(context, R.drawable.marker_default);
+    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int color) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, R.drawable.marker_pin);
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
 
-        vectorDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.MULTIPLY);
+        vectorDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
                 vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);

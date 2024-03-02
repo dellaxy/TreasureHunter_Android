@@ -48,20 +48,18 @@ public class ConstantsCatalog {
 
     public enum DATABASE_COLLECTIONS {
         MARKERS("markers"),
-        LEVELS("levels"),
-        LEVEL_CHECKPOINTS("level_checkpoints"),
+        GAMES("games"),
+        GAME_CHECKPOINTS("game_checkpoints"),
         FINAL_CHECKPOINTS("final_checkpoints"),
         ITEMS("items"),
-        FINISHED("finished"),
-        PROGRESS("progress");
-
+        FINISHED("finished");
         private final String collectionName;
 
         DATABASE_COLLECTIONS(String collectionName) {
             this.collectionName = collectionName;
         }
 
-        public String getCollectionName(){
+        public String getCollectionName() {
             return this.collectionName;
         }
 

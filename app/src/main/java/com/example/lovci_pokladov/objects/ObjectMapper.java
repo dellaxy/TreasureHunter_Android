@@ -3,9 +3,9 @@ package com.example.lovci_pokladov.objects;
 import android.database.Cursor;
 
 import com.example.lovci_pokladov.entities.FinalCheckpoint;
+import com.example.lovci_pokladov.entities.Game;
+import com.example.lovci_pokladov.entities.GameCheckpoint;
 import com.example.lovci_pokladov.entities.Item;
-import com.example.lovci_pokladov.entities.Level;
-import com.example.lovci_pokladov.entities.LevelCheckpoint;
 import com.example.lovci_pokladov.entities.LocationMarker;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -18,11 +18,8 @@ class ObjectMapper {
             COLUMN_LAT = "lat",
             COLUMN_LONG = "long",
             COLUMN_COLOR = "color",
-            COLUMN_ICON = "icon",
             COLUMN_NAME = "name",
             COLUMN_DESCRIPTION = "description",
-            COLUMN_DIFFICULTY = "difficulty",
-            COLUMN_SEQUENCE_NUMBER = "sequence",
             COLUMN_AREA_SIZE = "area_size",
             COLUMN_TEXT = "text",
             COLUMN_ICON_NAME = "icon_name",
@@ -35,27 +32,24 @@ class ObjectMapper {
         float locationLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
         float locationLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
         int locationColor = cursor.getInt(cursor.getColumnIndex(COLUMN_COLOR));
-        String locationIcon = cursor.getString(cursor.getColumnIndex(COLUMN_ICON));
         String locationTitle = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
         String locationDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));
 
-        return new LocationMarker(locationID, new LatLng(locationLat, locationLong), locationTitle, locationColor, locationIcon, locationDescription);
+        return new LocationMarker(locationID, new LatLng(locationLat, locationLong), locationTitle, locationColor, locationDescription);
     }
 
     @Suppress(names = "Range")
-    public static Level mapCursorToLevel(Cursor cursor) {
-        int levelId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
-        int levelDifficulty = cursor.getInt(cursor.getColumnIndex(COLUMN_DIFFICULTY));
-        int levelSequenceNumber = cursor.getInt(cursor.getColumnIndex(COLUMN_SEQUENCE_NUMBER));
-        String levelDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));
-        float levelLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
-        float levelLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
+    public static Game mapCursorToGame(Cursor cursor) {
+        int gameId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
+        String gameDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));
+        float gameLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
+        float gameLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
 
-        return new Level(levelId, levelDifficulty, levelSequenceNumber, new LatLng(levelLat, levelLong), levelDescription);
+        return new Game(gameId, new LatLng(gameLat, gameLong), gameDescription);
     }
 
     @Suppress(names = "Range")
-    public static LevelCheckpoint mapCursorToCheckpoint(Cursor cursor) {
+    public static GameCheckpoint mapCursorToCheckpoint(Cursor cursor) {
         int checkpointId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         int checkpointAreaSizeIndex = cursor.getColumnIndex(COLUMN_AREA_SIZE);
         int checkpointAreaSize = cursor.isNull(checkpointAreaSizeIndex) ? 3 : cursor.getInt(checkpointAreaSizeIndex);
@@ -63,7 +57,7 @@ class ObjectMapper {
         float checkpointLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
         float checkpointLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
 
-        return new LevelCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, null);
+        return new GameCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, null);
     }
 
     @Suppress(names = "Range")
