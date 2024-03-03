@@ -28,15 +28,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.city_tours.R;
+import com.example.city_tours.components.CheckpointTextCard;
 import com.example.city_tours.components.RegularModal;
 import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
-import com.example.city_tours.entities.TimeCounter;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
-import com.example.city_tours.services.PreferencesManager;
 import com.example.city_tours.services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -64,9 +63,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Game currentGame;
     private List<GameCheckpoint> undiscoveredCheckpoints;
     private Observable<GameState> currentGameState;
-    SupportMapFragment mapFragment;
-    private TimeCounter timeCounter;
-    private PreferencesManager profilePreferences;
+    private SupportMapFragment mapFragment;
     private FinalCheckpoint finalCheckpoint;
 
     @Override
@@ -84,7 +81,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentGameState = new Observable<>();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService(this);
-        profilePreferences = PreferencesManager.getInstance(this);
         RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
         RelativeLayout completedGameLayout = findViewById(R.id.completedGameLayout);
 
@@ -128,7 +124,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            timeCounter.stopTimer();
                             activeGameLayout.setVisibility(View.GONE);
                             completedGameLayout.setVisibility(View.VISIBLE);
                             Button backToMapButton = completedGameLayout.findViewById(R.id.backToMapButton);
@@ -180,8 +175,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void startGame() {
         textToSpeechService.synthesizeText(currentGame.getDescription());
-
-        timeCounter.startTimer();
+        textToSpeechService.postTaskToMainThread(() -> {
+            addCheckpointToUi(currentGame.getDescription());
+        });
     }
 
     private void clearGameLayout() {
@@ -233,9 +229,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         LinearLayout checkpointLayout = findViewById(R.id.checkpointInfo);
 
         if (checkpointLayout != null) {
-            //checkpointLayout.removeAllViews();
-            //CheckpointTextCard checkpointCard = new CheckpointTextCard(this, checkpointText);
-            //checkpointLayout.addView(checkpointCard);
+            checkpointLayout.removeAllViews();
+            CheckpointTextCard checkpointCard = new CheckpointTextCard(this, checkpointText);
+            checkpointLayout.addView(checkpointCard);
         }
     }
 

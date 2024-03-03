@@ -16,6 +16,7 @@ import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
 import com.example.city_tours.entities.LocationMarker;
+import com.example.city_tours.entities.Quest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -166,6 +167,16 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.GAME_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs);
             while (cursor.moveToNext()) {
                 GameCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
+                int questionIdIndex = cursor.getColumnIndex("question_id");
+                if (!cursor.isNull(questionIdIndex)) {
+                    int questionId = cursor.getInt(questionIdIndex);
+                    Cursor questCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questionId)});
+                    if (questCursor.moveToFirst()) {
+                        Quest quest = ObjectMapper.mapCursorToQuest(questCursor);
+                        checkpoint.setQuestion(quest);
+                    }
+                    questCursor.close();
+                }
                 checkpoints.add(checkpoint);
             }
         } catch (Exception e) {
@@ -183,8 +194,19 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         try {
             String[] selectionArgs = {String.valueOf(gameId)};
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs, null);
-            if (cursor.moveToFirst()) {
+            while (cursor.moveToNext()) {
                 finalCheckpoint = ObjectMapper.mapCursorToFinalCheckpoint(cursor);
+                int questionIdIndex = cursor.getColumnIndex("question_id");
+                if (!cursor.isNull(questionIdIndex)) {
+                    int questionId = cursor.getInt(questionIdIndex);
+                    Cursor questCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questionId)});
+                    if (questCursor.moveToFirst()) {
+                        Quest quest = ObjectMapper.mapCursorToQuest(questCursor);
+                        finalCheckpoint.setQuestion(quest);
+                    }
+                    questCursor.close();
+                }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
