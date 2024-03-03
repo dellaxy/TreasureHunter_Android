@@ -13,7 +13,7 @@
         map:mapId="@string/map_id"
         tools:context=".fragments.MapsFragment" />
 
-    <com.example.lovci_pokladov.components.AnimatedMenu
+    <com.example.city_tours.components.AnimatedMenu
         android:id="@+id/animatedMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
