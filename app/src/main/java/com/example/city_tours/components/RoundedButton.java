@@ -20,9 +20,10 @@ public class RoundedButton extends AppCompatButton {
     public RoundedButton(@NonNull Context context, AttributeSet attrs) {
         super(context, attrs);
         setBackgroundResource(R.drawable.rounded_button);
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, new int[]{android.R.attr.background, android.R.attr.textColor});
-        int backgroundColor = typedArray.getColor(0, getResources().getColor(R.color.primary, null));
-        int textColor = typedArray.getColor(1, getResources().getColor(R.color.white, null));
+
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.RoundedButton);
+        int backgroundColor = typedArray.getColor(R.styleable.RoundedButton_buttonColor, getResources().getColor(R.color.primary, null));
+        int textColor = typedArray.getColor(R.styleable.RoundedButton_buttonTextColor, getResources().getColor(R.color.white, null));
 
         getBackground().setColorFilter(backgroundColor, PorterDuff.Mode.SRC_ATOP);
         setTextColor(textColor);

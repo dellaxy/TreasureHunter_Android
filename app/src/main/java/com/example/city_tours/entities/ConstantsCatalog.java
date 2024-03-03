@@ -51,7 +51,8 @@ public class ConstantsCatalog {
         GAMES("games"),
         GAME_CHECKPOINTS("game_checkpoints"),
         FINAL_CHECKPOINTS("final_checkpoints"),
-        FINISHED("finished");
+        FINISHED("finished"),
+        QUESTS("quests");
         private final String collectionName;
 
         DATABASE_COLLECTIONS(String collectionName) {

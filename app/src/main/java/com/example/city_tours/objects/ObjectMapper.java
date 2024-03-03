@@ -6,6 +6,7 @@ import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
 import com.example.city_tours.entities.LocationMarker;
+import com.example.city_tours.entities.Quest;
 import com.google.android.gms.maps.model.LatLng;
 
 import kotlin.Suppress;
@@ -22,7 +23,10 @@ class ObjectMapper {
             COLUMN_AREA_SIZE = "area_size",
             COLUMN_TEXT = "text",
             COLUMN_COINS = "coins",
-            COLUMN_SEQUENCE = "sequence";
+            COLUMN_SEQUENCE = "sequence",
+            COLUMN_QUESTION = "question",
+            COLUMN_ANSWER = "answer",
+            COLUMN_HINT = "hint";
 
     @Suppress(names = "Range")
     public static LocationMarker mapCursorToMarker(Cursor cursor) {
@@ -69,6 +73,15 @@ class ObjectMapper {
         int checkpointCoins = cursor.getInt(cursor.getColumnIndex(COLUMN_COINS));
 
         return new FinalCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointCoins);
+    }
+
+    public static Quest mapCursorToQuest(Cursor questCursor) {
+        String question = questCursor.getString(questCursor.getColumnIndex(COLUMN_QUESTION));
+        String answer = questCursor.getString(questCursor.getColumnIndex(COLUMN_ANSWER));
+        String hint = questCursor.getString(questCursor.getColumnIndex(COLUMN_HINT));
+        String text = questCursor.getString(questCursor.getColumnIndex(COLUMN_TEXT));
+
+        return new Quest(question, answer, hint, text);
     }
 }
 
