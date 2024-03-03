@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         map:mapId="@string/map_id"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:context=".activities.GameActivity" />
 
     <RelativeLayout
@@ -25,58 +25,21 @@
         android:padding="12dp"
         tools:layout_editor_absoluteY="278dp">
 
-        <TextView
-            android:id="@+id/timeCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="80dp"
-            android:minWidth="140dp"
-            android:textColor="@color/black"
-            android:textSize="60dp"></TextView>
-
-        <RelativeLayout
-            android:id="@+id/image_text_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true">
-
-            <TextView
-                android:id="@+id/keyfragment_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="10dp"
-                android:text=""
-                android:textColor="@color/primary"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/key_fragment"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerVertical="true"
-                android:layout_toEndOf="@id/keyfragment_count"
-                android:src="@drawable/fragment" />
-
-        </RelativeLayout>
-
-        <ScrollView
-            android:id="@+id/checkpointScrollView"
+        <LinearLayout
+            android:id="@+id/checkpointInfo"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_below="@+id/timeCounter"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="30dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="20dp">
+            android:layout_height="300dp"
+            android:orientation="vertical"></LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/checkpointList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"></LinearLayout>
+        <LinearLayout
+            android:id="@+id/miniMap"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="@drawable/rounded_background"
+            android:layout_below="@id/checkpointInfo"
+            android:orientation="vertical">
 
-        </ScrollView>
+        </LinearLayout>
 
     </RelativeLayout>
 
@@ -106,7 +69,7 @@
             android:visibility="gone" />
 
 
-        <com.example.lovci_pokladov.components.RoundedButton
+        <com.example.city_tours.components.RoundedButton
             android:id="@+id/backToMapButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

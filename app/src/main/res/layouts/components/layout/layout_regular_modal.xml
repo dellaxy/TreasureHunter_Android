@@ -30,7 +30,7 @@
                 android:text="">
 
             </TextView>
-            <com.example.lovci_pokladov.components.RoundedButton
+            <com.example.city_tours.components.RoundedButton
                 android:id="@+id/regularModalAcceptButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

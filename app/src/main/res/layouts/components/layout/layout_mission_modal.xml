@@ -198,7 +198,7 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <com.example.lovci_pokladov.components.RoundedButton
+            <com.example.city_tours.components.RoundedButton
                 android:id="@+id/acceptGameButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

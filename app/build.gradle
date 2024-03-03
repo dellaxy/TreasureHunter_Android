@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.lovci_pokladov'
+    namespace 'com.example.city_tours'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.lovci_pokladov"
+        applicationId "com.example.city_tours"
         minSdk 26
         targetSdk 33
         versionCode 1
