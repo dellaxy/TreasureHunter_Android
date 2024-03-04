@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 public abstract class QuestModal extends BaseModal {
 
     private Quest quest;
+    private boolean isWrongAnswerShown = false;
 
     public QuestModal(Context context, Quest quest) {
         super(context, R.layout.layout_quest_modal);
@@ -36,9 +37,15 @@ public abstract class QuestModal extends BaseModal {
                 correctAnswerEntered();
                 closePopup();
             } else {
-                String previousText = hintText.getText().toString();
-                hintText.setText("Wrong answer! Try again.");
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> hintText.setText(previousText), 5000);
+                if (!isWrongAnswerShown) {
+                    isWrongAnswerShown = true;
+                    String previousText = hintText.getText().toString();
+                    hintText.setText("Wrong answer! Try again.");
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        hintText.setText(previousText);
+                        isWrongAnswerShown = false;
+                    }, 5000);
+                }
             }
         });
 

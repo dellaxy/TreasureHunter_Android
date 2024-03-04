@@ -52,6 +52,7 @@ public class GameCheckpoint {
         return question;
     }
 
-    public void setQuestion(Quest quest) {
+    public void setQuest(Quest quest) {
+        this.question = quest;
     }
 }

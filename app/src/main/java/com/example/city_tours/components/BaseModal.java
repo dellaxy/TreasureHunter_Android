@@ -24,6 +24,7 @@ public abstract class BaseModal extends LinearLayout {
         modalView = LayoutInflater.from(context).inflate(resource, null);
         popupWindow = new PopupWindow(modalView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.popupWindow.setAnimationStyle(android.R.style.Animation_Translucent);
+        this.popupWindow.setFocusable(true);
     }
 
     public void openPopup() {

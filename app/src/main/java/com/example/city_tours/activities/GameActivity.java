@@ -29,11 +29,13 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.city_tours.R;
 import com.example.city_tours.components.CheckpointTextCard;
+import com.example.city_tours.components.QuestModal;
 import com.example.city_tours.components.RegularModal;
 import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
+import com.example.city_tours.entities.Quest;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
 import com.example.city_tours.services.TextToSpeechService;
@@ -106,6 +108,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 finalCheckpoint = currentGame.getFinalCheckpoint();
                                 undiscoveredCheckpoints = currentGame.getCheckpoints();
                                 Collections.sort(undiscoveredCheckpoints, Comparator.comparingInt(GameCheckpoint::getSequence));
+                                Quest quest = new Quest("Vieš v ktorom roku sa narodil Anton Bernolák? Porozhliadni sa okolo kostola, tam nájdeš všetko čo potrebuješ vedieť.", "1796", "Choď ešte raz k najbližšiemu kostolu a na jeho ľavej stene stojí busta tohto významného slovenského jazykovedca.", "Správne!");
+                                undiscoveredCheckpoints.get(0).setQuest(quest);
                                 undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
 
                                 mapFragment.getView().setVisibility(View.GONE);
@@ -203,6 +207,18 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
                     GameCheckpoint checkpoint = undiscoveredCheckpoints.get(0);
                     if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
+                        if (checkpoint.hasQuest()) {
+                            QuestModal questModal = new QuestModal(this, checkpoint.getQuest()) {
+                                @Override
+                                public void correctAnswerEntered() {
+                                    textToSpeechService.synthesizeText(checkpoint.getQuest().getText());
+                                    textToSpeechService.postTaskToMainThread(() -> {
+                                        addCheckpointToUi(checkpoint.getQuest().getText());
+                                    });
+                                }
+                            };
+                            questModal.openPopup();
+                        }
                         if (checkpoint.getClass() == FinalCheckpoint.class) {
                             finalCheckpointFound();
                         } else {

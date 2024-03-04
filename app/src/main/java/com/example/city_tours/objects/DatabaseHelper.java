@@ -173,7 +173,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                     Cursor questCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questionId)});
                     if (questCursor.moveToFirst()) {
                         Quest quest = ObjectMapper.mapCursorToQuest(questCursor);
-                        checkpoint.setQuestion(quest);
+                        checkpoint.setQuest(quest);
                     }
                     questCursor.close();
                 }
@@ -202,7 +202,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                     Cursor questCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questionId)});
                     if (questCursor.moveToFirst()) {
                         Quest quest = ObjectMapper.mapCursorToQuest(questCursor);
-                        finalCheckpoint.setQuestion(quest);
+                        finalCheckpoint.setQuest(quest);
                     }
                     questCursor.close();
                 }
