@@ -29,7 +29,10 @@
             android:id="@+id/checkpointInfo"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:orientation="vertical"></LinearLayout>
+            android:elevation="0dp"
+            android:orientation="vertical">
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/miniMap"
