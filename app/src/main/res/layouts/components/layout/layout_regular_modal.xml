@@ -7,6 +7,7 @@
     android:elevation="10dp">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/regularModalCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -30,11 +31,23 @@
                 android:text="">
 
             </TextView>
+
             <com.example.city_tours.components.RoundedButton
                 android:id="@+id/regularModalAcceptButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Accept"
+                android:layout_below="@id/regularModalText"
+                android:layout_marginBottom="12dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toStartOf="@+id/regularModalCloseButton"
+                android:text="Accept" />
+
+            <com.example.city_tours.components.RoundedButton
+                android:id="@+id/regularModalCloseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Close"
+                app:buttonColor="@color/gray"
                 android:layout_alignParentEnd="true"
                 android:layout_below="@id/regularModalText"
                 android:layout_marginEnd="12dp"
