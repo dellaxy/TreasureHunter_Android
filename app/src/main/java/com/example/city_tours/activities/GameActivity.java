@@ -18,7 +18,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -38,6 +37,7 @@ import com.example.city_tours.entities.GameCheckpoint;
 import com.example.city_tours.entities.Quest;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
+import com.example.city_tours.services.PreferencesManager;
 import com.example.city_tours.services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -60,13 +60,14 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
     private LatLng startLocation;
-    private int AREA_RADIUS, markerId;
+    private int AREA_RADIUS, markerId, correctAnswerCount = 0;
     private boolean isInsideArea = false, navigateToLocation;
     private Game currentGame;
     private List<GameCheckpoint> undiscoveredCheckpoints;
     private Observable<GameState> currentGameState;
     private SupportMapFragment mapFragment;
     private FinalCheckpoint finalCheckpoint;
+    private PreferencesManager preferencesManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +82,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void onInit() {
         currentGameState = new Observable<>();
+        preferencesManager = PreferencesManager.getInstance(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         textToSpeechService = new TextToSpeechService(this);
         RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
@@ -130,11 +132,13 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
                             activeGameLayout.setVisibility(View.GONE);
                             completedGameLayout.setVisibility(View.VISIBLE);
-                            Button backToMapButton = completedGameLayout.findViewById(R.id.backToMapButton);
-                            backToMapButton.setOnClickListener(v -> finish());
                             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                             locationManager.removeUpdates(this);
                             clearGameLayout();
+
+                            preferencesManager.setPlayerCoins(preferencesManager.getPlayerCoins() + finalCheckpoint.getCoins() + correctAnswerCount * 100);
+
+                            finish();
                             break;
                         }
                     }
@@ -146,6 +150,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void acceptButtonClicked() {
                 currentGameState.setValue(GAME_STARTED);
+                closePopup();
             }
         };
         gameStartModal.setModalText("By tapping the button below, you will start your new tour. Good luck!");
@@ -211,6 +216,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             QuestModal questModal = new QuestModal(this, checkpoint.getQuest()) {
                                 @Override
                                 public void correctAnswerEntered() {
+                                    correctAnswerCount++;
                                     textToSpeechService.synthesizeText(checkpoint.getQuest().getText());
                                     textToSpeechService.postTaskToMainThread(() -> {
                                         addCheckpointToUi(checkpoint.getQuest().getText());

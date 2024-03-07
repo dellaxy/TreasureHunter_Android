@@ -37,13 +37,13 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     private TextView regionNameTextView;
     private Map<Integer, Polygon> regionsPolygonMap;
     private int selectedRegionId;
-    private PreferencesManager profilePreferences;
+    private PreferencesManager preferencesManager;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_regions, container, false);
         regionNameTextView = view.findViewById(R.id.regionNameText);
-        profilePreferences = PreferencesManager.getInstance(requireContext());
+        preferencesManager = PreferencesManager.getInstance(requireContext());
         initParams();
         return view;
     }
@@ -68,7 +68,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void getSelectedRegion(){
-        int selectedRegion = profilePreferences.getSelectedRegion(-1);
+        int selectedRegion = preferencesManager.getSelectedRegion(-1);
         if (selectedRegion != -1) {
             Polygon selectedPolygon = regionsPolygonMap.get(selectedRegion);
             if (selectedPolygon != null) {
@@ -143,7 +143,7 @@ public class RegionFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onPause() {
         super.onPause();
-        profilePreferences.setSelectedRegion(selectedRegionId);
+        preferencesManager.setSelectedRegion(selectedRegionId);
         mMap.clear();
     }
 

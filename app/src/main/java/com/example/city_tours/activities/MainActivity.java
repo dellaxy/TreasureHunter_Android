@@ -24,7 +24,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements MenuClickListener {
     private FragmentManager fragmentManager;
-    private PreferencesManager profilePreferences;
+    private PreferencesManager preferencesManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
     }
 
     private boolean isTutorialSeen() {
-        profilePreferences = PreferencesManager.getInstance(this);
-        return profilePreferences.isTutorialSeen();
+        preferencesManager = PreferencesManager.getInstance(this);
+        return preferencesManager.isTutorialSeen();
     }
 
     private void checkPermissions() {
