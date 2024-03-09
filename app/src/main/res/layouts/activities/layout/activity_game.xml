@@ -21,26 +21,45 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="0dp"
-        android:visibility="gone"
-        android:padding="12dp"
-        tools:layout_editor_absoluteY="278dp">
+        android:visibility="visible"
+        android:padding="12dp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:paddingBottom="10dp"
+            android:layout_above="@id/miniMapLayout">
+
+            <LinearLayout
+                android:id="@+id/checkpointInfo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:elevation="0dp"
+                android:orientation="vertical"></LinearLayout>
+        </ScrollView>
 
         <LinearLayout
-            android:id="@+id/checkpointInfo"
+            android:id="@+id/miniMapLayout"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:elevation="0dp"
+            android:layout_alignParentBottom="true"
+            android:clipChildren="true"
+            android:background="@color/white"
             android:orientation="vertical">
 
-        </LinearLayout>
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardElevation="0dp"
+                app:cardCornerRadius="20dp">
 
-        <LinearLayout
-            android:id="@+id/miniMap"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:background="@drawable/rounded_background"
-            android:layout_below="@id/checkpointInfo"
-            android:orientation="vertical">
+                <fragment
+                    android:id="@+id/miniMapFragment"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:context=".activities.GameActivity" />
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
@@ -52,24 +71,6 @@
         android:layout_height="match_parent"
         android:visibility="gone"
         android:padding="12dp">
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/treasureChest"
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:scaleX="1.8"
-            android:scaleY="1.8"
-            android:layout_centerInParent="true"
-            app:lottie_fileName="treasure_chest.json"
-            app:lottie_autoPlay="false"
-            app:lottie_loop="false" />
-
-        <ImageView
-            android:id="@+id/itemIcon"
-            android:layout_width="90dp"
-            android:layout_height="90dp"
-            android:layout_centerInParent="true"
-            android:visibility="gone" />
 
 
         <com.example.city_tours.components.RoundedButton

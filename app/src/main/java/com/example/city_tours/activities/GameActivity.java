@@ -51,11 +51,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
-    private GoogleMap mMap;
+    private GoogleMap mainMap, miniMap;
     private FusedLocationProviderClient fusedLocationClient;
     private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
@@ -65,7 +66,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Game currentGame;
     private List<GameCheckpoint> undiscoveredCheckpoints;
     private Observable<GameState> currentGameState;
-    private SupportMapFragment mapFragment;
+    private SupportMapFragment mainMapFragment, miniMapFragment;
     private FinalCheckpoint finalCheckpoint;
     private PreferencesManager preferencesManager;
 
@@ -73,9 +74,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-
-        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
-        Objects.requireNonNull(mapFragment).getMapAsync(this);
+        initializeMainMap();
 
         initMarkerData();
     }
@@ -91,13 +90,13 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentGameState.onChangeListener(gameState -> {
                     switch ((GameState) gameState) {
                         case GAME_NOT_STARTED: {
-                            mMap.addCircle(new CircleOptions()
+                            mainMap.addCircle(new CircleOptions()
                                     .center(startLocation)
                                     .radius(AREA_RADIUS)
                                     .strokeWidth(5)
                                     .strokeColor(ColorPalette.SECONDARY.getColor())
                                     .fillColor(ColorPalette.SECONDARY.getColor(200)));
-                            mMap.addMarker(new MarkerOptions()
+                            mainMap.addMarker(new MarkerOptions()
                                     .position(startLocation)
                                     .icon(bitmapDescriptorFromVector(this, ColorPalette.SECONDARY.getColor(), R.drawable.marker_default)));
                             break;
@@ -110,14 +109,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 finalCheckpoint = currentGame.getFinalCheckpoint();
                                 undiscoveredCheckpoints = currentGame.getCheckpoints();
                                 Collections.sort(undiscoveredCheckpoints, Comparator.comparingInt(GameCheckpoint::getSequence));
+
                                 Quest quest = new Quest("Vieš v ktorom roku sa narodil Anton Bernolák? Porozhliadni sa okolo kostola, tam nájdeš všetko čo potrebuješ vedieť.", "1796", "Choď ešte raz k najbližšiemu kostolu a na jeho ľavej stene stojí busta tohto významného slovenského jazykovedca.", "Správne!");
                                 undiscoveredCheckpoints.get(0).setQuest(quest);
+
                                 undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
 
-                                mapFragment.getView().setVisibility(View.GONE);
+                                mainMapFragment.getView().setVisibility(View.GONE);
                                 activeGameLayout.setVisibility(View.VISIBLE);
-                                mMap.clear();
-
+                                initializeMiniMap();
                                 startGame();
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -154,6 +154,52 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
         gameStartModal.setModalText("By tapping the button below, you will start your new tour. Good luck!");
+    }
+
+    private void initializeMiniMap() {
+        mainMap.clear();
+        mainMap = null;
+        miniMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.miniMapFragment);
+        Objects.requireNonNull(miniMapFragment).getMapAsync(googleMap -> {
+            miniMap = googleMap;
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                miniMap.setMyLocationEnabled(true);
+                getLastKnownLocation(miniMap);
+                addCheckpointsToMiniMap();
+            }
+        });
+    }
+
+    private void addCheckpointsToMiniMap() {
+        if (undiscoveredCheckpoints != null) {
+            for (GameCheckpoint checkpoint : undiscoveredCheckpoints) {
+                miniMap.addCircle(new CircleOptions()
+                        .center(checkpoint.getPosition())
+                        .radius(checkpoint.getAreaSize())
+                        .strokeWidth(5)
+                        .strokeColor(ColorPalette.PRIMARY.getColor())
+                        .fillColor(ColorPalette.PRIMARY.getColor(100)));
+            }
+        }
+    }
+
+
+    private void initializeMainMap() {
+        mainMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
+        Objects.requireNonNull(mainMapFragment).getMapAsync(googleMap -> {
+            mainMap = googleMap;
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                onInit();
+
+                mainMap.setMyLocationEnabled(true);
+                getLastKnownLocation(mainMap);
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300, 0.5f, this);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        });
     }
 
     private void initMarkerData() {
@@ -209,30 +255,36 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
             }
             case GAME_STARTED: {
+                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 20f));
                 if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
-                    GameCheckpoint checkpoint = undiscoveredCheckpoints.get(0);
-                    if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
-                        if (checkpoint.hasQuest()) {
-                            QuestModal questModal = new QuestModal(this, checkpoint.getQuest()) {
-                                @Override
-                                public void correctAnswerEntered() {
-                                    correctAnswerCount++;
-                                    textToSpeechService.synthesizeText(checkpoint.getQuest().getText());
-                                    textToSpeechService.postTaskToMainThread(() -> {
-                                        addCheckpointToUi(checkpoint.getQuest().getText());
-                                    });
-                                }
-                            };
-                            questModal.openPopup();
-                        }
-                        if (checkpoint.getClass() == FinalCheckpoint.class) {
-                            finalCheckpointFound();
-                        } else {
-                            undiscoveredCheckpoints.remove(0);
-                            textToSpeechService.synthesizeText(checkpoint.getText());
-                            textToSpeechService.postTaskToMainThread(() -> {
-                                addCheckpointToUi(checkpoint.getText());
-                            });
+                    Iterator<GameCheckpoint> iterator = undiscoveredCheckpoints.iterator();
+                    while (iterator.hasNext()) {
+                        GameCheckpoint checkpoint = iterator.next();
+                        if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
+                            if (checkpoint.hasQuest()) {
+                                QuestModal questModal = new QuestModal(this, checkpoint.getQuest()) {
+                                    @Override
+                                    public void correctAnswerEntered() {
+                                        correctAnswerCount++;
+                                        textToSpeechService.synthesizeText(checkpoint.getQuest().getText());
+                                        textToSpeechService.postTaskToMainThread(() -> {
+                                            addCheckpointToUi(checkpoint.getQuest().getText());
+                                        });
+                                    }
+                                };
+                                questModal.openPopup();
+                            }
+                            if (checkpoint.getClass() == FinalCheckpoint.class) {
+                                finalCheckpointFound();
+                            } else {
+                                textToSpeechService.synthesizeText(checkpoint.getText());
+                                textToSpeechService.postTaskToMainThread(() -> {
+                                    addCheckpointToUi(checkpoint.getText());
+                                });
+                                iterator.remove();
+                                miniMap.clear();
+                                addCheckpointsToMiniMap();
+                            }
                         }
                     }
                 }
@@ -263,26 +315,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            onInit();
-
-            mMap.setMyLocationEnabled(true);
-            getLastKnownLocation();
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400, 1, this);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        }
     }
 
-    private void getLastKnownLocation() {
+    private void getLastKnownLocation(GoogleMap map) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
                 if (isNotNull(location)) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 20f));
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 20f));
                     if (navigateToLocation && !isPlayerInsideArea(currentLocation, startLocation, AREA_RADIUS)) {
                         navigateToLocation(startLocation, currentLocation);
                     }
