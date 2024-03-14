@@ -83,7 +83,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentGameState = new Observable<>();
         preferencesManager = PreferencesManager.getInstance(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        textToSpeechService = new TextToSpeechService(this);
         RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
         RelativeLayout completedGameLayout = findViewById(R.id.completedGameLayout);
 
@@ -207,13 +206,20 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         navigateToLocation = getIntent().getBooleanExtra("navigateToStart", false);
         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
             currentGame = databaseHelper.getGame(markerId);
+            if (isNull(currentGame)) {
+                Toast.makeText(this, "No game found", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+            String language = currentGame.getLanguage();
+            String voice = currentGame.getVoice();
+            if (isNotNull(language) && isNotNull(voice)) {
+                textToSpeechService = new TextToSpeechService(this, language, voice);
+            } else {
+                textToSpeechService = new TextToSpeechService(this);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        if (isNull(currentGame)) {
-            Toast.makeText(this, "No game found", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
         }
         startLocation = currentGame.getPosition();
         AREA_RADIUS = 6;

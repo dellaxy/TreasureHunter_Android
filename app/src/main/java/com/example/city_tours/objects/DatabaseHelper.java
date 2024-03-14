@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 
+import com.example.city_tours.entities.Achievement;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
@@ -117,7 +118,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         } finally {
             database.close();
         }
-
         return marker;
     }
 
@@ -187,6 +187,75 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return checkpoints;
     }
 
+    public Achievement getAchievementById(int achievementId) {
+        SQLiteDatabase database = getReadableDatabase();
+        Achievement achievement = null;
+        try {
+            String[] selectionArgs = {String.valueOf(achievementId)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.ACHIEVEMENTS.getCollectionName(), null, "id = ?", selectionArgs);
+            if (cursor.moveToFirst()) {
+                achievement = ObjectMapper.mapCursorToAchievement(cursor);
+                LocationMarker marker = getMarkerById(cursor.getInt(cursor.getColumnIndex("marker_id")));
+                if (marker != null) {
+                    achievement.setTourName(marker.getTitle());
+                }
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return achievement;
+    }
+
+    public List<Achievement> getLockedAchievements() {
+        SQLiteDatabase database = getReadableDatabase();
+        List<Achievement> achievements = new ArrayList<>();
+        try {
+            String query = "SELECT * FROM " + DATABASE_COLLECTIONS.ACHIEVEMENTS.getCollectionName() +
+                    " WHERE id NOT IN (SELECT achievement_id FROM " +
+                    DATABASE_COLLECTIONS.PLAYER_ACHIEVEMENTS.getCollectionName() + ")";
+            Cursor cursor = database.rawQuery(query, null);
+
+            while (cursor.moveToNext()) {
+                Achievement achievement = ObjectMapper.mapCursorToAchievement(cursor);
+                LocationMarker marker = getMarkerById(cursor.getInt(cursor.getColumnIndex("marker_id")));
+                if (marker != null) {
+                    achievement.setTourName(marker.getTitle());
+                }
+                achievements.add(achievement);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return achievements;
+    }
+
+    public List<Achievement> getPlayerAchievements() {
+        SQLiteDatabase database = getReadableDatabase();
+        List<Achievement> achievements = new ArrayList<>();
+        try {
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.PLAYER_ACHIEVEMENTS.getCollectionName(), null, null, null, null);
+            while (cursor.moveToNext()) {
+                int achievementId = cursor.getInt(cursor.getColumnIndex("achievement_id"));
+                Achievement achievement = getAchievementById(achievementId);
+                achievement.setRating(cursor.getInt(cursor.getColumnIndex("stage")));
+                if (achievement != null) {
+                    achievements.add(achievement);
+                }
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return achievements;
+    }
 
     public FinalCheckpoint getFinalGameCheckpoint(int gameId) {
         SQLiteDatabase database = getReadableDatabase();
@@ -230,6 +299,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             database.close();
         }
     }
+
 
     private Cursor queryDatabase(SQLiteDatabase database, String table, String[] columns, String selection, String[] selectionArgs) {
         return database.query(table, columns, selection, selectionArgs, null, null, null);

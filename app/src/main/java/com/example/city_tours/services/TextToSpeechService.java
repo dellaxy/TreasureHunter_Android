@@ -35,13 +35,24 @@ public class TextToSpeechService {
         startService();
     }
 
+    public TextToSpeechService(Context context, String languageCode, String voiceName) {
+        googleCloudTTS = GoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
+        executorService = Executors.newSingleThreadExecutor();
+        handler = new Handler(Looper.getMainLooper());
+        profilePreferences = PreferencesManager.getInstance(context);
+        this.languageCode = languageCode;
+        this.voiceName = voiceName;
+
+        startService();
+    }
+
     protected void startService() {
         executorService.execute(() -> {
-            if (isNull(voicesList)) {
+            if (isNull(voicesList) && isNull(languageCode) && isNull(voiceName)) {
                 voicesList = googleCloudTTS.load();
+                languageCode = voicesList.getLanguageCodes()[15];
+                voiceName = profilePreferences.getTTSVoice();
             }
-            languageCode = voicesList.getLanguageCodes()[15];
-            voiceName = profilePreferences.getTTSVoice();
             googleCloudTTS.setVoiceSelectionParams(new VoiceSelectionParams(languageCode, voiceName))
                     .setAudioConfig(new AudioConfig(AudioEncoding.MP3, .95f, 0f));
         });
