@@ -8,6 +8,7 @@ public class Game {
     private final int id;
     private final LatLng position;
     private final String description;
+    private String language, voice;
     private List<GameCheckpoint> checkpoints;
     private FinalCheckpoint finalCheckpoint;
 
@@ -34,6 +35,22 @@ public class Game {
 
     public FinalCheckpoint getFinalCheckpoint() {
         return finalCheckpoint;
+    }
+
+    public String getVoice() {
+        return voice;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setVoice(String voice) {
+        this.voice = voice;
     }
 
     public void setCheckpoints(List<GameCheckpoint> checkpoints) {

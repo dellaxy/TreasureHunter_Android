@@ -18,7 +18,7 @@
         android:theme="@style/Theme.Lovci_pokladov"
         tools:targetApi="31">
         <activity
-            android:name=".fragments.TestFragment"
+            android:name=".fragments.AchievementsFragment"
             android:exported="false" />
         <activity
             android:name=".fragments.RegionFragment"

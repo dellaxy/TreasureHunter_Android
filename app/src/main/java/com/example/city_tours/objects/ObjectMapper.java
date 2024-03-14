@@ -2,6 +2,7 @@ package com.example.city_tours.objects;
 
 import android.database.Cursor;
 
+import com.example.city_tours.entities.Achievement;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
@@ -26,6 +27,9 @@ class ObjectMapper {
             COLUMN_SEQUENCE = "sequence",
             COLUMN_QUESTION = "question",
             COLUMN_ANSWER = "answer",
+            COLUMN_LANGUAGE = "language",
+            COLUMN_VOICE = "voice",
+            COLUMN_IMAGE = "image",
             COLUMN_HINT = "hint";
 
     @Suppress(names = "Range")
@@ -46,8 +50,15 @@ class ObjectMapper {
         String gameDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));
         float gameLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
         float gameLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
+        String gameLanguage = cursor.getString(cursor.getColumnIndex(COLUMN_LANGUAGE));
+        String gameVoice = cursor.getString(cursor.getColumnIndex(COLUMN_VOICE));
 
-        return new Game(gameId, new LatLng(gameLat, gameLong), gameDescription);
+        Game game = new Game(gameId, new LatLng(gameLat, gameLong), gameDescription);
+        if (gameLanguage != null && gameVoice != null) {
+            game.setLanguage(gameLanguage);
+            game.setVoice(gameVoice);
+        }
+        return game;
     }
 
     @Suppress(names = "Range")
@@ -82,6 +93,13 @@ class ObjectMapper {
         String text = questCursor.getString(questCursor.getColumnIndex(COLUMN_TEXT));
 
         return new Quest(question, answer, hint, text);
+    }
+
+    public static Achievement mapCursorToAchievement(Cursor achievementCursor) {
+        String title = achievementCursor.getString(achievementCursor.getColumnIndex(COLUMN_NAME));
+        String image = achievementCursor.getString(achievementCursor.getColumnIndex(COLUMN_IMAGE));
+
+        return new Achievement(title, null, image, 0);
     }
 }
 
