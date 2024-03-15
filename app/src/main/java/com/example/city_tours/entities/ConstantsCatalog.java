@@ -66,7 +66,7 @@ public class ConstantsCatalog {
     }
 
     public enum MENU_PAGES {
-        TEST("Test", new AchievementsFragment()),
+        ACHIEVEMENTS("Achievements", new AchievementsFragment()),
         HOME("Home", new MapsFragment()),
         SETTINGS("Settings", new RegionFragment()),
         REGIONS("Region Select", new RegionFragment());

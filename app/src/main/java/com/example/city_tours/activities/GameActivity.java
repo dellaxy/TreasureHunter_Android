@@ -61,7 +61,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
     private LatLng startLocation;
-    private int AREA_RADIUS, markerId, correctAnswerCount = 0;
+    private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
     private boolean isInsideArea = false, navigateToLocation;
     private Game currentGame;
     private List<GameCheckpoint> undiscoveredCheckpoints;
@@ -134,8 +134,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                             locationManager.removeUpdates(this);
                             clearGameLayout();
-
-                            preferencesManager.setPlayerCoins(preferencesManager.getPlayerCoins() + finalCheckpoint.getCoins() + correctAnswerCount * 100);
+                            setAwards();
 
                             finish();
                             break;
@@ -246,6 +245,21 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         checkpointLayout.removeAllViews();
     }
 
+    private void setAwards() {
+        try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
+            int achievementId = databaseHelper.getAchievementIdByMarkerId(markerId);
+            if (achievementId != -1) {
+                databaseHelper.updatePlayerAchievement(achievementId, Math.round((float) correctAnswerCount / questCount) * 3);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        boolean gameWasPlayed = getIntent().getBooleanExtra("gameWasPlayed", false);
+        if (!gameWasPlayed) {
+            preferencesManager.setPlayerCoins(preferencesManager.getPlayerCoins() + finalCheckpoint.getCoins() + correctAnswerCount * 50);
+        }
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         LatLng playerLocation = new LatLng(location.getLatitude(), location.getLongitude());
@@ -268,6 +282,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                         GameCheckpoint checkpoint = iterator.next();
                         if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                             if (checkpoint.hasQuest()) {
+                                questCount++;
                                 QuestModal questModal = new QuestModal(this, checkpoint.getQuest()) {
                                     @Override
                                     public void correctAnswerEntered() {
