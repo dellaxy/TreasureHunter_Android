@@ -257,6 +257,49 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return achievements;
     }
 
+    public int getAchievementIdByMarkerId(int markerId) {
+        SQLiteDatabase database = getReadableDatabase();
+        int achievementId = -1;
+        try {
+            String[] selectionArgs = {String.valueOf(markerId)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.ACHIEVEMENTS.getCollectionName(), new String[]{"id"}, "marker_id = ?", selectionArgs);
+            if (cursor.moveToFirst()) {
+                achievementId = cursor.getInt(cursor.getColumnIndex("id"));
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return achievementId;
+    }
+
+    public void updatePlayerAchievement(int achievementId, int stage) {
+        SQLiteDatabase database = getWritableDatabase();
+        try {
+            database.beginTransaction();
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.PLAYER_ACHIEVEMENTS.getCollectionName(), null, "achievement_id = ?", new String[]{String.valueOf(achievementId)});
+            if (cursor.moveToFirst()) {
+                ContentValues values = new ContentValues();
+                values.put("stage", stage);
+                database.update(DATABASE_COLLECTIONS.PLAYER_ACHIEVEMENTS.getCollectionName(), values, "achievement_id = ?", new String[]{String.valueOf(achievementId)});
+            } else {
+                ContentValues values = new ContentValues();
+                values.put("achievement_id", achievementId);
+                values.put("stage", stage);
+                database.insert(DATABASE_COLLECTIONS.PLAYER_ACHIEVEMENTS.getCollectionName(), null, values);
+            }
+            cursor.close();
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.endTransaction();
+            database.close();
+        }
+    }
+
     public FinalCheckpoint getFinalGameCheckpoint(int gameId) {
         SQLiteDatabase database = getReadableDatabase();
         FinalCheckpoint finalCheckpoint = null;

@@ -27,6 +27,8 @@ public class AchievementBadge extends ConstraintLayout {
         this.image = image;
         this.rating = rating;
         init();
+        badgeDescription.setText("Reward for completing the " + tourName);
+
     }
 
     public AchievementBadge(@NonNull Context context, String title, String tourName, String image) {
@@ -36,6 +38,7 @@ public class AchievementBadge extends ConstraintLayout {
         this.image = image;
         this.rating = 0;
         init();
+        badgeDescription.setText("Reward for completing the " + tourName);
 
         ColorMatrix matrix = new ColorMatrix();
         matrix.setSaturation(0);
@@ -48,7 +51,6 @@ public class AchievementBadge extends ConstraintLayout {
         inflate(getContext(), R.layout.layout_achievement_badge, this);
         initViews();
         badgeTitle.setText(title);
-        badgeDescription.setText("reward for completing the " + tourName + " tour!");
         badgeRating.setRating(rating);
         badgeImage.setImageResource(getResources().getIdentifier(image, "drawable", getContext().getPackageName()));
     }

@@ -21,8 +21,7 @@
             <ImageView
                 android:id="@+id/badgeImage"
                 android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/nitra" />
+                android:layout_height="60dp" />
 
             <RatingBar
                 android:id="@+id/badgeRating"
@@ -30,6 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:isIndicator="true"
+                android:progressTint="@color/golden"
                 android:layout_below="@id/badgeImage"
                 android:layout_centerHorizontal="true"
                 android:numStars="3" />
@@ -55,7 +55,7 @@
                 android:id="@+id/badgeDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Awarded after completing the XYZ Tour"
+                android:text="Reward for completing specific tours"
                 android:layout_marginTop="6dp"
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary" />
