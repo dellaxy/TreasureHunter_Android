@@ -164,7 +164,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         List<GameCheckpoint> checkpoints = new ArrayList<>();
         try {
             String[] selectionArgs = {String.valueOf(gameId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.GAME_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs);
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.GAME_CHECKPOINTS.getCollectionName(), null, "game_id = ?", selectionArgs);
             while (cursor.moveToNext()) {
                 GameCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
                 int questionIdIndex = cursor.getColumnIndex("question_id");
@@ -305,7 +305,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         FinalCheckpoint finalCheckpoint = null;
         try {
             String[] selectionArgs = {String.valueOf(gameId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "level_id = ?", selectionArgs, null);
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "game_id = ?", selectionArgs, null);
             while (cursor.moveToNext()) {
                 finalCheckpoint = ObjectMapper.mapCursorToFinalCheckpoint(cursor);
                 int questionIdIndex = cursor.getColumnIndex("question_id");

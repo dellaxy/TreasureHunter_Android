@@ -34,7 +34,6 @@ import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
-import com.example.city_tours.entities.Quest;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
 import com.example.city_tours.services.PreferencesManager;
@@ -109,10 +108,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 undiscoveredCheckpoints = currentGame.getCheckpoints();
                                 Collections.sort(undiscoveredCheckpoints, Comparator.comparingInt(GameCheckpoint::getSequence));
 
-                                Quest quest = new Quest("Vieš v ktorom roku sa narodil Anton Bernolák? Porozhliadni sa okolo kostola, tam nájdeš všetko čo potrebuješ vedieť.", "1796", "Choď ešte raz k najbližšiemu kostolu a na jeho ľavej stene stojí busta tohto významného slovenského jazykovedca.", "Správne!");
-                                undiscoveredCheckpoints.get(0).setQuest(quest);
 
-                                undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
+                                //undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
 
                                 mainMapFragment.getView().setVisibility(View.GONE);
                                 activeGameLayout.setVisibility(View.VISIBLE);
