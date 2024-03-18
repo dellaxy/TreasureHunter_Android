@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import com.example.city_tours.R;
 import com.example.city_tours.services.PreferencesManager;
-import com.example.city_tours.services.TextToSpeechService;
+import com.example.city_tours.services.tts_services.TextToSpeechService;
 
 
 public class TutorialOverlay extends RelativeLayout {

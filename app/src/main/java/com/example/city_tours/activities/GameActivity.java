@@ -37,7 +37,7 @@ import com.example.city_tours.entities.GameCheckpoint;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
 import com.example.city_tours.services.PreferencesManager;
-import com.example.city_tours.services.TextToSpeechService;
+import com.example.city_tours.services.tts_services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -48,8 +48,6 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -106,10 +104,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                 finalCheckpoint = currentGame.getFinalCheckpoint();
                                 undiscoveredCheckpoints = currentGame.getCheckpoints();
-                                Collections.sort(undiscoveredCheckpoints, Comparator.comparingInt(GameCheckpoint::getSequence));
-
-
-                                //undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
+                                undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
 
                                 mainMapFragment.getView().setVisibility(View.GONE);
                                 activeGameLayout.setVisibility(View.VISIBLE);
@@ -295,7 +290,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
                             if (checkpoint.getClass() == FinalCheckpoint.class) {
                                 finalCheckpointFound();
                             } else {
-                                textToSpeechService.synthesizeText(checkpoint.getText());
+                                textToSpeechService.synthesizeTexts(new String[]{checkpoint.getText(), checkpoint.getNavigationInstructions()}, 1000);
                                 textToSpeechService.postTaskToMainThread(() -> {
                                     addCheckpointToUi(checkpoint.getText());
                                 });
