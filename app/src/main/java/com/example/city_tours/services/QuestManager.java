@@ -1,38 +1,49 @@
-package com.example.city_tours.components;
+package com.example.city_tours.services;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.city_tours.R;
+import com.example.city_tours.components.RegularModal;
 import com.example.city_tours.entities.Quest;
-import com.example.city_tours.services.PreferencesManager;
 
 import java.text.Normalizer;
 import java.util.regex.Pattern;
 
-public abstract class QuestModal extends BaseModal {
-
-    private Quest quest;
-    private boolean isWrongAnswerShown = false;
+public abstract class QuestManager {
+    private Context context;
     private PreferencesManager preferencesManager;
+    private RegularModal hintModal;
+    private boolean isWrongAnswerShown = false;
+    private final LinearLayout bottomInfoLayout, questLayout;
+    private TextView questText, hintText;
+    private Button acceptButton, hintButton;
+    private ImageButton closeButton;
+    private Quest quest;
 
-    public QuestModal(Context context, Quest quest) {
-        super(context, R.layout.layout_quest_modal);
-        this.quest = quest;
-        onInit();
+    public QuestManager(Context context, LinearLayout bottomInfoLayout, LinearLayout questLayout, TextView questText, TextView hintText, Button acceptButton, Button hintButton, ImageButton closeButton) {
+        this.context = context;
+        this.preferencesManager = PreferencesManager.getInstance(context);
+        this.bottomInfoLayout = bottomInfoLayout;
+        this.questLayout = questLayout;
+        this.questText = questText;
+        this.hintText = hintText;
+        this.acceptButton = acceptButton;
+        this.hintButton = hintButton;
+        this.closeButton = closeButton;
     }
 
-
-    private void onInit() {
-        preferencesManager = PreferencesManager.getInstance(context);
-        TextView questionText = modalView.findViewById(R.id.question_text);
-        TextView hintText = modalView.findViewById(R.id.hint_text);
-        Button acceptButton = modalView.findViewById(R.id.submit_button);
-        Button hintButton = modalView.findViewById(R.id.hint_button);
-        RegularModal hintModal = new RegularModal(context) {
+    public void initializeQuestManager(Quest quest) {
+        this.quest = quest;
+        questText.setText(quest.getQuestion());
+        initializeButtons();
+        hintModal = new RegularModal(context) {
             @Override
             public void acceptButtonClicked() {
                 int coins = preferencesManager.getPlayerCoins();
@@ -40,6 +51,7 @@ public abstract class QuestModal extends BaseModal {
                     preferencesManager.setPlayerCoins(coins - 100);
                     hintText.setText(quest.getHint());
                     closePopup();
+                    hintButton.setEnabled(false);
                 } else {
                     setModalTextColour(Color.RED);
                     setModalText("You don't have enough coins to buy a hint!");
@@ -48,14 +60,14 @@ public abstract class QuestModal extends BaseModal {
         };
         hintModal.setModalText("Do you want to buy a hint for 100 coins?");
         hintModal.setModalLocation(450);
+    }
 
-        questionText.setText(quest.getQuestion());
-
+    private void initializeButtons() {
         acceptButton.setOnClickListener(v -> {
-            String answer = ((EditText) modalView.findViewById(R.id.answer_input)).getText().toString();
+            String answer = ((EditText) questLayout.findViewById(R.id.answer_input)).getText().toString();
             if (isAnswerCorrect(answer)) {
                 correctAnswerEntered();
-                closePopup();
+                toggleQuestModal(false);
             } else {
                 if (!isWrongAnswerShown) {
                     isWrongAnswerShown = true;
@@ -69,11 +81,16 @@ public abstract class QuestModal extends BaseModal {
             }
         });
 
+        closeButton.setOnClickListener(v -> {
+            abandonQuest();
+            toggleQuestModal(false);
+        });
+
         hintButton.setOnClickListener(v -> {
             hintModal.openPopup();
         });
-
     }
+
 
     private boolean isAnswerCorrect(String answer) {
         String normalizedAnswer = normalizeString(answer);
@@ -87,15 +104,19 @@ public abstract class QuestModal extends BaseModal {
         return pattern.matcher(normalized).replaceAll("");
     }
 
+    public void toggleQuestModal(boolean changeViewToQuest) {
+        if (changeViewToQuest) {
+            bottomInfoLayout.setVisibility(View.GONE);
+            questLayout.setVisibility(View.VISIBLE);
+        } else {
+            bottomInfoLayout.setVisibility(View.VISIBLE);
+            questLayout.setVisibility(View.GONE);
+        }
+    }
+
     public abstract void correctAnswerEntered();
 
-    @Override
-    public void beforeModalOpen() {
+    public abstract void abandonQuest();
 
-    }
 
-    @Override
-    public void beforeModalClose() {
-
-    }
 }

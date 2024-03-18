@@ -16,21 +16,11 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/checkpointTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:textColor="@color/black"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true" />
-
-        <TextView
             android:id="@+id/checkpointDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/checkpointTime"
             android:textColor="@color/black"
-            android:textSize="18sp" />
+            android:textSize="19sp" />
 
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

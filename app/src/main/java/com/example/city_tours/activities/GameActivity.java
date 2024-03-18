@@ -18,8 +18,11 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,21 +31,21 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.city_tours.R;
 import com.example.city_tours.components.CheckpointTextCard;
-import com.example.city_tours.components.QuestModal;
 import com.example.city_tours.components.RegularModal;
 import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
+import com.example.city_tours.entities.Quest;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
 import com.example.city_tours.services.PreferencesManager;
+import com.example.city_tours.services.QuestManager;
 import com.example.city_tours.services.tts_services.TextToSpeechService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -52,16 +55,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class GameActivity extends AppCompatActivity implements LocationListener {
     private GoogleMap mainMap, miniMap;
     private FusedLocationProviderClient fusedLocationClient;
     private RegularModal gameStartModal;
     private TextToSpeechService textToSpeechService;
     private LatLng startLocation;
+    private QuestManager questManager;
     private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
-    private boolean isInsideArea = false, navigateToLocation;
+    private boolean isInsideArea = false, navigateToLocation = false, isQuestActive = false;
     private Game currentGame;
     private List<GameCheckpoint> undiscoveredCheckpoints;
+    private GameCheckpoint activeQuestCheckpoint;
     private Observable<GameState> currentGameState;
     private SupportMapFragment mainMapFragment, miniMapFragment;
     private FinalCheckpoint finalCheckpoint;
@@ -72,7 +77,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         initializeMainMap();
-
         initMarkerData();
     }
 
@@ -144,6 +148,41 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
         gameStartModal.setModalText("By tapping the button below, you will start your new tour. Good luck!");
+    }
+
+    private void initQuestLayout(Quest quest) {
+        LinearLayout questLayout = findViewById(R.id.questModalLayout), bottomInfoLayout = findViewById(R.id.bottomInfoLayout);
+        TextView questText = questLayout.findViewById(R.id.question_text), hintText = questLayout.findViewById(R.id.hint_text);
+        Button acceptButton = questLayout.findViewById(R.id.submit_button), hintButton = questLayout.findViewById(R.id.hint_button);
+        ImageButton closeButton = questLayout.findViewById(R.id.close_button);
+
+        questManager = new QuestManager(this, bottomInfoLayout, questLayout, questText, hintText, acceptButton, hintButton, closeButton) {
+            @Override
+            public void correctAnswerEntered() {
+                questCount++;
+                correctAnswerCount++;
+                isQuestActive = false;
+                textToSpeechService.synthesizeText(quest.getText());
+                textToSpeechService.postTaskToMainThread(() -> {
+                    addTextToUI(quest.getText());
+                });
+                miniMap.clear();
+                addCheckpointsToMiniMap();
+            }
+
+            @Override
+            public void abandonQuest() {
+                questCount++;
+                isQuestActive = false;
+                textToSpeechService.synthesizeText(quest.getText());
+                textToSpeechService.postTaskToMainThread(() -> {
+                    addTextToUI(quest.getText());
+                });
+                miniMap.clear();
+                addCheckpointsToMiniMap();
+            }
+        };
+        questManager.initializeQuestManager(quest);
     }
 
     private void initializeMiniMap() {
@@ -228,7 +267,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void startGame() {
         textToSpeechService.synthesizeText(currentGame.getDescription());
         textToSpeechService.postTaskToMainThread(() -> {
-            addCheckpointToUi(currentGame.getDescription());
+            addTextToUI(currentGame.getDescription());
         });
     }
 
@@ -268,35 +307,51 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             case GAME_STARTED: {
                 miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 20f));
-                if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
-                    Iterator<GameCheckpoint> iterator = undiscoveredCheckpoints.iterator();
-                    while (iterator.hasNext()) {
-                        GameCheckpoint checkpoint = iterator.next();
-                        if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
-                            if (checkpoint.hasQuest()) {
-                                questCount++;
-                                QuestModal questModal = new QuestModal(this, checkpoint.getQuest()) {
-                                    @Override
-                                    public void correctAnswerEntered() {
-                                        correctAnswerCount++;
-                                        textToSpeechService.synthesizeText(checkpoint.getQuest().getText());
-                                        textToSpeechService.postTaskToMainThread(() -> {
-                                            addCheckpointToUi(checkpoint.getQuest().getText());
-                                        });
+                if (isQuestActive) {
+                    if (isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize()) && !isInsideArea) {
+                        isInsideArea = true;
+                        questManager.toggleQuestModal(true);
+                    } else if (!isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize()) && isInsideArea) {
+                        isInsideArea = false;
+                        questManager.toggleQuestModal(false);
+                    }
+                } else {
+                    if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
+                        Iterator<GameCheckpoint> iterator = undiscoveredCheckpoints.iterator();
+                        while (iterator.hasNext()) {
+                            GameCheckpoint checkpoint = iterator.next();
+                            if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
+                                if (checkpoint.hasQuest()) {
+                                    isQuestActive = true;
+                                    activeQuestCheckpoint = checkpoint;
+                                    initQuestLayout(checkpoint.getQuest());
+                                    questManager.toggleQuestModal(true);
+                                    isInsideArea = true;
+                                }
+                                if (checkpoint.getClass() == FinalCheckpoint.class) {
+                                    finalCheckpointFound();
+                                } else {
+                                    if (isNotNull(checkpoint.getNavigationInstructions())) {
+                                        textToSpeechService.synthesizeTexts(new String[]{checkpoint.getText(), checkpoint.getNavigationInstructions()}, 1000);
+                                    } else {
+                                        textToSpeechService.synthesizeText(checkpoint.getText());
                                     }
-                                };
-                                questModal.openPopup();
-                            }
-                            if (checkpoint.getClass() == FinalCheckpoint.class) {
-                                finalCheckpointFound();
-                            } else {
-                                textToSpeechService.synthesizeTexts(new String[]{checkpoint.getText(), checkpoint.getNavigationInstructions()}, 1000);
-                                textToSpeechService.postTaskToMainThread(() -> {
-                                    addCheckpointToUi(checkpoint.getText());
-                                });
-                                iterator.remove();
-                                miniMap.clear();
-                                addCheckpointsToMiniMap();
+                                    textToSpeechService.postTaskToMainThread(() -> {
+                                        addCheckpointTextToUI(checkpoint);
+                                    });
+                                    miniMap.clear();
+                                    iterator.remove();
+                                    if (isQuestActive) {
+                                        miniMap.addCircle(new CircleOptions()
+                                                .center(checkpoint.getPosition())
+                                                .radius(checkpoint.getAreaSize())
+                                                .strokeWidth(5)
+                                                .strokeColor(ColorPalette.PRIMARY.getColor())
+                                                .fillColor(ColorPalette.PRIMARY.getColor(100)));
+                                    } else {
+                                        addCheckpointsToMiniMap();
+                                    }
+                                }
                             }
                         }
                     }
@@ -312,23 +367,38 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         return distance[0] < locationRadius;
     }
 
-    private void addCheckpointToUi(String checkpointText) {
+    private void addTextToUI(String text) {
         LinearLayout checkpointLayout = findViewById(R.id.checkpointInfo);
 
+        clearTextLayouts();
+        checkpointLayout.addView(new CheckpointTextCard(this, text));
+    }
+
+    private void addCheckpointTextToUI(GameCheckpoint checkpoint) {
+        LinearLayout checkpointLayout = findViewById(R.id.checkpointInfo);
+        LinearLayout navigationLayout = findViewById(R.id.navigationInfo);
+        clearTextLayouts();
+        if (isNotNull(checkpoint.getText())) {
+            checkpointLayout.addView(new CheckpointTextCard(this, checkpoint.getText()));
+        }
+        if (isNotNull(checkpoint.getNavigationInstructions())) {
+            navigationLayout.addView(new CheckpointTextCard(this, checkpoint.getNavigationInstructions()));
+        }
+    }
+
+    private void clearTextLayouts() {
+        LinearLayout checkpointLayout = findViewById(R.id.checkpointInfo);
+        LinearLayout navigationLayout = findViewById(R.id.navigationInfo);
         if (checkpointLayout != null) {
             checkpointLayout.removeAllViews();
-            CheckpointTextCard checkpointCard = new CheckpointTextCard(this, checkpointText);
-            checkpointLayout.addView(checkpointCard);
+        }
+        if (navigationLayout != null) {
+            navigationLayout.removeAllViews();
         }
     }
 
     private void finalCheckpointFound() {
         currentGameState.setValue(GAME_COMPLETED);
-    }
-
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-
     }
 
     private void getLastKnownLocation(GoogleMap map) {

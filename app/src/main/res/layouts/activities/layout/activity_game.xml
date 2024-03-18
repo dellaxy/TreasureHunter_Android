@@ -27,40 +27,191 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
-            android:paddingBottom="10dp"
-            android:layout_above="@id/miniMapLayout">
+            android:layout_marginBottom="10dp"
+            android:layout_above="@id/bottomInfoLayout">
 
             <LinearLayout
                 android:id="@+id/checkpointInfo"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:elevation="0dp"
-                android:orientation="vertical"></LinearLayout>
+                android:orientation="vertical">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/black"
+                    app:cardCornerRadius="20dp"></androidx.cardview.widget.CardView>
+            </LinearLayout>
         </ScrollView>
 
         <LinearLayout
-            android:id="@+id/miniMapLayout"
+            android:id="@+id/bottomInfoLayout"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:clipChildren="true"
-            android:background="@color/white"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/navigationInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="120dp"
+                android:layout_marginBottom="10dp"
+                android:layout_above="@id/miniMapLayout"
+                android:orientation="horizontal">
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/miniMapLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipChildren="true"
+                android:background="@color/white"
+                android:orientation="vertical"
+                android:layout_alignParentBottom="true">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/miniMapCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    app:cardElevation="0dp"
+                    app:cardCornerRadius="20dp">
+
+                    <fragment
+                        android:id="@+id/miniMapFragment"
+                        android:name="com.google.android.gms.maps.SupportMapFragment"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        tools:context=".activities.GameActivity" />
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/questModalLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/questModalCard"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:cardElevation="0dp"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="20dp">
 
-                <fragment
-                    android:id="@+id/miniMapFragment"
-                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                <LinearLayout
+                    android:id="@+id/questLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    tools:context=".activities.GameActivity" />
-            </androidx.cardview.widget.CardView>
+                    android:layout_height="wrap_content"
+                    android:padding="15dp"
+                    android:orientation="vertical">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/question"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:fontFamily="@font/roboto"
+                            android:text="Question"
+                            android:textColor="@color/primary"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/close_button"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp"
+                            android:background="@drawable/cancel"
+                            android:scaleX="1"
+                            android:scaleY="1" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/question_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="50dp"
+                        android:textColor="@color/primary"
+                        android:layout_alignEnd="@id/answerGroup"
+                        android:layout_marginBottom="20dp"
+                        android:textSize="20sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/answerGroup"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="15dp"
+                            android:layout_weight="1"
+                            android:minHeight="100dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/hint_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:paddingBottom="10dp"
+                                android:textColor="@color/secondary"
+                                android:textSize="18sp" />
+
+                            <EditText
+                                android:id="@+id/answer_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/roboto"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:focusedByDefault="true"
+                                android:text="" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="0.3"
+                            android:gravity="end|bottom"
+                            android:orientation="vertical">
+
+                            <com.example.city_tours.components.RoundedButton
+                                android:id="@+id/hint_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="5dp"
+                                android:text="Hint"
+                                app:buttonColor="@color/secondary" />
+
+                            <com.example.city_tours.components.RoundedButton
+                                android:id="@+id/submit_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Submit" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
         </LinearLayout>
 
     </RelativeLayout>
