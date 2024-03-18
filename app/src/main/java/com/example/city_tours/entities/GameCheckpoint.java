@@ -6,15 +6,17 @@ import com.google.android.gms.maps.model.LatLng;
 public class GameCheckpoint {
     private int id, areaSize, sequence;
     private final String text;
+    private String navigationInstructions;
     private final LatLng position;
     private Quest question;
 
-    public GameCheckpoint(int id, String text, LatLng position, int areaSize, int sequence) {
+    public GameCheckpoint(int id, String text, String navigationInstructions, LatLng position, int areaSize, int sequence) {
         this.id = id;
         this.text = text;
         this.position = position;
         this.areaSize = areaSize;
         this.sequence = sequence;
+        this.navigationInstructions = navigationInstructions;
     }
 
     public GameCheckpoint(int id, String text, LatLng position, int areaSize) {
@@ -26,6 +28,10 @@ public class GameCheckpoint {
 
     public boolean hasQuest() {
         return Utils.isNotNull(question);
+    }
+
+    public String getNavigationInstructions() {
+        return navigationInstructions;
     }
 
     public String getText() {

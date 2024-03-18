@@ -66,10 +66,10 @@ public class ConstantsCatalog {
     }
 
     public enum MENU_PAGES {
-        ACHIEVEMENTS("Achievements", new AchievementsFragment()),
         HOME("Home", new MapsFragment()),
-        SETTINGS("Settings", new RegionFragment()),
-        REGIONS("Region Select", new RegionFragment());
+        REGIONS("Region Select", new RegionFragment()),
+        ACHIEVEMENTS("Achievements", new AchievementsFragment()),
+        SETTINGS("Settings", new RegionFragment());
 
         private final String pageName;
         private final Fragment fragmentClass;

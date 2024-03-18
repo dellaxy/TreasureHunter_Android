@@ -56,6 +56,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap = googleMap;
         getMapPreferences();
         loadDataFromDatabase();
+
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {

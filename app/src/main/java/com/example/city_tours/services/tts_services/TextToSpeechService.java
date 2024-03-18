@@ -1,4 +1,4 @@
-package com.example.city_tours.services;
+package com.example.city_tours.services.tts_services;
 
 import static com.example.city_tours.objects.Utils.isNull;
 
@@ -7,19 +7,18 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.example.city_tours.BuildConfig;
+import com.example.city_tours.services.PreferencesManager;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import darren.googlecloudtts.GoogleCloudTTS;
-import darren.googlecloudtts.GoogleCloudTTSFactory;
 import darren.googlecloudtts.model.VoicesList;
 import darren.googlecloudtts.parameter.AudioConfig;
 import darren.googlecloudtts.parameter.AudioEncoding;
 import darren.googlecloudtts.parameter.VoiceSelectionParams;
 
 public class TextToSpeechService {
-    GoogleCloudTTS googleCloudTTS;
+    MyGoogleCloudTTS googleCloudTTS;
     VoicesList voicesList;
     String languageCode, voiceName;
     ExecutorService executorService;
@@ -27,7 +26,7 @@ public class TextToSpeechService {
     PreferencesManager profilePreferences;
 
     public TextToSpeechService(Context context) {
-        googleCloudTTS = GoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
+        googleCloudTTS = MyGoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
         executorService = Executors.newSingleThreadExecutor();
         handler = new Handler(Looper.getMainLooper());
         profilePreferences = PreferencesManager.getInstance(context);
@@ -36,7 +35,7 @@ public class TextToSpeechService {
     }
 
     public TextToSpeechService(Context context, String languageCode, String voiceName) {
-        googleCloudTTS = GoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
+        googleCloudTTS = MyGoogleCloudTTSFactory.create(BuildConfig.TTS_API_KEY);
         executorService = Executors.newSingleThreadExecutor();
         handler = new Handler(Looper.getMainLooper());
         profilePreferences = PreferencesManager.getInstance(context);
@@ -68,11 +67,26 @@ public class TextToSpeechService {
         });
     }
 
+    public void synthesizeTexts(String[] texts, int delay) {
+        executorService.execute(() -> {
+            try {
+                for (String text : texts) {
+                    googleCloudTTS.start(text);
+                    while (googleCloudTTS.isPlaying()) {
+                        Thread.sleep(delay);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public void postTaskToMainThread(Runnable runnable) {
         handler.post(runnable);
     }
 
-    public void cancel(){
+    public void cancel() {
         executorService.shutdownNow();
         googleCloudTTS.stop();
     }

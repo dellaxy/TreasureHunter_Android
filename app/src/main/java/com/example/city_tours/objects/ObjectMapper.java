@@ -30,7 +30,8 @@ class ObjectMapper {
             COLUMN_LANGUAGE = "language",
             COLUMN_VOICE = "voice",
             COLUMN_IMAGE = "image",
-            COLUMN_HINT = "hint";
+            COLUMN_HINT = "hint",
+            COLUMN_NAV_INSTRUCTIONS = "navigation_instructions";
 
     @Suppress(names = "Range")
     public static LocationMarker mapCursorToMarker(Cursor cursor) {
@@ -70,7 +71,8 @@ class ObjectMapper {
         float checkpointLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
         float checkpointLong = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
         int checkpointSequence = cursor.getInt(cursor.getColumnIndex(COLUMN_SEQUENCE));
-        return new GameCheckpoint(checkpointId, checkpointText, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointSequence);
+        String checkpointNavInstructions = cursor.getString(cursor.getColumnIndex(COLUMN_NAV_INSTRUCTIONS));
+        return new GameCheckpoint(checkpointId, checkpointText, checkpointNavInstructions, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointSequence);
     }
 
     @Suppress(names = "Range")
