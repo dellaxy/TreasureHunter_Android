@@ -20,7 +20,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +34,7 @@ import androidx.core.app.ActivityCompat;
 import com.example.city_tours.R;
 import com.example.city_tours.components.CheckpointTextCard;
 import com.example.city_tours.components.RegularModal;
+import com.example.city_tours.entities.Achievement;
 import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
@@ -129,10 +132,26 @@ public class GameActivity extends AppCompatActivity implements LocationListener 
                             completedGameLayout.setVisibility(View.VISIBLE);
                             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                             locationManager.removeUpdates(this);
+
+                            findViewById(R.id.backToMapButton).setOnClickListener(v -> {
+                                finish();
+                            });
+
+                            ImageView achievementImage = findViewById(R.id.achievementImage);
+                            RatingBar ratingBar = findViewById(R.id.achievementRating);
+                            try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
+                                int achievementId = databaseHelper.getAchievementIdByMarkerId(markerId);
+                                if (achievementId != -1) {
+                                    Achievement achievement = databaseHelper.getAchievementById(achievementId);
+                                    achievementImage.setImageResource(getResources().getIdentifier(achievement.getImage(), "drawable", this.getPackageName()));
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            ratingBar.setRating(Math.round((float) correctAnswerCount / questCount) * 3);
+
                             clearGameLayout();
                             setAwards();
-
-                            finish();
                             break;
                         }
                     }

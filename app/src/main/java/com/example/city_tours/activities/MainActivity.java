@@ -3,7 +3,9 @@ package com.example.city_tours.activities;
 import static com.example.city_tours.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.widget.RelativeLayout;
 
@@ -20,6 +22,7 @@ import com.example.city_tours.objects.Utils;
 import com.example.city_tours.services.MenuClickListener;
 import com.example.city_tours.services.PreferencesManager;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements MenuClickListener {
@@ -32,6 +35,15 @@ public class MainActivity extends AppCompatActivity implements MenuClickListener
         setContentView(R.layout.activity_main);
 
         checkPermissions();
+
+        Locale locale = new Locale("sk");
+        Locale.setDefault(locale);
+
+        Configuration config = new Configuration();
+        config.locale = locale;
+
+        Context context = getBaseContext();
+        context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
 
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
