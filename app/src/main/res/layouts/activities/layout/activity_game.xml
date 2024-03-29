@@ -205,7 +205,7 @@
                                 android:id="@+id/submit_button"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Submit" />
+                                android:text="@string/Submit" />
 
                         </LinearLayout>
                     </LinearLayout>
@@ -223,16 +223,46 @@
         android:visibility="gone"
         android:padding="12dp">
 
+        <TextView
+            android:id="@+id/tourName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="Congratilations!"
+            android:textColor="@color/primary"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+
+        <ImageView
+            android:id="@+id/achievementImage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="40dp"
+            android:layout_below="@id/tourName"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/nitra"></ImageView>
+
+        <RatingBar
+            android:id="@+id/achievementRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:isIndicator="true"
+            android:progressTint="@color/golden"
+            android:layout_below="@id/achievementImage"
+            android:layout_centerHorizontal="true"
+            android:numStars="3" />
+
 
         <com.example.city_tours.components.RoundedButton
             android:id="@+id/backToMapButton"
-            android:layout_width="wrap_content"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="Continue"
+            android:text="FINISH"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="15dp"
-            android:visibility="gone" />
+            android:layout_marginBottom="15dp" />
     </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

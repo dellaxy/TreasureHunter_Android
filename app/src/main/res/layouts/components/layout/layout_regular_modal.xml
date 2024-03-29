@@ -40,13 +40,13 @@
                 android:layout_marginBottom="12dp"
                 android:layout_marginEnd="10dp"
                 android:layout_toStartOf="@+id/regularModalCloseButton"
-                android:text="Accept" />
+                android:text="@string/accept" />
 
             <com.example.city_tours.components.RoundedButton
                 android:id="@+id/regularModalCloseButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Close"
+                android:text="@string/close"
                 app:buttonColor="@color/gray"
                 android:layout_alignParentEnd="true"
                 android:layout_below="@id/regularModalText"

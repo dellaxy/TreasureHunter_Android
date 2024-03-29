@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.city_tours.R;
 import com.example.city_tours.fragments.AchievementsFragment;
 import com.example.city_tours.fragments.MapsFragment;
 import com.example.city_tours.fragments.RegionFragment;
@@ -46,46 +47,47 @@ public class ConstantsCatalog {
             return false;
         }
     }
+
     public enum ColorPalette {
         PRIMARY(69, 107, 141),
         SECONDARY(69, 107, 141),
         SELECTED(67, 114, 158);
         private final int color;
 
-        ColorPalette(int red, int green, int blue){
+        ColorPalette(int red, int green, int blue) {
             this.color = Color.rgb(red, green, blue);
         }
 
-        public int getColor(){
+        public int getColor() {
             return this.color;
         }
 
-        public int getColor(int alpha){
+        public int getColor(int alpha) {
             return Color.argb(alpha, Color.red(this.color), Color.green(this.color), Color.blue(this.color));
         }
     }
 
-    public enum MENU_PAGES {
-        HOME("Home", new MapsFragment()),
-        REGIONS("Region Select", new RegionFragment()),
-        ACHIEVEMENTS("Achievements", new AchievementsFragment()),
-        SETTINGS("Settings", new RegionFragment());
 
-        private final String pageName;
+    public enum MENU_PAGES {
+        HOME(R.string.home, new MapsFragment()),
+        REGIONS(R.string.region, new RegionFragment()),
+        ACHIEVEMENTS(R.string.achievements, new AchievementsFragment()),
+        SETTINGS(R.string.settings, new RegionFragment());
+
+        private final int pageNameResourceId;
         private final Fragment fragmentClass;
 
-        MENU_PAGES(String pageName, Fragment fragmentClass) {
-            this.pageName = pageName;
+        MENU_PAGES(int pageNameResourceId, Fragment fragmentClass) {
+            this.pageNameResourceId = pageNameResourceId;
             this.fragmentClass = fragmentClass;
         }
 
         public String getPageName() {
-            return pageName;
+            return ResourceManager.getString(pageNameResourceId);
         }
 
         public Fragment getFragmentClass() {
             return fragmentClass;
         }
     }
-
 }

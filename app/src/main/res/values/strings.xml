@@ -1,4 +1,22 @@
 <resources>
-    <string name="app_name">Interactive City tours</string>
-    <string name="map_id">98a2eac97dc3e6d0</string>
+    <string name="app_name" translatable="false">Interactive City tours</string>
+    <string name="map_id" translatable="false">98a2eac97dc3e6d0</string>
+
+    <!-- DEFAULT ENGLISH STRINGS -->
+    <string name="accept">Accept</string>
+    <string name="Submit">Submit</string>
+    <string name="close">Close</string>
+
+    <string name="navigate">Navigate</string>
+    <string name="description">Description</string>
+    <string name="info">Info</string>
+
+    <!-- MENU -->
+    <string name="home">Home</string>
+    <string name="region">Region Select</string>
+    <string name="achievements">Achievements</string>
+    <string name="settings">Settings</string>
+
+    <!-- ACHIEVEMENTS -->
+    <string name="reward_text">Reward for completing the </string>
 </resources>
