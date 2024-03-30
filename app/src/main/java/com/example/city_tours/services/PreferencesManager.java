@@ -44,15 +44,15 @@ public class PreferencesManager {
         return sharedPreferences.getBoolean("isTutorialSeen", false);
     }
 
-    // PLAYER PREFERENCES
-    public void setPlayerName(String playerName) {
+    // USER PREFERENCES
+    public void setLanguageKey(String languageKey) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("playerName", playerName);
+        editor.putString("languageKey", languageKey);
         editor.apply();
     }
 
-    public String getPlayerName() {
-        return sharedPreferences.getString("playerName", "Player");
+    public String getLanguageKey() {
+        return sharedPreferences.getString("languageKey", "en");
     }
 
     public void setTTSVoice(String voice) {

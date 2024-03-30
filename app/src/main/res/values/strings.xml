@@ -19,4 +19,6 @@
 
     <!-- ACHIEVEMENTS -->
     <string name="reward_text">Reward for completing the </string>
+
+    <string name="device">Device language</string>
 </resources>

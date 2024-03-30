@@ -17,4 +17,6 @@
 
     <!-- ACHIEVEMENTS -->
     <string name="reward_text">Odmena za dokončenie </string>
+
+    <string name="device">Jazyk zariadenia</string>
 </resources>
