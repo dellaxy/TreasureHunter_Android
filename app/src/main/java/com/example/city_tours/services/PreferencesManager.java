@@ -52,7 +52,7 @@ public class PreferencesManager {
     }
 
     public String getLanguageKey() {
-        return sharedPreferences.getString("languageKey", "en");
+        return sharedPreferences.getString("languageKey", "");
     }
 
     public void setTTSVoice(String voice) {
