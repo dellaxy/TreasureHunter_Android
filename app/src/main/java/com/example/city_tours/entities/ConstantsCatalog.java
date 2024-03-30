@@ -8,7 +8,10 @@ import com.example.city_tours.R;
 import com.example.city_tours.fragments.AchievementsFragment;
 import com.example.city_tours.fragments.MapsFragment;
 import com.example.city_tours.fragments.RegionFragment;
+import com.example.city_tours.fragments.SettingsFragment;
 import com.google.android.gms.maps.model.LatLng;
+
+import java.util.Map;
 
 public class ConstantsCatalog {
     // Database constants
@@ -18,6 +21,11 @@ public class ConstantsCatalog {
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
 
     public static final LatLng SLOVAKIA_LOCATION = new LatLng(48.669026, 19.699024);
+
+    public static final Map<String, String> appLanguages = Map.of(
+            "English", "en",
+            "Slovenčina", "sk"
+    );
 
     public enum DATABASE_COLLECTIONS {
         MARKERS("markers"),
@@ -72,7 +80,7 @@ public class ConstantsCatalog {
         HOME(R.string.home, new MapsFragment()),
         REGIONS(R.string.region, new RegionFragment()),
         ACHIEVEMENTS(R.string.achievements, new AchievementsFragment()),
-        SETTINGS(R.string.settings, new RegionFragment());
+        SETTINGS(R.string.settings, new SettingsFragment());
 
         private final int pageNameResourceId;
         private final Fragment fragmentClass;
@@ -82,8 +90,8 @@ public class ConstantsCatalog {
             this.fragmentClass = fragmentClass;
         }
 
-        public String getPageName() {
-            return ResourceManager.getString(pageNameResourceId);
+        public int getPageNameResourceId() {
+            return pageNameResourceId;
         }
 
         public Fragment getFragmentClass() {

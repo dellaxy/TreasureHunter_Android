@@ -28,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.city_tours.R;
@@ -58,7 +57,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public class GameActivity extends AppCompatActivity implements LocationListener {
+public class GameActivity extends BaseActivity implements LocationListener {
     private GoogleMap mainMap, miniMap;
     private FusedLocationProviderClient fusedLocationClient;
     private RegularModal gameStartModal;

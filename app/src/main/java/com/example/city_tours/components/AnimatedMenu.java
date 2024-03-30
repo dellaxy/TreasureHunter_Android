@@ -19,6 +19,7 @@ import android.widget.TextView;
 import androidx.cardview.widget.CardView;
 
 import com.example.city_tours.R;
+import com.example.city_tours.entities.ResourceManager;
 import com.example.city_tours.objects.Utils;
 import com.example.city_tours.services.MenuClickListener;
 import com.example.city_tours.services.Observable;
@@ -71,9 +72,9 @@ public class AnimatedMenu extends LinearLayout {
 
     }
 
-    private void addButtonsToLayout(){
+    private void addButtonsToLayout() {
         for (MENU_PAGES page : MENU_PAGES.values()) {
-            RoundedButton button = new RoundedButton(getContext(), page.getPageName(), getResources().getColor(R.color.secondary_light), Color.BLACK);
+            RoundedButton button = new RoundedButton(getContext(), ResourceManager.getString(page.getPageNameResourceId()), getResources().getColor(R.color.secondary_light), Color.BLACK);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     getResources().getDimensionPixelSize(R.dimen.DEFAULT_MENU)

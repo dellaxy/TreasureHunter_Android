@@ -9,6 +9,10 @@ public class ResourceManager {
         applicationContext = context.getApplicationContext();
     }
 
+    public static void updateContext(Context newContext) {
+        applicationContext = newContext.getApplicationContext();
+    }
+
     public static String getString(int resourceId) {
 
         return applicationContext.getString(resourceId);
