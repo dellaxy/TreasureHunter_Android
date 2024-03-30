@@ -30,16 +30,20 @@ public class BaseActivity extends AppCompatActivity {
         PreferencesManager preferencesManager = PreferencesManager.getInstance(this);
         String language = preferencesManager.getLanguageKey();
 
+        Locale locale;
         if (!language.isEmpty()) {
-            Locale locale = new Locale(language);
-            Resources resources = getResources();
-            Configuration configuration = resources.getConfiguration();
-            configuration.setLocale(locale);
-            resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+            locale = new Locale(language);
+        } else {
+            locale = Locale.getDefault();
+        }
 
-            if (getApplication() instanceof ApplicationSuper) {
-                ((ApplicationSuper) getApplication()).setLocale(locale);
-            }
+        Resources resources = getResources();
+        Configuration configuration = resources.getConfiguration();
+        configuration.setLocale(locale);
+        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+
+        if (getApplication() instanceof ApplicationSuper) {
+            ((ApplicationSuper) getApplication()).setLocale(locale);
         }
     }
 }
