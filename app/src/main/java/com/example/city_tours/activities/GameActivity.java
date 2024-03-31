@@ -388,12 +388,12 @@ public class GameActivity extends BaseActivity implements LocationListener {
     }
 
     private void behaveOnActivePuzzle(LatLng playerLocation) {
-        boolean isPlayerInside = isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize());
+        boolean isPlayerInsideQuestCheckpoint = isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize());
 
-        if (isPlayerInside && !isInsideArea) {
+        if (isPlayerInsideQuestCheckpoint && !isInsideArea) {
             handleEnterArea(activeQuestCheckpoint.getPuzzle().getPuzzleType());
             isInsideArea = true;
-        } else if (!isPlayerInside && isInsideArea) {
+        } else if (!isPlayerInsideQuestCheckpoint && isInsideArea) {
             handleExitArea(activeQuestCheckpoint.getPuzzle().getPuzzleType());
             isInsideArea = false;
         }
