@@ -7,10 +7,10 @@ import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
 import com.example.city_tours.entities.LocationMarker;
-import com.example.city_tours.entities.Quest;
+import com.example.city_tours.entities.puzzles.Fetch;
+import com.example.city_tours.entities.puzzles.Item;
+import com.example.city_tours.entities.puzzles.Quest;
 import com.google.android.gms.maps.model.LatLng;
-
-import kotlin.Suppress;
 
 class ObjectMapper {
 
@@ -26,14 +26,15 @@ class ObjectMapper {
             COLUMN_COINS = "coins",
             COLUMN_SEQUENCE = "sequence",
             COLUMN_QUESTION = "question",
-            COLUMN_ANSWER = "answer",
             COLUMN_LANGUAGE = "language",
             COLUMN_VOICE = "voice",
             COLUMN_IMAGE = "image",
             COLUMN_HINT = "hint",
+            COLUMN_ITEM_NAME = "item_name",
+            COLUMN_ITEM_IMAGE = "item_image",
+            COLUMN_CORRECT = "correct",
             COLUMN_NAV_INSTRUCTIONS = "navigation_instructions";
 
-    @Suppress(names = "Range")
     public static LocationMarker mapCursorToMarker(Cursor cursor) {
         int locationID = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         float locationLat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
@@ -45,7 +46,6 @@ class ObjectMapper {
         return new LocationMarker(locationID, new LatLng(locationLat, locationLong), locationTitle, locationColor, locationDescription);
     }
 
-    @Suppress(names = "Range")
     public static Game mapCursorToGame(Cursor cursor) {
         int gameId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         String gameDescription = cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION));
@@ -62,7 +62,6 @@ class ObjectMapper {
         return game;
     }
 
-    @Suppress(names = "Range")
     public static GameCheckpoint mapCursorToCheckpoint(Cursor cursor) {
         int checkpointId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         int checkpointAreaSizeIndex = cursor.getColumnIndex(COLUMN_AREA_SIZE);
@@ -75,7 +74,6 @@ class ObjectMapper {
         return new GameCheckpoint(checkpointId, checkpointText, checkpointNavInstructions, new LatLng(checkpointLat, checkpointLong), checkpointAreaSize, checkpointSequence);
     }
 
-    @Suppress(names = "Range")
     public static FinalCheckpoint mapCursorToFinalCheckpoint(Cursor cursor) {
         int checkpointId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
         int checkpointAreaSizeIndex = cursor.getColumnIndex(COLUMN_AREA_SIZE);
@@ -90,11 +88,29 @@ class ObjectMapper {
 
     public static Quest mapCursorToQuest(Cursor questCursor) {
         String question = questCursor.getString(questCursor.getColumnIndex(COLUMN_QUESTION));
-        String answer = questCursor.getString(questCursor.getColumnIndex(COLUMN_ANSWER));
         String hint = questCursor.getString(questCursor.getColumnIndex(COLUMN_HINT));
         String text = questCursor.getString(questCursor.getColumnIndex(COLUMN_TEXT));
 
-        return new Quest(question, answer, hint, text);
+        return new Quest(text, question, hint);
+    }
+
+    public static Fetch mapCursorToFetch(Cursor cursor) {
+        String text = cursor.getString(cursor.getColumnIndex(COLUMN_TEXT));
+        int areaSize = cursor.getInt(cursor.getColumnIndex(COLUMN_AREA_SIZE));
+        float lat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
+        float lng = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
+
+        return new Fetch(new LatLng(lat, lng), areaSize, text);
+    }
+
+    public static Item mapCursorToItem(Cursor cursor) {
+        float lat = cursor.getFloat(cursor.getColumnIndex(COLUMN_LAT));
+        float lng = cursor.getFloat(cursor.getColumnIndex(COLUMN_LONG));
+        String text = cursor.getString(cursor.getColumnIndex(COLUMN_TEXT));
+        String itemName = cursor.getString(cursor.getColumnIndex(COLUMN_ITEM_NAME));
+        String imageName = cursor.getString(cursor.getColumnIndex(COLUMN_ITEM_IMAGE));
+        boolean correctItem = cursor.getInt(cursor.getColumnIndex(COLUMN_CORRECT)) == 1;
+        return new Item(new LatLng(lat, lng), text, itemName, imageName, correctItem);
     }
 
     public static Achievement mapCursorToAchievement(Cursor achievementCursor) {
