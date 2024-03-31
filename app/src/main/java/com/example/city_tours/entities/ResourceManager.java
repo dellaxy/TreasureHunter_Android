@@ -13,6 +13,10 @@ public class ResourceManager {
         applicationContext = newContext.getApplicationContext();
     }
 
+    public static Context getContext() {
+        return applicationContext;
+    }
+
     public static String getString(int resourceId) {
 
         return applicationContext.getString(resourceId);

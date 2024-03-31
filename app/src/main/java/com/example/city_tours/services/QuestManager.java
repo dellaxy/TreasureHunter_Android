@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.example.city_tours.R;
 import com.example.city_tours.components.RegularModal;
-import com.example.city_tours.entities.Quest;
+import com.example.city_tours.entities.puzzles.Quest;
 
 import java.text.Normalizer;
 import java.util.regex.Pattern;

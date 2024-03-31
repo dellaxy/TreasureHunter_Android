@@ -27,6 +27,12 @@ public class ConstantsCatalog {
             "Slovenčina", "sk"
     );
 
+
+    // PUZZLE TYPES
+    public static final String
+            QUESTION = "Q",
+            FETCH = "F";
+
     public enum DATABASE_COLLECTIONS {
         MARKERS("markers"),
         GAMES("games"),
@@ -34,6 +40,9 @@ public class ConstantsCatalog {
         FINAL_CHECKPOINTS("final_checkpoints"),
         FINISHED("finished"),
         QUESTS("quests"),
+        QUEST_ANSWERS("quest_answers"),
+        FETCH("fetch"),
+        FETCH_ITEMS("fetch_items"),
         ACHIEVEMENTS("achievements"),
         PLAYER_ACHIEVEMENTS("player_achievements");
         private final String collectionName;

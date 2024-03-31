@@ -2,6 +2,8 @@ package com.example.city_tours.objects;
 
 import static com.example.city_tours.entities.ConstantsCatalog.DATABASE_COLLECTIONS;
 import static com.example.city_tours.entities.ConstantsCatalog.DATABASE_NAME;
+import static com.example.city_tours.entities.ConstantsCatalog.FETCH;
+import static com.example.city_tours.entities.ConstantsCatalog.QUESTION;
 import static com.example.city_tours.objects.ObjectMapper.mapCursorToGame;
 import static com.example.city_tours.objects.ObjectMapper.mapCursorToMarker;
 
@@ -17,7 +19,10 @@ import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
 import com.example.city_tours.entities.LocationMarker;
-import com.example.city_tours.entities.Quest;
+import com.example.city_tours.entities.puzzles.Fetch;
+import com.example.city_tours.entities.puzzles.Item;
+import com.example.city_tours.entities.puzzles.Puzzle;
+import com.example.city_tours.entities.puzzles.Quest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -167,15 +172,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.GAME_CHECKPOINTS.getCollectionName(), null, "game_id = ?", selectionArgs);
             while (cursor.moveToNext()) {
                 GameCheckpoint checkpoint = ObjectMapper.mapCursorToCheckpoint(cursor);
-                int questionIdIndex = cursor.getColumnIndex("question_id");
-                if (!cursor.isNull(questionIdIndex)) {
-                    int questionId = cursor.getInt(questionIdIndex);
-                    Cursor questCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questionId)});
-                    if (questCursor.moveToFirst()) {
-                        Quest quest = ObjectMapper.mapCursorToQuest(questCursor);
-                        checkpoint.setQuest(quest);
-                    }
-                    questCursor.close();
+                Puzzle puzzle = getPuzzle(cursor);
+                if (puzzle != null) {
+                    checkpoint.setPuzzle(puzzle);
                 }
                 checkpoints.add(checkpoint);
             }
@@ -185,6 +184,107 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             database.close();
         }
         return checkpoints;
+    }
+
+    public FinalCheckpoint getFinalGameCheckpoint(int gameId) {
+        SQLiteDatabase database = getReadableDatabase();
+        FinalCheckpoint finalCheckpoint = null;
+        try {
+            String[] selectionArgs = {String.valueOf(gameId)};
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "game_id = ?", selectionArgs, null);
+            while (cursor.moveToNext()) {
+                finalCheckpoint = ObjectMapper.mapCursorToFinalCheckpoint(cursor);
+                Puzzle puzzle = getPuzzle(cursor);
+                if (puzzle != null) {
+                    finalCheckpoint.setPuzzle(puzzle);
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+        return finalCheckpoint;
+    }
+
+    private Puzzle getPuzzle(Cursor cursor) {
+        int puzzleIdIndex = cursor.getColumnIndex("puzzle_id");
+        int puzzleTypeIndex = cursor.getColumnIndex("puzzle_type");
+
+        if (!cursor.isNull(puzzleIdIndex) && !cursor.isNull(puzzleTypeIndex)) {
+            int puzzleId = cursor.getInt(puzzleIdIndex);
+            String puzzleType = cursor.getString(puzzleTypeIndex);
+
+            switch (puzzleType) {
+                case QUESTION:
+                    return getQuest(puzzleId);
+                case FETCH:
+                    return getFetch(puzzleId);
+                default:
+                    return null;
+            }
+        }
+
+        return null;
+    }
+
+    private Fetch getFetch(int fetchId) {
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FETCH.getCollectionName(), null, "id = ?", new String[]{String.valueOf(fetchId)});
+        try {
+            if (cursor.moveToFirst()) {
+                Fetch fetch = ObjectMapper.mapCursorToFetch(cursor);
+
+                Cursor itemsCursor = queryDatabase(database, DATABASE_COLLECTIONS.FETCH_ITEMS.getCollectionName(), null, "fetch_id = ?", new String[]{String.valueOf(fetchId)});
+                try {
+                    ArrayList<Item> items = new ArrayList<>();
+                    while (itemsCursor.moveToNext()) {
+                        Item item = ObjectMapper.mapCursorToItem(itemsCursor);
+                        items.add(item);
+                    }
+                    fetch.setItems(items);
+                } finally {
+                    itemsCursor.close();
+                }
+                return fetch;
+            }
+
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
+    private Quest getQuest(int questId) {
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questId)});
+
+        try {
+            if (cursor.moveToFirst()) {
+                Quest quest = ObjectMapper.mapCursorToQuest(cursor);
+
+                Cursor answersCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUEST_ANSWERS.getCollectionName(), null, "quest_id = ?", new String[]{String.valueOf(questId)});
+                try {
+                    ArrayList<String> answers = new ArrayList<>();
+                    while (answersCursor.moveToNext()) {
+                        String answer = answersCursor.getString(answersCursor.getColumnIndex("answer"));
+                        answers.add(answer);
+                        boolean isCorrect = answersCursor.getInt(answersCursor.getColumnIndex("correct")) == 1;
+                        if (isCorrect) {
+                            quest.setCorrectAnswer(answer);
+                        }
+                    }
+                    quest.setAnswers(answers);
+                } finally {
+                    answersCursor.close();
+                }
+                return quest;
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
     }
 
     public Achievement getAchievementById(int achievementId) {
@@ -300,33 +400,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
     }
 
-    public FinalCheckpoint getFinalGameCheckpoint(int gameId) {
-        SQLiteDatabase database = getReadableDatabase();
-        FinalCheckpoint finalCheckpoint = null;
-        try {
-            String[] selectionArgs = {String.valueOf(gameId)};
-            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.FINAL_CHECKPOINTS.getCollectionName(), null, "game_id = ?", selectionArgs, null);
-            while (cursor.moveToNext()) {
-                finalCheckpoint = ObjectMapper.mapCursorToFinalCheckpoint(cursor);
-                int questionIdIndex = cursor.getColumnIndex("question_id");
-                if (!cursor.isNull(questionIdIndex)) {
-                    int questionId = cursor.getInt(questionIdIndex);
-                    Cursor questCursor = queryDatabase(database, DATABASE_COLLECTIONS.QUESTS.getCollectionName(), null, "id = ?", new String[]{String.valueOf(questionId)});
-                    if (questCursor.moveToFirst()) {
-                        Quest quest = ObjectMapper.mapCursorToQuest(questCursor);
-                        finalCheckpoint.setQuest(quest);
-                    }
-                    questCursor.close();
-                }
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            database.close();
-        }
-        return finalCheckpoint;
-    }
     public void updateFinished(int markerId) {
         SQLiteDatabase database = getWritableDatabase();
         try {

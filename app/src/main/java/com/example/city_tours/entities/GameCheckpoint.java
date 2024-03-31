@@ -1,5 +1,6 @@
 package com.example.city_tours.entities;
 
+import com.example.city_tours.entities.puzzles.Puzzle;
 import com.example.city_tours.objects.Utils;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -8,7 +9,7 @@ public class GameCheckpoint {
     private final String text;
     private String navigationInstructions;
     private final LatLng position;
-    private Quest question;
+    private Puzzle puzzle;
 
     public GameCheckpoint(int id, String text, String navigationInstructions, LatLng position, int areaSize, int sequence) {
         this.id = id;
@@ -26,8 +27,8 @@ public class GameCheckpoint {
         this.areaSize = areaSize;
     }
 
-    public boolean hasQuest() {
-        return Utils.isNotNull(question);
+    public boolean hasPuzzle() {
+        return Utils.isNotNull(puzzle);
     }
 
     public String getNavigationInstructions() {
@@ -54,11 +55,15 @@ public class GameCheckpoint {
         return sequence;
     }
 
-    public Quest getQuest() {
-        return question;
+    public Puzzle getPuzzle() {
+        return puzzle;
     }
 
-    public void setQuest(Quest quest) {
-        this.question = quest;
+    public void setPuzzle(Puzzle puzzle) {
+        this.puzzle = puzzle;
+    }
+
+    public String getPuzzleType() {
+        return puzzle.getPuzzleType();
     }
 }

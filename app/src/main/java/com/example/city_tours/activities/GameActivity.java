@@ -3,7 +3,9 @@ package com.example.city_tours.activities;
 import static com.example.city_tours.activities.GameActivity.GameState.GAME_COMPLETED;
 import static com.example.city_tours.activities.GameActivity.GameState.GAME_NOT_STARTED;
 import static com.example.city_tours.activities.GameActivity.GameState.GAME_STARTED;
+import static com.example.city_tours.entities.ConstantsCatalog.FETCH;
 import static com.example.city_tours.entities.ConstantsCatalog.LOCATION_PERMISSION_REQUEST_CODE;
+import static com.example.city_tours.entities.ConstantsCatalog.QUESTION;
 import static com.example.city_tours.objects.Utils.bitmapDescriptorFromVector;
 import static com.example.city_tours.objects.Utils.isNotNull;
 import static com.example.city_tours.objects.Utils.isNull;
@@ -38,7 +40,7 @@ import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
-import com.example.city_tours.entities.Quest;
+import com.example.city_tours.entities.puzzles.Quest;
 import com.example.city_tours.objects.DatabaseHelper;
 import com.example.city_tours.services.Observable;
 import com.example.city_tours.services.PreferencesManager;
@@ -65,7 +67,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private LatLng startLocation;
     private QuestManager questManager;
     private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
-    private boolean isInsideArea = false, navigateToLocation = false, isQuestActive = false;
+    private boolean isInsideArea = false, navigateToLocation = false, isPuzzleActive = false;
     private Game currentGame;
     private List<GameCheckpoint> undiscoveredCheckpoints;
     private GameCheckpoint activeQuestCheckpoint;
@@ -179,7 +181,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
             public void correctAnswerEntered() {
                 questCount++;
                 correctAnswerCount++;
-                isQuestActive = false;
+                isPuzzleActive = false;
                 textToSpeechService.synthesizeText(quest.getText());
                 textToSpeechService.postTaskToMainThread(() -> {
                     addTextToUI(quest.getText());
@@ -191,7 +193,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
             @Override
             public void abandonQuest() {
                 questCount++;
-                isQuestActive = false;
+                isPuzzleActive = false;
                 textToSpeechService.synthesizeText(quest.getText());
                 textToSpeechService.postTaskToMainThread(() -> {
                     addTextToUI(quest.getText());
@@ -325,26 +327,16 @@ public class GameActivity extends BaseActivity implements LocationListener {
             }
             case GAME_STARTED: {
                 miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 20f));
-                if (isQuestActive) {
-                    if (isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize()) && !isInsideArea) {
-                        isInsideArea = true;
-                        questManager.toggleQuestModal(true);
-                    } else if (!isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize()) && isInsideArea) {
-                        isInsideArea = false;
-                        questManager.toggleQuestModal(false);
-                    }
+                if (isPuzzleActive) {
+                    behaveOnActivePuzzle(playerLocation);
                 } else {
                     if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
                         Iterator<GameCheckpoint> iterator = undiscoveredCheckpoints.iterator();
                         while (iterator.hasNext()) {
                             GameCheckpoint checkpoint = iterator.next();
                             if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
-                                if (checkpoint.hasQuest()) {
-                                    isQuestActive = true;
-                                    activeQuestCheckpoint = checkpoint;
-                                    initQuestLayout(checkpoint.getQuest());
-                                    questManager.toggleQuestModal(true);
-                                    isInsideArea = true;
+                                if (checkpoint.hasPuzzle()) {
+                                    activatePuzzle(checkpoint);
                                 }
                                 if (checkpoint.getClass() == FinalCheckpoint.class) {
                                     finalCheckpointFound();
@@ -359,7 +351,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                     });
                                     miniMap.clear();
                                     iterator.remove();
-                                    if (isQuestActive) {
+                                    if (isPuzzleActive) {
                                         miniMap.addCircle(new CircleOptions()
                                                 .center(checkpoint.getPosition())
                                                 .radius(checkpoint.getAreaSize())
@@ -376,6 +368,58 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 }
                 break;
             }
+        }
+    }
+
+    private void activatePuzzle(GameCheckpoint checkpoint) {
+        isPuzzleActive = true;
+        isInsideArea = true;
+        activeQuestCheckpoint = checkpoint;
+        switch (checkpoint.getPuzzleType()) {
+            case QUESTION:
+                initQuestLayout((Quest) checkpoint.getPuzzle());
+                questManager.toggleQuestModal(true);
+                break;
+            case FETCH:
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void behaveOnActivePuzzle(LatLng playerLocation) {
+        boolean isPlayerInside = isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize());
+
+        if (isPlayerInside && !isInsideArea) {
+            handleEnterArea(activeQuestCheckpoint.getPuzzle().getPuzzleType());
+            isInsideArea = true;
+        } else if (!isPlayerInside && isInsideArea) {
+            handleExitArea(activeQuestCheckpoint.getPuzzle().getPuzzleType());
+            isInsideArea = false;
+        }
+    }
+
+    private void handleEnterArea(String puzzleType) {
+        switch (puzzleType) {
+            case QUESTION:
+                questManager.toggleQuestModal(true);
+                break;
+            case FETCH:
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void handleExitArea(String puzzleType) {
+        switch (puzzleType) {
+            case QUESTION:
+                questManager.toggleQuestModal(false);
+                break;
+            case FETCH:
+                break;
+            default:
+                break;
         }
     }
 
