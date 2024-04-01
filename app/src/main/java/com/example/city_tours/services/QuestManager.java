@@ -94,7 +94,7 @@ public abstract class QuestManager {
 
     private boolean isAnswerCorrect(String answer) {
         String normalizedAnswer = normalizeString(answer);
-        String normalizedCorrectAnswer = normalizeString(quest.getAnswer());
+        String normalizedCorrectAnswer = normalizeString(quest.getCorrectAnswer());
         return normalizedCorrectAnswer.equalsIgnoreCase(normalizedAnswer);
     }
 

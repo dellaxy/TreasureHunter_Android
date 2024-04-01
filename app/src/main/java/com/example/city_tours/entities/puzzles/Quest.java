@@ -43,4 +43,8 @@ public class Quest extends Puzzle {
     public String getPuzzleType() {
         return QUESTION;
     }
+
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
 }

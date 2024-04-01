@@ -55,6 +55,10 @@ public class GameCheckpoint {
         return sequence;
     }
 
+    public boolean hasSequence() {
+        return sequence > 0;
+    }
+
     public Puzzle getPuzzle() {
         return puzzle;
     }
