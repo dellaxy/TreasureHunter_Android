@@ -70,22 +70,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
-        /*googleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
-            @Override
-            public void onCameraChange(CameraPosition cameraPosition) {
-                float currentZoom = cameraPosition.zoom;
-                float tilt = calculateTilt(currentZoom);
-
-                CameraPosition newCameraPosition = new CameraPosition.Builder()
-                        .target(cameraPosition.target)
-                        .zoom(cameraPosition.zoom)
-                        .tilt(tilt)
-                        .bearing(cameraPosition.bearing)
-                        .build();
-
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
-            }
-        });*/
     }
 
     private void getMapPreferences() {
@@ -123,16 +107,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         latitude /= points.size();
         longitude /= points.size();
         return new LatLng(latitude, longitude);
-    }
-
-    private float calculateTilt(float zoomLevel) {
-        float minZoom = 10.0f;
-        float maxZoom = 20.0f;
-        float minTilt = 0.0f;
-        float maxTilt = 45.0f;
-        float tilt = ((zoomLevel - minZoom) / (maxZoom - minZoom)) * maxTilt + minTilt;
-        tilt = Math.max(minTilt, Math.min(maxTilt, tilt));
-        return tilt;
     }
 
     private void loadDataFromDatabase() {
