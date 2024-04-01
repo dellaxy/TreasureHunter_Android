@@ -55,6 +55,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +70,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
     private boolean isInsideArea = false, navigateToLocation = false, isPuzzleActive = false;
     private Game currentGame;
-    private List<GameCheckpoint> undiscoveredCheckpoints;
+    private List<GameCheckpoint> allCheckpoints, undiscoveredCheckpoints;
     private GameCheckpoint activeQuestCheckpoint;
     private Observable<GameState> currentGameState;
     private SupportMapFragment mainMapFragment, miniMapFragment;
@@ -111,8 +112,10 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 currentGame.setFinalCheckpoint(databaseHelper.getFinalGameCheckpoint(currentGame.getId()));
 
                                 finalCheckpoint = currentGame.getFinalCheckpoint();
-                                undiscoveredCheckpoints = currentGame.getCheckpoints();
-                                undiscoveredCheckpoints.add(currentGame.getFinalCheckpoint());
+                                allCheckpoints = currentGame.getCheckpoints();
+                                allCheckpoints.add(currentGame.getFinalCheckpoint());
+
+                                updateCheckpointsList();
 
                                 mainMapFragment.getView().setVisibility(View.GONE);
                                 activeGameLayout.setVisibility(View.VISIBLE);
@@ -214,24 +217,64 @@ public class GameActivity extends BaseActivity implements LocationListener {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 miniMap.setMyLocationEnabled(true);
                 getLastKnownLocation(miniMap);
+                miniMap.setMinZoomPreference(16.0f);
                 addCheckpointsToMiniMap();
             }
         });
     }
 
-    private void addCheckpointsToMiniMap() {
-        if (undiscoveredCheckpoints != null) {
-            for (GameCheckpoint checkpoint : undiscoveredCheckpoints) {
-                miniMap.addCircle(new CircleOptions()
-                        .center(checkpoint.getPosition())
-                        .radius(checkpoint.getAreaSize())
-                        .strokeWidth(5)
-                        .strokeColor(ColorPalette.PRIMARY.getColor())
-                        .fillColor(ColorPalette.PRIMARY.getColor(100)));
+    private void updateCheckpointsList() {
+        undiscoveredCheckpoints = new ArrayList<>();
+        Iterator<GameCheckpoint> iterator = allCheckpoints.iterator();
+        while (iterator.hasNext()) {
+            GameCheckpoint checkpoint = iterator.next();
+            undiscoveredCheckpoints.add(checkpoint);
+            iterator.remove();
+            if (checkpoint.getSequence() != 0) {
+                break;
             }
         }
     }
 
+    private void addCheckpointsToMiniMap() {
+        if (undiscoveredCheckpoints != null && undiscoveredCheckpoints.size() >= 1) {
+            for (int i = 0; i < undiscoveredCheckpoints.size(); i++) {
+                GameCheckpoint currentCheckpoint = undiscoveredCheckpoints.get(i);
+
+                if (currentCheckpoint.getSequence() != 0 || currentCheckpoint instanceof FinalCheckpoint) {
+                    miniMap.addCircle(new CircleOptions()
+                            .center(currentCheckpoint.getPosition())
+                            .radius(currentCheckpoint.getAreaSize())
+                            .strokeWidth(5)
+                            .strokeColor(ColorPalette.PRIMARY.getColor())
+                            .fillColor(ColorPalette.PRIMARY.getColor(100)));
+                } else {
+                    GameCheckpoint nextCheckpoint = i < undiscoveredCheckpoints.size() - 1 ? undiscoveredCheckpoints.get(i + 1) : currentCheckpoint;
+                    addArrowMarker(currentCheckpoint.getPosition(), nextCheckpoint.getPosition());
+                }
+            }
+        }
+    }
+
+    private void addArrowMarker(LatLng position, LatLng nextCheckpoint) {
+        float rotation = getBearing(position, nextCheckpoint);
+        miniMap.addMarker(new MarkerOptions()
+                .position(position)
+                .icon(bitmapDescriptorFromVector(this, ColorPalette.SECONDARY.getColor(), R.drawable.arrow))
+                .rotation(rotation));
+    }
+
+    private float getBearing(LatLng begin, LatLng end) {
+        double lat = Math.toRadians(end.latitude - begin.latitude);
+        double lon = Math.toRadians(end.longitude - begin.longitude);
+        double startLat = Math.toRadians(begin.latitude);
+        double endLat = Math.toRadians(end.latitude);
+
+        double x = Math.sin(lon) * Math.cos(endLat);
+        double y = Math.cos(startLat) * Math.sin(endLat) - Math.sin(startLat) * Math.cos(endLat) * Math.cos(lon);
+
+        return (float) ((Math.toDegrees(Math.atan2(x, y)) + 360) % 360);
+    }
 
     private void initializeMainMap() {
         mainMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);

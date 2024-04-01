@@ -68,6 +68,7 @@ public class ConstantsCatalog {
     public enum ColorPalette {
         PRIMARY(69, 107, 141),
         SECONDARY(69, 107, 141),
+        ARROW(0, 158, 255),
         SELECTED(67, 114, 158);
         private final int color;
 
