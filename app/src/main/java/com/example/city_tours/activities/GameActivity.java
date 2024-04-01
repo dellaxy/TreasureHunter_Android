@@ -174,7 +174,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
     }
 
     private void initQuestLayout(Quest quest) {
-        LinearLayout questLayout = findViewById(R.id.questModalLayout), bottomInfoLayout = findViewById(R.id.bottomInfoLayout);
+        LinearLayout questLayout = findViewById(R.id.questLayout), bottomInfoLayout = findViewById(R.id.bottomInfoLayout);
         TextView questText = questLayout.findViewById(R.id.question_text), hintText = questLayout.findViewById(R.id.hint_text);
         Button acceptButton = questLayout.findViewById(R.id.submit_button), hintButton = questLayout.findViewById(R.id.hint_button);
         ImageButton closeButton = questLayout.findViewById(R.id.close_button);
@@ -230,7 +230,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
             GameCheckpoint checkpoint = iterator.next();
             undiscoveredCheckpoints.add(checkpoint);
             iterator.remove();
-            if (checkpoint.getSequence() != 0) {
+            if (checkpoint.hasSequence()) {
                 break;
             }
         }
@@ -241,7 +241,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
             for (int i = 0; i < undiscoveredCheckpoints.size(); i++) {
                 GameCheckpoint currentCheckpoint = undiscoveredCheckpoints.get(i);
 
-                if (currentCheckpoint.getSequence() != 0 || currentCheckpoint instanceof FinalCheckpoint) {
+                if (currentCheckpoint.hasSequence() || currentCheckpoint instanceof FinalCheckpoint) {
                     miniMap.addCircle(new CircleOptions()
                             .center(currentCheckpoint.getPosition())
                             .radius(currentCheckpoint.getAreaSize())
@@ -380,6 +380,9 @@ public class GameActivity extends BaseActivity implements LocationListener {
                             if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                                 if (checkpoint.hasPuzzle()) {
                                     activatePuzzle(checkpoint);
+                                }
+                                if (checkpoint.hasSequence()) {
+                                    updateCheckpointsList();
                                 }
                                 if (checkpoint.getClass() == FinalCheckpoint.class) {
                                     finalCheckpointFound();

@@ -92,7 +92,10 @@
         </LinearLayout>
 
 
-        <include layout="@layout/quest_layout" />
+        <include
+            android:id="@+id/questLayout"
+            layout="@layout/layout_quest"
+            android:visibility="gone" />
 
     </RelativeLayout>
 
