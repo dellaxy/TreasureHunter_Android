@@ -19,6 +19,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -67,6 +68,8 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
     private boolean isInsideArea = false, navigateToLocation = false, isPuzzleActive = false;
     private Game currentGame;
+    private float lastCheckTime = 0, previousDistance = -1;
+    private static final long CHECK_INTERVAL = 10 * 1000;
     private List<GameCheckpoint> allCheckpoints, undiscoveredCheckpoints;
     private GameCheckpoint activeQuestCheckpoint;
     private Observable<GameState> currentGameState;
@@ -111,17 +114,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 finalCheckpoint = currentGame.getFinalCheckpoint();
                                 allCheckpoints = currentGame.getCheckpoints();
                                 allCheckpoints.add(currentGame.getFinalCheckpoint());
-
-                                Quest quest = new Quest("ASD Question", "What is the capital of France?", "Hint: It's in Europe");
-                                quest.setCorrectAnswer("Paris");
-                                quest.setAnswers(new ArrayList<String>() {{
-                                    add("Paris");
-                                    add("London");
-                                    add("Berlin");
-                                    add("Madrid");
-                                }});
-
-                                allCheckpoints.get(0).setPuzzle(quest);
 
                                 updateCheckpointsList();
 
@@ -272,7 +264,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
     }
 
     private float getBearing(LatLng begin, LatLng end) {
-        double lat = Math.toRadians(end.latitude - begin.latitude);
         double lon = Math.toRadians(end.longitude - begin.longitude);
         double startLat = Math.toRadians(begin.latitude);
         double endLat = Math.toRadians(end.latitude);
@@ -381,6 +372,14 @@ public class GameActivity extends BaseActivity implements LocationListener {
                     behaveOnActivePuzzle(playerLocation);
                 } else {
                     if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
+
+                        float currentTime = System.currentTimeMillis();
+
+                        if (currentTime - lastCheckTime >= CHECK_INTERVAL) {
+                            isPlayerApproachingCheckpoint(playerLocation, undiscoveredCheckpoints.get(undiscoveredCheckpoints.size() - 1).getPosition());
+                            lastCheckTime = currentTime;
+                        }
+
                         Iterator<GameCheckpoint> iterator = undiscoveredCheckpoints.iterator();
                         while (iterator.hasNext()) {
                             GameCheckpoint checkpoint = iterator.next();
@@ -474,6 +473,23 @@ public class GameActivity extends BaseActivity implements LocationListener {
             default:
                 break;
         }
+    }
+
+    private void isPlayerApproachingCheckpoint(LatLng playerLocation, LatLng checkpointLocation) {
+        float[] distance = new float[1];
+        Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, checkpointLocation.latitude, checkpointLocation.longitude, distance);
+        if (previousDistance >= 0) {
+            if (distance[0] > previousDistance + 100) {
+                textToSpeechService.synthesizeText("You are moving away from the checkpoint");
+
+            } else if (distance[0] < previousDistance - 10) {
+                previousDistance = distance[0];
+            }
+        } else {
+            previousDistance = distance[0];
+        }
+        Log.d("Distance", String.valueOf(distance[0]));
+        Log.d("Distance", String.valueOf(previousDistance));
     }
 
     private boolean isPlayerInsideArea(LatLng playerLocation, LatLng checkedLocation, int locationRadius) {
