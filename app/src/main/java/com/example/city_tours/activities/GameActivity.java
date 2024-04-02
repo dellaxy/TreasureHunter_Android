@@ -20,13 +20,10 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -115,6 +112,17 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 allCheckpoints = currentGame.getCheckpoints();
                                 allCheckpoints.add(currentGame.getFinalCheckpoint());
 
+                                Quest quest = new Quest("ASD Question", "What is the capital of France?", "Hint: It's in Europe");
+                                quest.setCorrectAnswer("Paris");
+                                quest.setAnswers(new ArrayList<String>() {{
+                                    add("Paris");
+                                    add("London");
+                                    add("Berlin");
+                                    add("Madrid");
+                                }});
+
+                                allCheckpoints.get(0).setPuzzle(quest);
+
                                 updateCheckpointsList();
 
                                 mainMapFragment.getView().setVisibility(View.GONE);
@@ -175,11 +183,8 @@ public class GameActivity extends BaseActivity implements LocationListener {
 
     private void initQuestLayout(Quest quest) {
         LinearLayout questLayout = findViewById(R.id.questLayout), bottomInfoLayout = findViewById(R.id.bottomInfoLayout);
-        TextView questText = questLayout.findViewById(R.id.question_text), hintText = questLayout.findViewById(R.id.hint_text);
-        Button acceptButton = questLayout.findViewById(R.id.submit_button), hintButton = questLayout.findViewById(R.id.hint_button);
-        ImageButton closeButton = questLayout.findViewById(R.id.close_button);
 
-        questManager = new QuestManager(this, bottomInfoLayout, questLayout, questText, hintText, acceptButton, hintButton, closeButton) {
+        questManager = new QuestManager(this, bottomInfoLayout, questLayout) {
             @Override
             public void correctAnswerEntered() {
                 questCount++;
@@ -190,6 +195,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                     addTextToUI(quest.getText());
                 });
                 miniMap.clear();
+                questManager.clearLayout();
                 addCheckpointsToMiniMap();
             }
 
@@ -202,6 +208,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                     addTextToUI(quest.getText());
                 });
                 miniMap.clear();
+                questManager.clearLayout();
                 addCheckpointsToMiniMap();
             }
         };
@@ -369,7 +376,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 break;
             }
             case GAME_STARTED: {
-                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 20f));
+                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 17f));
                 if (isPuzzleActive) {
                     behaveOnActivePuzzle(playerLocation);
                 } else {
