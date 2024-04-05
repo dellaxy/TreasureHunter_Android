@@ -33,6 +33,7 @@ public abstract class QuestManager {
     private Quest quest;
     private ChipGroup answerChipGroup;
     private EditText answerInput;
+    private boolean hintUsed = false;
 
 
     public QuestManager(Context context, LinearLayout bottomInfoLayout, LinearLayout questLayout) {
@@ -62,6 +63,7 @@ public abstract class QuestManager {
                     preferencesManager.setPlayerCoins(coins - 100);
                     hintText.setText(quest.getHint());
                     closePopup();
+                    hintUsed = true;
                     hintButton.setEnabled(false);
                 } else {
                     setModalTextColour(Color.RED);
@@ -88,6 +90,7 @@ public abstract class QuestManager {
                         ((Chip) answerChipGroup.findViewById(answerChipGroup.getCheckedChipId())).getText().toString() : "";
                 if (Utils.isNotNull(answer) && isAnswerCorrect(answer)) {
                     correctAnswerEntered();
+                    clearLayout();
                     toggleQuestModal(false);
                 } else {
                     setWrongAnswerShown();
@@ -100,12 +103,17 @@ public abstract class QuestManager {
                 String answer = answerInput.getText().toString();
                 if (Utils.isNotNull(answer) && isAnswerCorrect(answer)) {
                     correctAnswerEntered();
+                    clearLayout();
                     toggleQuestModal(false);
                 } else {
                     setWrongAnswerShown();
                 }
             });
         }
+    }
+
+    public boolean wasHintUsed() {
+        return hintUsed;
     }
 
     private Chip createChip(Context context) {
@@ -123,6 +131,7 @@ public abstract class QuestManager {
     private void initializeButtons() {
         closeButton.setOnClickListener(v -> {
             abandonQuest();
+            clearLayout();
             toggleQuestModal(false);
         });
 

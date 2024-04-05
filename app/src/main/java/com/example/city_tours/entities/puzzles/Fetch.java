@@ -4,12 +4,12 @@ import static com.example.city_tours.entities.ConstantsCatalog.FETCH;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Fetch extends Puzzle {
     private final LatLng position;
     private final int area;
-    private ArrayList<Item> items;
+    private List<Item> items;
 
     public Fetch(LatLng position, int area, String text) {
         super(text);
@@ -17,7 +17,7 @@ public class Fetch extends Puzzle {
         this.area = area;
     }
 
-    public void setItems(ArrayList<Item> items) {
+    public void setItems(List<Item> items) {
         this.items = items;
     }
 
@@ -29,7 +29,7 @@ public class Fetch extends Puzzle {
         return area;
     }
 
-    public ArrayList<Item> getItems() {
+    public List<Item> getItems() {
         return items;
     }
 

@@ -19,7 +19,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,8 +37,11 @@ import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
+import com.example.city_tours.entities.puzzles.Fetch;
+import com.example.city_tours.entities.puzzles.Item;
 import com.example.city_tours.entities.puzzles.Quest;
 import com.example.city_tours.objects.DatabaseHelper;
+import com.example.city_tours.services.FetchManager;
 import com.example.city_tours.services.Observable;
 import com.example.city_tours.services.PreferencesManager;
 import com.example.city_tours.services.QuestManager;
@@ -65,13 +67,15 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private TextToSpeechService textToSpeechService;
     private LatLng startLocation;
     private QuestManager questManager;
+    private FetchManager fetchManager;
     private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
     private boolean isInsideArea = false, navigateToLocation = false, isPuzzleActive = false;
     private Game currentGame;
     private float lastCheckTime = 0, previousDistance = -1;
     private static final long CHECK_INTERVAL = 10 * 1000;
     private List<GameCheckpoint> allCheckpoints, undiscoveredCheckpoints;
-    private GameCheckpoint activeQuestCheckpoint;
+    private List<Item> items;
+    private GameCheckpoint activePuzzleCheckpoint;
     private Observable<GameState> currentGameState;
     private SupportMapFragment mainMapFragment, miniMapFragment;
     private FinalCheckpoint finalCheckpoint;
@@ -114,6 +118,15 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 finalCheckpoint = currentGame.getFinalCheckpoint();
                                 allCheckpoints = currentGame.getCheckpoints();
                                 allCheckpoints.add(currentGame.getFinalCheckpoint());
+
+
+                                items = new ArrayList<>();
+                                items.add(new Item(new LatLng(47.994373755980384, 18.173352155432244), "Text Text", "Mapa", "map", false));
+                                items.add(new Item(new LatLng(47.99437369332947, 18.173118867830205), "Text Text", "Knižka", "aristoteles_book", true));
+                                Fetch fetch = new Fetch(new LatLng(47.99429908446084, 18.173130746088304), 20, "Text Text");
+                                fetch.setItems(items);
+
+                                allCheckpoints.get(0).setPuzzle(fetch);
 
                                 updateCheckpointsList();
 
@@ -173,6 +186,35 @@ public class GameActivity extends BaseActivity implements LocationListener {
         gameStartModal.setModalText("By tapping the button below, you will start your new tour. Good luck!");
     }
 
+    private void initFetchLayout(Fetch fetch) {
+        LinearLayout fetchLayout = findViewById(R.id.fetchLayout), bottomInfoLayout = findViewById(R.id.bottomInfoLayout);
+
+        miniMap.addCircle(new CircleOptions()
+                .center(fetch.getPosition())
+                .radius(fetch.getArea())
+                .strokeWidth(5)
+                .strokeColor(ColorPalette.SECONDARY.getColor())
+                .fillColor(ColorPalette.SECONDARY.getColor(100)));
+
+        items = fetch.getItems() != null ? fetch.getItems() : new ArrayList<>();
+
+        for (Item item : items) {
+            miniMap.addCircle(new CircleOptions()
+                    .center(item.getPosition())
+                    .radius(item.getAreaSize())
+                    .strokeWidth(5)
+                    .strokeColor(ColorPalette.SECONDARY.getColor())
+                    .fillColor(ColorPalette.SECONDARY.getColor(100)));
+        }
+        fetchManager = new FetchManager(this, bottomInfoLayout, fetchLayout) {
+            @Override
+            public void correctItemSelected() {
+                miniMap.clear();
+                addCheckpointsToMiniMap();
+            }
+        };
+    }
+
     private void initQuestLayout(Quest quest) {
         LinearLayout questLayout = findViewById(R.id.questLayout), bottomInfoLayout = findViewById(R.id.bottomInfoLayout);
 
@@ -180,14 +222,13 @@ public class GameActivity extends BaseActivity implements LocationListener {
             @Override
             public void correctAnswerEntered() {
                 questCount++;
-                correctAnswerCount++;
+                correctAnswerCount = questManager.wasHintUsed() ? correctAnswerCount : correctAnswerCount + 1;
                 isPuzzleActive = false;
                 textToSpeechService.synthesizeText(quest.getText());
                 textToSpeechService.postTaskToMainThread(() -> {
                     addTextToUI(quest.getText());
                 });
                 miniMap.clear();
-                questManager.clearLayout();
                 addCheckpointsToMiniMap();
             }
 
@@ -200,7 +241,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
                     addTextToUI(quest.getText());
                 });
                 miniMap.clear();
-                questManager.clearLayout();
                 addCheckpointsToMiniMap();
             }
         };
@@ -372,9 +412,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                     behaveOnActivePuzzle(playerLocation);
                 } else {
                     if (isNotNull(undiscoveredCheckpoints) && !undiscoveredCheckpoints.isEmpty()) {
-
                         float currentTime = System.currentTimeMillis();
-
                         if (currentTime - lastCheckTime >= CHECK_INTERVAL) {
                             isPlayerApproachingCheckpoint(playerLocation, undiscoveredCheckpoints.get(undiscoveredCheckpoints.size() - 1).getPosition());
                             lastCheckTime = currentTime;
@@ -385,6 +423,8 @@ public class GameActivity extends BaseActivity implements LocationListener {
                             GameCheckpoint checkpoint = iterator.next();
                             if (isPlayerInsideArea(playerLocation, checkpoint.getPosition(), checkpoint.getAreaSize())) {
                                 if (checkpoint.hasPuzzle()) {
+                                    miniMap.clear();
+                                    iterator.remove();
                                     activatePuzzle(checkpoint);
                                 }
                                 if (checkpoint.hasSequence()) {
@@ -401,8 +441,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                     textToSpeechService.postTaskToMainThread(() -> {
                                         addCheckpointTextToUI(checkpoint);
                                     });
-                                    miniMap.clear();
-                                    iterator.remove();
                                     if (isPuzzleActive) {
                                         miniMap.addCircle(new CircleOptions()
                                                 .center(checkpoint.getPosition())
@@ -411,6 +449,8 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                                 .strokeColor(ColorPalette.PRIMARY.getColor())
                                                 .fillColor(ColorPalette.PRIMARY.getColor(100)));
                                     } else {
+                                        miniMap.clear();
+                                        iterator.remove();
                                         addCheckpointsToMiniMap();
                                     }
                                 }
@@ -426,13 +466,14 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private void activatePuzzle(GameCheckpoint checkpoint) {
         isPuzzleActive = true;
         isInsideArea = true;
-        activeQuestCheckpoint = checkpoint;
+        activePuzzleCheckpoint = checkpoint;
         switch (checkpoint.getPuzzleType()) {
             case QUESTION:
                 initQuestLayout((Quest) checkpoint.getPuzzle());
                 questManager.toggleQuestModal(true);
                 break;
             case FETCH:
+                initFetchLayout((Fetch) checkpoint.getPuzzle());
                 break;
             default:
                 break;
@@ -440,14 +481,26 @@ public class GameActivity extends BaseActivity implements LocationListener {
     }
 
     private void behaveOnActivePuzzle(LatLng playerLocation) {
-        boolean isPlayerInsideQuestCheckpoint = isPlayerInsideArea(playerLocation, activeQuestCheckpoint.getPosition(), activeQuestCheckpoint.getAreaSize());
+        boolean isPlayerInsideQuestCheckpoint = isPlayerInsideArea(playerLocation, activePuzzleCheckpoint.getPosition(), activePuzzleCheckpoint.getAreaSize());
 
         if (isPlayerInsideQuestCheckpoint && !isInsideArea) {
-            handleEnterArea(activeQuestCheckpoint.getPuzzle().getPuzzleType());
+            handleEnterArea(activePuzzleCheckpoint.getPuzzle().getPuzzleType());
             isInsideArea = true;
         } else if (!isPlayerInsideQuestCheckpoint && isInsideArea) {
-            handleExitArea(activeQuestCheckpoint.getPuzzle().getPuzzleType());
+            handleExitArea(activePuzzleCheckpoint.getPuzzle().getPuzzleType());
             isInsideArea = false;
+        }
+
+        if (activePuzzleCheckpoint.getPuzzleType().equals(FETCH) && isNotNull(items)) {
+            Iterator<Item> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                Item item = iterator.next();
+                if (isPlayerInsideArea(playerLocation, item.getPosition(), item.getAreaSize())) {
+                    textToSpeechService.synthesizeText(item.getText());
+                    fetchManager.itemCollected(item);
+                    iterator.remove();
+                }
+            }
         }
     }
 
@@ -457,6 +510,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 questManager.toggleQuestModal(true);
                 break;
             case FETCH:
+                fetchManager.toggleItemSelect(true);
                 break;
             default:
                 break;
@@ -469,6 +523,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 questManager.toggleQuestModal(false);
                 break;
             case FETCH:
+                fetchManager.toggleItemSelect(false);
                 break;
             default:
                 break;
@@ -488,8 +543,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
         } else {
             previousDistance = distance[0];
         }
-        Log.d("Distance", String.valueOf(distance[0]));
-        Log.d("Distance", String.valueOf(previousDistance));
     }
 
     private boolean isPlayerInsideArea(LatLng playerLocation, LatLng checkedLocation, int locationRadius) {
