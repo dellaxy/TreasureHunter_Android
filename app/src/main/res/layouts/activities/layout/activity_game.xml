@@ -97,6 +97,11 @@
             layout="@layout/layout_quest"
             android:visibility="gone" />
 
+        <include
+            android:id="@+id/fetchLayout"
+            layout="@layout/layout_fetch"
+            android:visibility="gone" />
+
     </RelativeLayout>
 
     <RelativeLayout
