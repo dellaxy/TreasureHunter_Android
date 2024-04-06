@@ -21,4 +21,12 @@
     <string name="reward_text">Reward for completing the </string>
 
     <string name="device">Device language</string>
+
+    <string name="gameStart">By tapping the accept button below, you will start the game</string>
+
+    <string name="wrongAnswer">That\'s not the right answer</string>
+    <string name="wrongItem">That\'s not the right item, try looking for a different one</string>
+
+    <string name="hintQuestion">Do you want to buy a hint for 100 coins?</string>
+    <string name="hintNotEnough">You don\'t have enough coins to buy a hint!</string>
 </resources>

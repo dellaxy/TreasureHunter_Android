@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.example.city_tours.R;
 import com.example.city_tours.components.RegularModal;
+import com.example.city_tours.entities.ResourceManager;
 import com.example.city_tours.entities.puzzles.Quest;
 import com.example.city_tours.objects.Utils;
 import com.google.android.material.chip.Chip;
@@ -67,11 +68,11 @@ public abstract class QuestManager {
                     hintButton.setEnabled(false);
                 } else {
                     setModalTextColour(Color.RED);
-                    setModalText("You don't have enough coins to buy a hint!");
+                    setModalText(ResourceManager.getString(R.string.hintNotEnough));
                 }
             }
         };
-        hintModal.setModalText("Do you want to buy a hint for 100 coins?");
+        hintModal.setModalText(ResourceManager.getString(R.string.hintQuestion));
         hintModal.setModalLocation(450);
     }
 
@@ -144,7 +145,7 @@ public abstract class QuestManager {
         if (!isWrongAnswerShown) {
             isWrongAnswerShown = true;
             String previousText = hintText.getText().toString();
-            hintText.setText("Wrong answer! Try again.");
+            hintText.setText(ResourceManager.getString(R.string.wrongAnswer));
             new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                 hintText.setText(previousText);
                 isWrongAnswerShown = false;

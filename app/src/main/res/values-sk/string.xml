@@ -19,4 +19,12 @@
     <string name="reward_text">Odmena za dokončenie </string>
 
     <string name="device">Jazyk zariadenia</string>
+
+    <string name="gameStart">Kliknutím na tlačidlo prijať začneš hru</string>
+
+    <string name="wrongAnswer">Toto nie je správna odpoveď</string>
+    <string name="wrongItem">Toto nie je správny predmet, skús pohľadať iný</string>
+
+    <string name="hintQuestion">Chceš kúpiť nápovedu za 100 mincí?</string>
+    <string name="hintNotEnough">Nemáš dostatok mincí na kúpu nápovedy!</string>
 </resources>
