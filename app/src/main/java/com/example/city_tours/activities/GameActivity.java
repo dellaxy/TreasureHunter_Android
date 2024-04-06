@@ -424,6 +424,8 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 } else {
                                     if (isNotNull(checkpoint.getNavigationInstructions())) {
                                         textToSpeechService.synthesizeTexts(new String[]{checkpoint.getText(), checkpoint.getNavigationInstructions()}, 1000);
+                                    } else if (checkpoint.hasPuzzle() && checkpoint.getPuzzleType().equals(FETCH)) {
+                                        textToSpeechService.synthesizeTexts(new String[]{checkpoint.getText(), ResourceManager.getString(R.string.fetchText)}, 1000);
                                     } else {
                                         textToSpeechService.synthesizeText(checkpoint.getText());
                                     }
@@ -556,6 +558,9 @@ public class GameActivity extends BaseActivity implements LocationListener {
         }
         if (isNotNull(checkpoint.getNavigationInstructions())) {
             navigationLayout.addView(new CheckpointTextCard(this, checkpoint.getNavigationInstructions()));
+        }
+        if (checkpoint.hasPuzzle() && checkpoint.getPuzzleType().equals(FETCH)) {
+            navigationLayout.addView(new CheckpointTextCard(this, ResourceManager.getString(R.string.fetchText)));
         }
     }
 

@@ -8,6 +8,11 @@
     <string name="navigate">Navigovať</string>
     <string name="description">Popis</string>
     <string name="info">Informácie</string>
+    <string name="hint">Nápoveda</string>
+
+    <string name="congratulations">Gratulujeme!</string>
+    <string name="backToMap">Späť na mapu</string>
+    <string name="question">Otázka</string>
 
     <!-- MENU -->
     <string name="home">Domov</string>
@@ -27,4 +32,6 @@
 
     <string name="hintQuestion">Chceš kúpiť nápovedu za 100 mincí?</string>
     <string name="hintNotEnough">Nemáš dostatok mincí na kúpu nápovedy!</string>
+
+    <string name="fetchText">Nájdi požadovaný predmet v oblasti zobrazenej na mape</string>
 </resources>

@@ -117,7 +117,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
-            android:text="Congratilations!"
+            android:text="@string/congratulations"
             android:textColor="@color/primary"
             android:textSize="30sp"
             android:textStyle="bold" />
@@ -147,7 +147,7 @@
             android:id="@+id/backToMapButton"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="FINISH"
+            android:text="@string/backToMap"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="15dp" />
