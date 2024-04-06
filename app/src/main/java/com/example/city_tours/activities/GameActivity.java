@@ -70,6 +70,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private QuestManager questManager;
     private FetchManager fetchManager;
     private int AREA_RADIUS, markerId, correctAnswerCount = 0, puzzleCount = 0;
+    private int savedSequence;
     private boolean isInsideArea = false, navigateToLocation = false, isPuzzleActive = false;
     private Game currentGame;
     private float lastCheckTime = 0, previousDistance = -1;
@@ -88,6 +89,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
         setContentView(R.layout.activity_game);
         initializeMainMap();
         initMarkerData();
+
     }
 
     private void onInit() {
@@ -96,39 +98,42 @@ public class GameActivity extends BaseActivity implements LocationListener {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
         RelativeLayout completedGameLayout = findViewById(R.id.completedGameLayout);
+        savedSequence = preferencesManager.getGameState(currentGame.getId());
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300, 0.5f, this);
+        }
 
         currentGameState.onChangeListener(gameState -> {
-                    switch ((GameState) gameState) {
-                        case GAME_NOT_STARTED: {
-                            mainMap.addCircle(new CircleOptions()
-                                    .center(startLocation)
-                                    .radius(AREA_RADIUS)
-                                    .strokeWidth(5)
-                                    .strokeColor(ColorPalette.SECONDARY.getColor())
-                                    .fillColor(ColorPalette.SECONDARY.getColor(200)));
-                            mainMap.addMarker(new MarkerOptions()
-                                    .position(startLocation)
-                                    .icon(bitmapDescriptorFromVector(this, ColorPalette.SECONDARY.getColor(), R.drawable.marker_default)));
-                            break;
+            switch ((GameState) gameState) {
+                case GAME_NOT_STARTED: {
+                    if (savedSequence != -1) {
+                        currentGameState.setValue(GameState.GAME_STARTED);
+                        return;
+                    }
+                    mainMap.addCircle(new CircleOptions()
+                            .center(startLocation)
+                            .radius(AREA_RADIUS)
+                            .strokeWidth(5)
+                            .strokeColor(ColorPalette.SECONDARY.getColor())
+                            .fillColor(ColorPalette.SECONDARY.getColor(200)));
+                    mainMap.addMarker(new MarkerOptions()
+                            .position(startLocation)
+                            .icon(bitmapDescriptorFromVector(this, ColorPalette.SECONDARY.getColor(), R.drawable.marker_default)));
+                    break;
                         }
                         case GAME_STARTED: {
-                            try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
-                                currentGame.setCheckpoints(databaseHelper.getGameCheckpoints(currentGame.getId()));
-                                currentGame.setFinalCheckpoint(databaseHelper.getFinalGameCheckpoint(currentGame.getId()));
+                            setCurrentGameCheckpoints();
+                            startGame();
+                            finalCheckpoint = currentGame.getFinalCheckpoint();
+                            allCheckpoints = currentGame.getCheckpoints();
+                            allCheckpoints.add(currentGame.getFinalCheckpoint());
 
-                                finalCheckpoint = currentGame.getFinalCheckpoint();
-                                allCheckpoints = currentGame.getCheckpoints();
-                                allCheckpoints.add(currentGame.getFinalCheckpoint());
+                            updateCheckpointsList();
 
-                                updateCheckpointsList();
-
-                                mainMapFragment.getView().setVisibility(View.GONE);
-                                activeGameLayout.setVisibility(View.VISIBLE);
-                                initializeMiniMap();
-                                startGame();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            mainMapFragment.getView().setVisibility(View.GONE);
+                            activeGameLayout.setVisibility(View.VISIBLE);
+                            initializeMiniMap();
                             break;
                         }
                         case GAME_COMPLETED: {
@@ -139,7 +144,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
                             }
                             activeGameLayout.setVisibility(View.GONE);
                             completedGameLayout.setVisibility(View.VISIBLE);
-                            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                             locationManager.removeUpdates(this);
 
                             findViewById(R.id.backToMapButton).setOnClickListener(v -> {
@@ -176,6 +180,26 @@ public class GameActivity extends BaseActivity implements LocationListener {
             }
         };
         gameStartModal.setModalText(ResourceManager.getString(R.string.gameStart));
+    }
+
+    private void setCurrentGameCheckpoints() {
+        try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
+            List<GameCheckpoint> checkpoints = databaseHelper.getGameCheckpoints(currentGame.getId());
+            if (savedSequence != -1) {
+                Iterator<GameCheckpoint> iterator = checkpoints.iterator();
+                while (iterator.hasNext()) {
+                    GameCheckpoint checkpoint = iterator.next();
+                    if (checkpoint.getSequence() == savedSequence) {
+                        break;
+                    }
+                    iterator.remove();
+                }
+            }
+            currentGame.setCheckpoints(checkpoints);
+            currentGame.setFinalCheckpoint(databaseHelper.getFinalGameCheckpoint(currentGame.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initFetchLayout(Fetch fetch) {
@@ -238,7 +262,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
 
     private void initializeMiniMap() {
         mainMap.clear();
-        mainMap = null;
         miniMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.miniMapFragment);
         Objects.requireNonNull(miniMapFragment).getMapAsync(googleMap -> {
             miniMap = googleMap;
@@ -307,14 +330,12 @@ public class GameActivity extends BaseActivity implements LocationListener {
         mainMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gameActivityMap);
         Objects.requireNonNull(mainMapFragment).getMapAsync(googleMap -> {
             mainMap = googleMap;
+            onInit();
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                onInit();
-
                 mainMap.setMyLocationEnabled(true);
                 getLastKnownLocation(mainMap);
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300, 0.5f, this);
+
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
             }
@@ -355,6 +376,12 @@ public class GameActivity extends BaseActivity implements LocationListener {
     }
 
     private void startGame() {
+        if (savedSequence != -1) {
+            textToSpeechService.synthesizeTexts(new String[]{currentGame.getCheckpoints().get(0).getText(), currentGame.getCheckpoints().get(0).getNavigationInstructions()}, 100);
+            addCheckpointTextToUI(currentGame.getCheckpoints().get(0));
+            currentGame.getCheckpoints().remove(0);
+            return;
+        }
         textToSpeechService.synthesizeText(currentGame.getDescription());
         textToSpeechService.postTaskToMainThread(() -> {
             addTextToUI(currentGame.getDescription());
@@ -396,7 +423,9 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 break;
             }
             case GAME_STARTED: {
-                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 18.5f));
+                if (miniMap != null) {
+                    miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 18.5f));
+                }
                 if (isPuzzleActive) {
                     behaveOnActivePuzzle(playerLocation);
                 } else {
@@ -418,6 +447,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 }
                                 if (checkpoint.hasSequence()) {
                                     updateCheckpointsList();
+                                    preferencesManager.saveGameState(currentGame.getId(), checkpoint.getSequence());
                                 }
                                 if (checkpoint.getClass() == FinalCheckpoint.class) {
                                     finalCheckpointFound();
