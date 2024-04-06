@@ -11,15 +11,30 @@
         android:id="@+id/fetchModalCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/white"
         android:elevation="0dp"
+        app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="20dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/fetch_recycler_view"
+        <TextView
+            android:id="@+id/wrongItemText"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:textSize="26dp"
+            android:textColor="@color/wrong"
+            android:gravity="center" />
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true"
+            android:maxHeight="430dp">
+
+            <GridLayout
+                android:id="@+id/itemGridLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:columnCount="2" />
+        </ScrollView>
 
     </androidx.cardview.widget.CardView>
 

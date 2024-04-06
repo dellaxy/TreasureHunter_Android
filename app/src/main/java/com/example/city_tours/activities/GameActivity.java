@@ -37,6 +37,7 @@ import com.example.city_tours.entities.ConstantsCatalog.ColorPalette;
 import com.example.city_tours.entities.FinalCheckpoint;
 import com.example.city_tours.entities.Game;
 import com.example.city_tours.entities.GameCheckpoint;
+import com.example.city_tours.entities.ResourceManager;
 import com.example.city_tours.entities.puzzles.Fetch;
 import com.example.city_tours.entities.puzzles.Item;
 import com.example.city_tours.entities.puzzles.Quest;
@@ -68,7 +69,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
     private LatLng startLocation;
     private QuestManager questManager;
     private FetchManager fetchManager;
-    private int AREA_RADIUS, markerId, correctAnswerCount = 0, questCount = 0;
+    private int AREA_RADIUS, markerId, correctAnswerCount = 0, puzzleCount = 0;
     private boolean isInsideArea = false, navigateToLocation = false, isPuzzleActive = false;
     private Game currentGame;
     private float lastCheckTime = 0, previousDistance = -1;
@@ -119,15 +120,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
                                 allCheckpoints = currentGame.getCheckpoints();
                                 allCheckpoints.add(currentGame.getFinalCheckpoint());
 
-
-                                items = new ArrayList<>();
-                                items.add(new Item(new LatLng(47.994373755980384, 18.173352155432244), "Text Text", "Mapa", "map", false));
-                                items.add(new Item(new LatLng(47.99437369332947, 18.173118867830205), "Text Text", "Knižka", "aristoteles_book", true));
-                                Fetch fetch = new Fetch(new LatLng(47.99429908446084, 18.173130746088304), 20, "Text Text");
-                                fetch.setItems(items);
-
-                                allCheckpoints.get(0).setPuzzle(fetch);
-
                                 updateCheckpointsList();
 
                                 mainMapFragment.getView().setVisibility(View.GONE);
@@ -165,7 +157,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            ratingBar.setRating(Math.round((float) correctAnswerCount / questCount) * 3);
+                            ratingBar.setRating(Math.round((float) correctAnswerCount / puzzleCount) * 3);
 
                             clearGameLayout();
                             setAwards();
@@ -183,7 +175,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 closePopup();
             }
         };
-        gameStartModal.setModalText("By tapping the button below, you will start your new tour. Good luck!");
+        gameStartModal.setModalText(ResourceManager.getString(R.string.gameStart));
     }
 
     private void initFetchLayout(Fetch fetch) {
@@ -197,18 +189,15 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 .fillColor(ColorPalette.SECONDARY.getColor(100)));
 
         items = fetch.getItems() != null ? fetch.getItems() : new ArrayList<>();
-
-        for (Item item : items) {
-            miniMap.addCircle(new CircleOptions()
-                    .center(item.getPosition())
-                    .radius(item.getAreaSize())
-                    .strokeWidth(5)
-                    .strokeColor(ColorPalette.SECONDARY.getColor())
-                    .fillColor(ColorPalette.SECONDARY.getColor(100)));
-        }
         fetchManager = new FetchManager(this, bottomInfoLayout, fetchLayout) {
             @Override
             public void correctItemSelected() {
+                puzzleCount++;
+                isPuzzleActive = false;
+                textToSpeechService.synthesizeText(fetch.getText());
+                textToSpeechService.postTaskToMainThread(() -> {
+                    addTextToUI(fetch.getText());
+                });
                 miniMap.clear();
                 addCheckpointsToMiniMap();
             }
@@ -221,7 +210,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
         questManager = new QuestManager(this, bottomInfoLayout, questLayout) {
             @Override
             public void correctAnswerEntered() {
-                questCount++;
+                puzzleCount++;
                 correctAnswerCount = questManager.wasHintUsed() ? correctAnswerCount : correctAnswerCount + 1;
                 isPuzzleActive = false;
                 textToSpeechService.synthesizeText(quest.getText());
@@ -234,7 +223,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
 
             @Override
             public void abandonQuest() {
-                questCount++;
+                puzzleCount++;
                 isPuzzleActive = false;
                 textToSpeechService.synthesizeText(quest.getText());
                 textToSpeechService.postTaskToMainThread(() -> {
@@ -381,7 +370,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
         try (DatabaseHelper databaseHelper = new DatabaseHelper(this)) {
             int achievementId = databaseHelper.getAchievementIdByMarkerId(markerId);
             if (achievementId != -1) {
-                databaseHelper.updatePlayerAchievement(achievementId, Math.round((float) correctAnswerCount / questCount) * 3);
+                databaseHelper.updatePlayerAchievement(achievementId, Math.round((float) correctAnswerCount / puzzleCount) * 3);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -407,7 +396,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 break;
             }
             case GAME_STARTED: {
-                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 17f));
+                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 18.5f));
                 if (isPuzzleActive) {
                     behaveOnActivePuzzle(playerLocation);
                 } else {
