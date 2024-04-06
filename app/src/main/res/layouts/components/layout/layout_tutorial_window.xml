@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:textColor="@color/black"
-            android:text="Your text here"
+            android:text=""
             android:textSize="12sp" />
     </androidx.cardview.widget.CardView>
 
