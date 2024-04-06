@@ -55,11 +55,6 @@ public class PreferencesManager {
         return sharedPreferences.getString("languageKey", "");
     }
 
-    public void setTTSVoice(String voice) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("ttsVoice", voice);
-        editor.apply();
-    }
 
     public String getTTSVoice() {
         return sharedPreferences.getString("ttsVoice", "en-US-Standard-B");
@@ -80,5 +75,14 @@ public class PreferencesManager {
         return sharedPreferences.getInt("playerCoins", 0);
     }
 
+    public void saveGameState(int gameId, int checkpointSequence) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("gameId_" + gameId + "_checkpointSequence", checkpointSequence);
+        editor.apply();
+    }
+
+    public int getGameState(int gameId) {
+        return sharedPreferences.getInt("gameId_" + gameId + "_checkpointSequence", -1);
+    }
 
 }

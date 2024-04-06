@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.city_tours.R;
+import com.example.city_tours.entities.ResourceManager;
 
 public class AchievementBadge extends ConstraintLayout {
 
@@ -27,7 +28,7 @@ public class AchievementBadge extends ConstraintLayout {
         this.image = image;
         this.rating = rating;
         init();
-        badgeDescription.setText("Reward for completing the " + tourName);
+        badgeDescription.setText(ResourceManager.getString(R.string.reward_text) + " " + tourName);
 
     }
 
@@ -38,7 +39,7 @@ public class AchievementBadge extends ConstraintLayout {
         this.image = image;
         this.rating = 0;
         init();
-        badgeDescription.setText("Reward for completing the " + tourName);
+        badgeDescription.setText(ResourceManager.getString(R.string.reward_text) + " " + tourName);
 
         ColorMatrix matrix = new ColorMatrix();
         matrix.setSaturation(0);
