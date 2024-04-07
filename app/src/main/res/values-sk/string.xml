@@ -4,6 +4,8 @@
     <string name="accept">Prijať</string>
     <string name="Submit">Odoslať</string>
     <string name="close">Zavrieť</string>
+    <string name="submitChanges">Uložiť zmeny</string>
+    <string name="mapFinished">Otvoriť mapu s odohranými hrami</string>
 
     <string name="navigate">Navigovať</string>
     <string name="description">Popis</string>

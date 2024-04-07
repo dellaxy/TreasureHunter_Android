@@ -111,8 +111,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     private void loadDataFromDatabase() {
         List<LocationMarker> markers, allMarkers = new ArrayList<>();
-        try (DatabaseHelper databaseHelper = new DatabaseHelper(requireContext())){
-            allMarkers = databaseHelper.getAllMarkers();
+        Bundle bundle = getArguments();
+        try (DatabaseHelper databaseHelper = new DatabaseHelper(requireContext())) {
+            if (isNotNull(bundle) && bundle.getBoolean("showFinishedGames"))
+                allMarkers = databaseHelper.getAllFinishedMarkers();
+            else
+                allMarkers = databaseHelper.getAllMarkers();
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Error loading data from database", Toast.LENGTH_SHORT).show();
         }
@@ -127,8 +131,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             for (LocationMarker marker : markers) {
                 addMarker(marker);
             }
-        } else {
-            Toast.makeText(requireContext(), "There are no missions in this area", Toast.LENGTH_SHORT).show();
         }
     }
 

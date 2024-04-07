@@ -11,6 +11,7 @@ import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.city_tours.R;
 import com.example.city_tours.entities.ConstantsCatalog;
@@ -57,7 +58,24 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        Button finishedGamesMapButton = view.findViewById(R.id.finishedGamesMapButton);
+        finishedGamesMapButton.setOnClickListener(this::openMapFinishedGames);
+
         return view;
+    }
+
+
+    public void openMapFinishedGames(View view) {
+        MapsFragment mapsFragment = new MapsFragment();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("showFinishedGames", true);
+        mapsFragment.setArguments(bundle);
+
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, mapsFragment, "MapsFragment")
+                .addToBackStack(null)
+                .commit();
     }
 
     private void setAppLanguage(String languageCode) {
