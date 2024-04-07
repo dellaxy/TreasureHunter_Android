@@ -6,6 +6,8 @@
     <string name="accept">Accept</string>
     <string name="Submit">Submit</string>
     <string name="close">Close</string>
+    <string name="submitChanges">Submit changes</string>
+    <string name="mapFinished">Open map with all the finished games</string>
 
     <string name="navigate">Navigate</string>
     <string name="description">Description</string>

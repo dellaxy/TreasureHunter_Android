@@ -1,6 +1,7 @@
 package com.example.city_tours.objects;
 
 import static com.example.city_tours.entities.ConstantsCatalog.DATABASE_COLLECTIONS;
+import static com.example.city_tours.entities.ConstantsCatalog.DATABASE_COLLECTIONS.FINISHED;
 import static com.example.city_tours.entities.ConstantsCatalog.DATABASE_NAME;
 import static com.example.city_tours.entities.ConstantsCatalog.FETCH;
 import static com.example.city_tours.entities.ConstantsCatalog.QUESTION;
@@ -130,8 +131,27 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase database = getReadableDatabase();
         List<LocationMarker> markers = new ArrayList<>();
         try {
-            String selection = "";
-            //String selection = "id NOT IN (SELECT marker_id FROM " + FINISHED.getCollectionName() + ")";
+            String selection = "id NOT IN (SELECT marker_id FROM " + FINISHED.getCollectionName() + ")";
+            Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, selection, null);
+            while (cursor.moveToNext()) {
+                LocationMarker marker = mapCursorToMarker(cursor);
+                markers.add(marker);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.close();
+        }
+
+        return markers;
+    }
+
+    public List<LocationMarker> getAllFinishedMarkers() {
+        SQLiteDatabase database = getReadableDatabase();
+        List<LocationMarker> markers = new ArrayList<>();
+        try {
+            String selection = "id IN (SELECT marker_id FROM " + FINISHED.getCollectionName() + ")";
             Cursor cursor = queryDatabase(database, DATABASE_COLLECTIONS.MARKERS.getCollectionName(), null, selection, null);
             while (cursor.moveToNext()) {
                 LocationMarker marker = mapCursorToMarker(cursor);
@@ -406,7 +426,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             database.beginTransaction();
             ContentValues values = new ContentValues();
             values.put("marker_id", markerId);
-            database.insert(DATABASE_COLLECTIONS.FINISHED.getCollectionName(), null, values);
+            database.insert(FINISHED.getCollectionName(), null, values);
             database.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
