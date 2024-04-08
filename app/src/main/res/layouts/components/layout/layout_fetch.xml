@@ -15,26 +15,33 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="20dp">
 
-        <TextView
-            android:id="@+id/wrongItemText"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="26dp"
-            android:textColor="@color/wrong"
-            android:gravity="center" />
+            android:orientation="vertical">
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:maxHeight="430dp">
-
-            <GridLayout
-                android:id="@+id/itemGridLayout"
+            <TextView
+                android:id="@+id/wrongItemText"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:columnCount="2" />
-        </ScrollView>
+                android:layout_height="wrap_content"
+                android:textSize="26dp"
+                android:textColor="@color/wrong"
+                android:gravity="center" />
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:maxHeight="430dp">
+
+                <GridLayout
+                    android:id="@+id/itemGridLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:columnCount="2" />
+            </ScrollView>
+
+        </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
