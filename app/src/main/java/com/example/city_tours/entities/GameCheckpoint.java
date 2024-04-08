@@ -1,7 +1,8 @@
 package com.example.city_tours.entities;
 
+import static com.example.city_tours.objects.Utils.isNotNull;
+
 import com.example.city_tours.entities.puzzles.Puzzle;
-import com.example.city_tours.objects.Utils;
 import com.google.android.gms.maps.model.LatLng;
 
 public class GameCheckpoint {
@@ -28,7 +29,7 @@ public class GameCheckpoint {
     }
 
     public boolean hasPuzzle() {
-        return Utils.isNotNull(puzzle);
+        return isNotNull(puzzle);
     }
 
     public String getNavigationInstructions() {
@@ -56,7 +57,7 @@ public class GameCheckpoint {
     }
 
     public boolean hasSequence() {
-        return sequence > 0;
+        return isNotNull(sequence) && sequence > 0;
     }
 
     public Puzzle getPuzzle() {

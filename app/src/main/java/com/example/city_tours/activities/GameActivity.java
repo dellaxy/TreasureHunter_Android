@@ -99,6 +99,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
         RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
         RelativeLayout completedGameLayout = findViewById(R.id.completedGameLayout);
         savedSequence = preferencesManager.getGameState(currentGame.getId());
+        savedSequence = 1;
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300, 0.5f, this);
@@ -213,6 +214,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 .fillColor(ColorPalette.SECONDARY.getColor(100)));
 
         items = fetch.getItems() != null ? fetch.getItems() : new ArrayList<>();
+
         fetchManager = new FetchManager(this, bottomInfoLayout, fetchLayout) {
             @Override
             public void correctItemSelected() {
@@ -226,6 +228,10 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 addCheckpointsToMiniMap();
             }
         };
+
+        for (Item item : items) {
+            fetchManager.itemCollected(item);
+        }
     }
 
     private void initQuestLayout(Quest quest) {
@@ -423,9 +429,10 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 break;
             }
             case GAME_STARTED: {
-                if (miniMap != null) {
-                    miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 18.5f));
+                if (isNull(miniMap)) {
+                    return;
                 }
+                miniMap.animateCamera(CameraUpdateFactory.newLatLngZoom(playerLocation, 18.5f));
                 if (isPuzzleActive) {
                     behaveOnActivePuzzle(playerLocation);
                 } else {

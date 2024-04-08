@@ -55,7 +55,7 @@ public abstract class FetchManager {
     private void openItemsList() {
         GridLayout parentLayout = fetchLayout.findViewById(R.id.itemGridLayout);
         for (Item item : foundItems) {
-            ItemView itemView = new ItemView(context, item.getText(), item.getImage());
+            ItemView itemView = new ItemView(context, item.getItemName(), item.getImage());
             itemView.setOnClickListener(v -> onItemClick(foundItems.indexOf(item)));
 
             GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
