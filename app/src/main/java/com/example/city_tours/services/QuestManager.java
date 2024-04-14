@@ -82,7 +82,7 @@ public abstract class QuestManager {
             answerInput.setVisibility(View.GONE);
             answerChipGroup.setVisibility(View.VISIBLE);
             for (String answer : quest.getAnswers()) {
-                Chip chip = createChip(context);
+                Chip chip = createChip();
                 chip.setText(answer);
                 answerChipGroup.addView(chip);
             }
@@ -117,7 +117,7 @@ public abstract class QuestManager {
         return hintUsed;
     }
 
-    private Chip createChip(Context context) {
+    private Chip createChip() {
         Chip chip = new Chip(context);
         chip.setCheckable(true);
         chip.setCheckedIconTintResource(R.color.primary);
