@@ -99,7 +99,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
         RelativeLayout activeGameLayout = findViewById(R.id.activeGameLayout);
         RelativeLayout completedGameLayout = findViewById(R.id.completedGameLayout);
         savedSequence = preferencesManager.getGameState(currentGame.getId());
-        savedSequence = 1;
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300, 0.5f, this);
