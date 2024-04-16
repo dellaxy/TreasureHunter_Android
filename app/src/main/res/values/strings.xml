@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Interactive City tours</string>
+    <string name="app_name" translatable="false">WanderWise</string>
     <string name="map_id" translatable="false">98a2eac97dc3e6d0</string>
 
     <!-- DEFAULT ENGLISH STRINGS -->
@@ -28,6 +28,7 @@
     <string name="reward_text">Reward for completing the </string>
 
     <string name="device">Device language</string>
+    <string name="language_select">Language selection</string>
 
     <string name="gameStart">By tapping the accept button below, you will start the game</string>
 
