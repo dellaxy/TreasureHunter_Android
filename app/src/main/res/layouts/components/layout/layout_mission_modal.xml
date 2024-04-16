@@ -170,7 +170,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginStart="15dp"
-                android:layout_marginEnd="15dp"
                 android:layout_below="@id/actionButtonsGroup"
                 android:background="@color/gray" />
 
@@ -178,24 +177,30 @@
                 android:id="@+id/fragmentContainer"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
-                android:padding="25dp"
+                android:padding="20dp"
+                android:layout_above="@id/acceptGameButton"
                 android:layout_below="@id/actionButtonsGroup">
 
-                <TextView
-                    android:id="@+id/missionDescription"
+                <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/black"
-                    android:text="Description content here"
-                    android:visibility="visible" />
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/missionDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/black"
+                        android:text="Description content here"
+                        android:visibility="visible" />
+
+                </ScrollView>
 
                 <LinearLayout
                     android:id="@+id/missionStats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:visibility="gone">
-                </LinearLayout>
+                    android:visibility="gone"></LinearLayout>
             </FrameLayout>
 
             <com.example.city_tours.components.RoundedButton
