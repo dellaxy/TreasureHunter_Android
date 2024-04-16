@@ -3,14 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="15dp"
+    android:paddingLeft="15dp"
+    android:paddingBottom="15dp"
+    android:paddingRight="15dp"
     android:paddingTop="60dp">
 
     <TextView
         android:id="@+id/languageSelectionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Language Selection"
+        android:text="@string/language_select"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@color/black"
@@ -30,6 +32,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp" />
 
+
     <com.example.city_tours.components.RoundedButton
         android:id="@+id/finishedGamesMapButton"
         android:layout_width="match_parent"
@@ -44,7 +47,7 @@
         android:id="@+id/selectLanguageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/Submit"
+        android:text="@string/accept"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp"
