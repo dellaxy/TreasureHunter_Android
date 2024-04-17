@@ -30,7 +30,7 @@
                 android:padding="25dp"
                 android:textSize="20dp" />
 
-            <com.example.city_tours.components.RoundedButton
+            <com.example.wander_wise.components.RoundedButton
                 android:id="@+id/regularModalAcceptButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
                 android:layout_toStartOf="@+id/regularModalCloseButton"
                 android:text="@string/accept" />
 
-            <com.example.city_tours.components.RoundedButton
+            <com.example.wander_wise.components.RoundedButton
                 android:id="@+id/regularModalCloseButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

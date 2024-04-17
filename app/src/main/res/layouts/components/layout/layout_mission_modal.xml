@@ -203,7 +203,7 @@
                     android:visibility="gone"></LinearLayout>
             </FrameLayout>
 
-            <com.example.city_tours.components.RoundedButton
+            <com.example.wander_wise.components.RoundedButton
                 android:id="@+id/acceptGameButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
