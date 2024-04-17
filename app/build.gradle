@@ -5,18 +5,19 @@ plugins {
 }
 
 android {
-    namespace 'com.example.lovci_pokladov'
+    namespace 'com.example.city_tours'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.lovci_pokladov"
-        minSdk 24
+        applicationId "com.example.city_tours"
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
 
         buildConfigField("String", "MONGO_DB_LOGIN", MONGO_DB_LOGIN)
         buildConfigField("String", "MONGO_DB_PASSWORD", MONGO_DB_PASSWORD)
+        buildConfigField("String", "TTS_API_KEY", TTS_API_KEY)
 
         renderscriptTargetApi 33
         renderscriptSupportModeEnabled true
@@ -41,6 +42,22 @@ android {
     packagingOptions {
             resources.excludes.add("META-INF/*")
     }
+    sourceSets {
+        main {
+            res {
+                srcDirs = [
+                        'src\\main\\res\\layouts\\fragments',
+                        'src\\main\\res\\layouts\\activities',
+                        'src\\main\\res\\layouts\\components',
+                        'src\\main\\res\\layouts',
+                        'src\\main\\res\\drawables\\icons',
+                        'src\\main\\res\\drawables\\images',
+                        'src\\main\\res\\drawables\\shapes',
+                        'src\\main\\res\\drawables',
+                        'src\\main\\res']
+            }
+        }
+    }
 }
 
 dependencies {
@@ -56,5 +73,5 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation 'com.github.Dimezis:BlurView:version-2.0.3'
+    implementation 'com.github.changemyminds:Google-Cloud-TTS-Android:1.0.2'
 }

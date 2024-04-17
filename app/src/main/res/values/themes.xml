@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.Lovci_pokladov" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Lovci_pokladov" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_light</item>
