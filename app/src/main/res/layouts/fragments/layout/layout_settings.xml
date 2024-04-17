@@ -33,7 +33,7 @@
         android:layout_marginEnd="16dp" />
 
 
-    <com.example.city_tours.components.RoundedButton
+    <com.example.wander_wise.components.RoundedButton
         android:id="@+id/finishedGamesMapButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="60dp" />
 
-    <com.example.city_tours.components.RoundedButton
+    <com.example.wander_wise.components.RoundedButton
         android:id="@+id/selectLanguageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

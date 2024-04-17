@@ -16,7 +16,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Lovci_pokladov"
+        android:theme="@style/Theme.Wander_Wise"
         tools:targetApi="31">
         <activity
             android:name=".fragments.AchievementsFragment"

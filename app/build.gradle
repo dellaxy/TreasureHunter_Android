@@ -10,11 +10,11 @@ localProperties.load(new FileInputStream(localPropertiesFile))
 def TTS_API_KEY = localProperties.getProperty('TTS_API_KEY')
 
 android {
-    namespace 'com.example.city_tours'
+    namespace 'com.example.wander_wise'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.city_tours"
+        applicationId "com.example.wander_wise"
         minSdk 26
         targetSdk 33
         versionCode 1
