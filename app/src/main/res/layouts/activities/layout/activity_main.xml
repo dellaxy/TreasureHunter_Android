@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity">
 
-    <com.example.city_tours.components.AnimatedMenu
+    <com.example.wander_wise.components.AnimatedMenu
         android:id="@+id/animated_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

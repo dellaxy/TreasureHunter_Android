@@ -4,19 +4,22 @@ plugins {
 
 }
 
+def localPropertiesFile = rootProject.file("local.properties")
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(localPropertiesFile))
+def TTS_API_KEY = localProperties.getProperty('TTS_API_KEY')
+
 android {
-    namespace 'com.example.city_tours'
+    namespace 'com.example.wander_wise'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.city_tours"
+        applicationId "com.example.wander_wise"
         minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
 
-        buildConfigField("String", "MONGO_DB_LOGIN", MONGO_DB_LOGIN)
-        buildConfigField("String", "MONGO_DB_PASSWORD", MONGO_DB_PASSWORD)
         buildConfigField("String", "TTS_API_KEY", TTS_API_KEY)
 
         renderscriptTargetApi 33
