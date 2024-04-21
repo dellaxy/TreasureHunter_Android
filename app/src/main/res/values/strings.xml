@@ -39,4 +39,6 @@
     <string name="hintNotEnough">You don\'t have enough coins to buy a hint!</string>
 
     <string name="fetchText">Find the desired item inside the area displayed on the map</string>
+
+    <string name="wrongDirection">You are moving away from the checkpoint.</string>
 </resources>

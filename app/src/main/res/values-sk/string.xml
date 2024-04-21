@@ -37,4 +37,7 @@
     <string name="hintNotEnough">Nemáš dostatok mincí na kúpu nápovedy!</string>
 
     <string name="fetchText">Nájdi požadovaný predmet v oblasti zobrazenej na mape</string>
+
+    <string name="wrongDirection">Vzďaluješ sa od nasledujúcej zóny.</string>
+
 </resources>

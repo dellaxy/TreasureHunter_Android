@@ -85,4 +85,10 @@ public class PreferencesManager {
         return sharedPreferences.getInt("gameId_" + gameId + "_checkpointSequence", -1);
     }
 
+    public void clearGameState(int gameId) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove("gameId_" + gameId + "_checkpointSequence");
+        editor.apply();
+    }
+
 }

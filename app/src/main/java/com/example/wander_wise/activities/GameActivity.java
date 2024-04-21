@@ -145,7 +145,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
                             activeGameLayout.setVisibility(View.GONE);
                             completedGameLayout.setVisibility(View.VISIBLE);
                             locationManager.removeUpdates(this);
-
+                            preferencesManager.clearGameState(currentGame.getId());
                             findViewById(R.id.backToMapButton).setOnClickListener(v -> {
                                 finish();
                             });
@@ -212,12 +212,11 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 .strokeColor(ColorPalette.SECONDARY.getColor())
                 .fillColor(ColorPalette.SECONDARY.getColor(100)));
 
-        items = fetch.getItems() != null ? fetch.getItems() : new ArrayList<>();
-
         fetchManager = new FetchManager(this, bottomInfoLayout, fetchLayout) {
             @Override
             public void correctItemSelected() {
                 puzzleCount++;
+                correctAnswerCount++;
                 isPuzzleActive = false;
                 textToSpeechService.synthesizeText(fetch.getText());
                 textToSpeechService.postTaskToMainThread(() -> {
@@ -227,10 +226,6 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 addCheckpointsToMiniMap();
             }
         };
-
-        for (Item item : items) {
-            fetchManager.itemCollected(item);
-        }
     }
 
     private void initQuestLayout(Quest quest) {
@@ -307,6 +302,11 @@ public class GameActivity extends BaseActivity implements LocationListener {
                 } else {
                     GameCheckpoint nextCheckpoint = i < undiscoveredCheckpoints.size() - 1 ? undiscoveredCheckpoints.get(i + 1) : currentCheckpoint;
                     addArrowMarker(currentCheckpoint.getPosition(), nextCheckpoint.getPosition());
+                    miniMap.addCircle(new CircleOptions()
+                            .center(currentCheckpoint.getPosition())
+                            .radius(currentCheckpoint.getAreaSize())
+                            .strokeWidth(0)
+                            .fillColor(ColorPalette.SECONDARY.getColor(60)));
                 }
             }
         }
@@ -562,7 +562,7 @@ public class GameActivity extends BaseActivity implements LocationListener {
         Location.distanceBetween(playerLocation.latitude, playerLocation.longitude, checkpointLocation.latitude, checkpointLocation.longitude, distance);
         if (previousDistance >= 0) {
             if (distance[0] > previousDistance + 100) {
-                textToSpeechService.synthesizeText("You are moving away from the checkpoint");
+                textToSpeechService.synthesizeText(ResourceManager.getString(R.string.wrongDirection));
 
             } else if (distance[0] < previousDistance - 10) {
                 previousDistance = distance[0];

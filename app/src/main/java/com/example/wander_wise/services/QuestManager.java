@@ -163,7 +163,7 @@ public abstract class QuestManager {
     private String normalizeString(String input) {
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(normalized).replaceAll("");
+        return pattern.matcher(normalized).replaceAll("").toLowerCase();
     }
 
     public void toggleQuestModal(boolean changeViewToQuest) {
